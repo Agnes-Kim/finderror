@@ -1,0 +1,1681 @@
+[
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3529",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3529/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3529/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3529/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3529",
+    "id": 25509398,
+    "number": 3529,
+    "title": "git master HEAD causes v0.8.6 to fail to open the block database",
+    "user": {
+      "login": "Michagogo",
+      "id": 2559390,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/2559390?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Michagogo",
+      "html_url": "https://github.com/Michagogo",
+      "followers_url": "https://api.github.com/users/Michagogo/followers",
+      "following_url": "https://api.github.com/users/Michagogo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Michagogo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Michagogo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Michagogo/subscriptions",
+      "organizations_url": "https://api.github.com/users/Michagogo/orgs",
+      "repos_url": "https://api.github.com/users/Michagogo/repos",
+      "events_url": "https://api.github.com/users/Michagogo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Michagogo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 16,
+    "created_at": "2014-01-13T16:34:21Z",
+    "updated_at": "2014-01-24T12:16:30Z",
+    "closed_at": "2014-01-24T12:16:30Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "Running a version built from Git (I happen to be using a gitian-build, win32, at commit 549e69a558a045829d2910c5d172e91f49101a31) seems to do something to the database that causes v0.8.6 to report an error opening the block database, requiring a reindex.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3522",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3522/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3522/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3522/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3522",
+    "id": 25483280,
+    "number": 3522,
+    "title": "Gitian win32 build broken",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 61889416,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Build%20system",
+        "name": "Build system",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2014-01-13T08:39:20Z",
+    "updated_at": "2014-01-15T12:20:58Z",
+    "closed_at": "2014-01-15T12:20:58Z",
+    "author_association": "OWNER",
+    "body": "A gitian win32 build against master fails. It appears to have to do with Qt, so I think it is a regression from #3346. \n\nFrom build.log:\n\n```\nchecking if QT should be enabled... no (Qt4)\nconfigure: WARNING: zlib not found; bitcoin-qt frontend will not be built\n\n....\n\nmake -C ./src/qt bitcoin-qt.exe\nmake[1]: Entering directory `/home/ubuntu/build/bitcoin/distsrc/src/qt'\n  CXX    bitcoin_qt-bitcoin.o\nIn file included from paymentserver.h:34:0,\n                 from bitcoin.cpp:18:\npaymentrequestplus.h:8:31: fatal error: paymentrequest.pb.h: No such file or directory\ncompilation terminated.\nmake[1]: make[1]: Leaving directory `/home/ubuntu/build/bitcoin/distsrc/src/qt'\n*** [bitcoin_qt-bitcoin.o] Error 1\n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3496",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3496/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3496/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3496/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3496",
+    "id": 25223920,
+    "number": 3496,
+    "title": "bitcoind crashes due to error 30974",
+    "user": {
+      "login": "justusranvier",
+      "id": 1255702,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1255702?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/justusranvier",
+      "html_url": "https://github.com/justusranvier",
+      "followers_url": "https://api.github.com/users/justusranvier/followers",
+      "following_url": "https://api.github.com/users/justusranvier/following{/other_user}",
+      "gists_url": "https://api.github.com/users/justusranvier/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/justusranvier/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/justusranvier/subscriptions",
+      "organizations_url": "https://api.github.com/users/justusranvier/orgs",
+      "repos_url": "https://api.github.com/users/justusranvier/repos",
+      "events_url": "https://api.github.com/users/justusranvier/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/justusranvier/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 8,
+    "created_at": "2014-01-08T07:48:15Z",
+    "updated_at": "2015-05-18T11:16:27Z",
+    "closed_at": "2015-05-18T11:16:27Z",
+    "author_association": "NONE",
+    "body": "Bitcoind is periodically crashing due to a problem accessing wallet.dat, however there's no apparent reason why it would need to do so at all since this node has never been used to send or receive bitcoins.\n\n<pre>\n2014-01-08 02:07:57 AcceptToMemoryPool: 151.228.231.138:35147 /Satoshi:0.8.6/ : accepted ce73721e983ac13a18a35fb6e4f8acbcffc51c1f9d78a383292f82ea08172385 (poolsz 731)\n2014-01-08 02:07:57 received block 00000000000000026119785e54afcf5ec2c50b17fbdbf8ab2b2731f0dc971b49\n2014-01-08 02:08:02 Committing 1618 changed transactions to coin database...\n2014-01-08 02:08:02 *** System error: CDB() : can't open database file wallet.dat, error -30974\n2014-01-08 02:08:02 Error: System error: CDB() : can't open database file wallet.dat, error -30974\n2014-01-08 02:08:02 ERROR: AcceptBlock() : AddToBlockIndex failed\n2014-01-08 02:08:02 ERROR: ProcessBlock() : AcceptBlock FAILED\n2014-01-08 02:08:02 received getdata (2 invsz)\n2014-01-08 02:08:02 AcceptToMemoryPool: 60.242.39.39:55343 /Satoshi:0.8.6/ : accepted 599cfe1a8be361b8e1ed3ed260381d8343da7d8f7c8a9f3350d44e4248c68f03 (poolsz 314)\n2014-01-08 02:08:02 received getdata for: tx ce73721e983ac13a18a35fb6e4f8acbcffc51c1f9d78a383292f82ea08172385\n2014-01-08 02:08:02 Added 1 addresses from 130.83.163.196: 253 tried, 14411 new\n2014-01-08 02:08:02 Added 1 addresses from 192.168.50.13: 253 tried, 14411 new\n2014-01-08 02:08:02 Added 1 addresses from 114.142.212.128: 253 tried, 14411 new\n2014-01-08 02:08:02 Shutdown : In progress...\n2014-01-08 02:08:02 addcon thread interrupt\n2014-01-08 02:08:02 opencon thread interrupt\n2014-01-08 02:08:02 msghand thread interrupt\n2014-01-08 02:08:02 dumpaddr thread stop\n2014-01-08 02:08:02 net thread interrupt\n2014-01-08 02:08:02 Flush(false)\n2014-01-08 02:08:02 wallet.dat refcount=0\n2014-01-08 02:08:02 wallet.dat checkpoint\n2014-01-08 02:08:02 wallet.dat detach\n2014-01-08 02:08:02 wallet.dat closed\n2014-01-08 02:08:02 DBFlush(false) ended               1ms\n2014-01-08 02:08:02 StopNode()\n2014-01-08 02:08:03 Flushed 14664 addresses to peers.dat  1006ms</pre>\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3495",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3495/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3495/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3495/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3495",
+    "id": 25207348,
+    "number": 3495,
+    "title": "EXCEPTION: St9bad_alloc; assertion \"pindex->pprev == view.GetBestBlock()\" failed",
+    "user": {
+      "login": "AlexanderAA",
+      "id": 202360,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/202360?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/AlexanderAA",
+      "html_url": "https://github.com/AlexanderAA",
+      "followers_url": "https://api.github.com/users/AlexanderAA/followers",
+      "following_url": "https://api.github.com/users/AlexanderAA/following{/other_user}",
+      "gists_url": "https://api.github.com/users/AlexanderAA/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/AlexanderAA/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/AlexanderAA/subscriptions",
+      "organizations_url": "https://api.github.com/users/AlexanderAA/orgs",
+      "repos_url": "https://api.github.com/users/AlexanderAA/repos",
+      "events_url": "https://api.github.com/users/AlexanderAA/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/AlexanderAA/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2014-01-08T00:08:22Z",
+    "updated_at": "2015-02-18T16:24:10Z",
+    "closed_at": "2015-02-18T16:24:10Z",
+    "author_association": "NONE",
+    "body": "Exception happened shortly (not immediately) after the following command was issued \"bitcoind -conf=/etc/bitcoin.conf getinfo\".\n\nSystem: OpenBSD 5.4-release, with no modifications. \nbitcoind-0.8.5 was compiled and packaged using https://github.com/jasperla/openbsd-wip/tree/master/net/bitcoin\n\nPackage with binary can be provided on request.\n\nFull error message is below:\n\n---\n\nEXCEPTION: St9bad_alloc  \nstd::bad_alloc  \nbitcoin in ProcessMessages()       \n\nassertion \"pindex->pprev == view.GetBestBlock()\" failed: file \"main.cpp\", line 1596, function \"ConnectBlock\"\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3494",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3494/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3494/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3494/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3494",
+    "id": 25183770,
+    "number": 3494,
+    "title": "Current master crashes in wine",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 234877,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Windows",
+        "name": "Windows",
+        "color": "884400",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 12,
+    "created_at": "2014-01-07T17:46:22Z",
+    "updated_at": "2014-01-10T08:42:16Z",
+    "closed_at": "2014-01-09T08:58:22Z",
+    "author_association": "OWNER",
+    "body": "Current master (cross compiled using gitian) crashes in wine. If this doesn't happen on windows proper (unsure) this is a low priority issue.\n\nFirst, after connecting to a few nodes, it gives a warning about the time `Warning: Please check that your computer's date and time are correct! If your clock is wrong Bitcoin will not work properly.`, and then after at most a minute it crashes with a segmentation fault.\n\nIt looks like a crash in `strftime` with a NULL pointer, called some place within the networking code. I'll need to compile with debugging information to find out more.\n\nNo information or messages explaining the crash end up in debug.log.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3478",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3478/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3478/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3478/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3478",
+    "id": 24936832,
+    "number": 3478,
+    "title": "[Qt] Intro - choose datadir broken?",
+    "user": {
+      "login": "Diapolo",
+      "id": 1419649,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1419649?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Diapolo",
+      "html_url": "https://github.com/Diapolo",
+      "followers_url": "https://api.github.com/users/Diapolo/followers",
+      "following_url": "https://api.github.com/users/Diapolo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Diapolo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Diapolo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Diapolo/subscriptions",
+      "organizations_url": "https://api.github.com/users/Diapolo/orgs",
+      "repos_url": "https://api.github.com/users/Diapolo/repos",
+      "events_url": "https://api.github.com/users/Diapolo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Diapolo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2014-01-01T02:55:41Z",
+    "updated_at": "2014-01-13T16:30:14Z",
+    "closed_at": "2014-01-13T16:30:14Z",
+    "author_association": "NONE",
+    "body": "I can select a path, but even before that dialog the default datadir folders are created and after choosing a custom path that one isn't used.\n\nAre we using GetDataDir() before Intro? Had no time to look at it yet.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3456",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3456/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3456/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3456/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3456",
+    "id": 24693533,
+    "number": 3456,
+    "title": "error: {\"code\":-4,\"message\":\"Error adding key to wallet\"}",
+    "user": {
+      "login": "devilankur18",
+      "id": 431165,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/431165?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/devilankur18",
+      "html_url": "https://github.com/devilankur18",
+      "followers_url": "https://api.github.com/users/devilankur18/followers",
+      "following_url": "https://api.github.com/users/devilankur18/following{/other_user}",
+      "gists_url": "https://api.github.com/users/devilankur18/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/devilankur18/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/devilankur18/subscriptions",
+      "organizations_url": "https://api.github.com/users/devilankur18/orgs",
+      "repos_url": "https://api.github.com/users/devilankur18/repos",
+      "events_url": "https://api.github.com/users/devilankur18/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/devilankur18/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 7,
+    "created_at": "2013-12-23T03:51:57Z",
+    "updated_at": "2015-05-18T11:22:53Z",
+    "closed_at": "2015-05-18T11:22:53Z",
+    "author_association": "NONE",
+    "body": "I am not able to import a private key using the importpvtkey command. I tried with with and without passphase set, it always throw the error\n\n```\nerror: {\"code\":-4,\"message\":\"Error adding key to wallet\"}\n```\n\nHere is the getinfo about my setup.\n\n```\n{\n    \"version\" : 80600,\n    \"protocolversion\" : 70001,\n    \"walletversion\" : 60000,\n    \"balance\" : 0.00000000,\n    \"blocks\" : 276480,\n    \"timeoffset\" : -3,\n    \"connections\" : 8,\n    \"proxy\" : \"\",\n    \"difficulty\" : 1180923195.25802612,\n    \"testnet\" : false,\n    \"keypoololdest\" : 1387767080,\n    \"keypoolsize\" : 101,\n    \"paytxfee\" : 0.00000000,\n    \"unlocked_until\" : 1387806110,\n    \"errors\" : \"\"\n}\n```\n\nI am on ubuntu 12.04. Any suggestions ?\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3384",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3384/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3384/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3384/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3384",
+    "id": 24059095,
+    "number": 3384,
+    "title": "Duplicated addresses?",
+    "user": {
+      "login": "depesz",
+      "id": 274395,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/274395?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/depesz",
+      "html_url": "https://github.com/depesz",
+      "followers_url": "https://api.github.com/users/depesz/followers",
+      "following_url": "https://api.github.com/users/depesz/following{/other_user}",
+      "gists_url": "https://api.github.com/users/depesz/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/depesz/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/depesz/subscriptions",
+      "organizations_url": "https://api.github.com/users/depesz/orgs",
+      "repos_url": "https://api.github.com/users/depesz/repos",
+      "events_url": "https://api.github.com/users/depesz/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/depesz/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2013-12-10T19:23:39Z",
+    "updated_at": "2014-07-31T07:07:02Z",
+    "closed_at": "2014-07-31T07:07:02Z",
+    "author_association": "NONE",
+    "body": "I'm on version v0.8.5.0-gef14a26-beta - from deb.\n\nAfter some cleanup I noticed that some addresses get kinda-duplicates:\n\n![shot](https://f.cloud.github.com/assets/274395/1717484/18abdc66-61d0-11e3-8d88-f4f028886d41.png)\n\nThe \"explain\" address was created by normally clicking \"new address\". \"ulek.net\" on the other hand was created by importprivkey.\n\nIn both cases, I wanted to create/import one key/account. But somehow (after some time, not immediately) I got two.\n\nWhat's more - these additional accounts do not show in listaccounts:\n\n```\n20:22:34 listaccounts\n\n20:22:34{\n\"Bazowy adres\" : 0.00000000,\n\"Od Illiego\" : 0.00000000,\n\"explain\" : 0.00000000,\n\"ulek.net\" : 0.00000000\n}\n```\n\nNow sure what else I can show to help debug the problem - if there is anything, please let me know.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3376",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3376/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3376/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3376/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3376",
+    "id": 24002886,
+    "number": 3376,
+    "title": "Assertion failed! table/table_builder.cc Line: 97",
+    "user": {
+      "login": "OpenGrid",
+      "id": 766440,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/766440?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/OpenGrid",
+      "html_url": "https://github.com/OpenGrid",
+      "followers_url": "https://api.github.com/users/OpenGrid/followers",
+      "following_url": "https://api.github.com/users/OpenGrid/following{/other_user}",
+      "gists_url": "https://api.github.com/users/OpenGrid/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/OpenGrid/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/OpenGrid/subscriptions",
+      "organizations_url": "https://api.github.com/users/OpenGrid/orgs",
+      "repos_url": "https://api.github.com/users/OpenGrid/repos",
+      "events_url": "https://api.github.com/users/OpenGrid/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/OpenGrid/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2013-12-09T23:51:03Z",
+    "updated_at": "2014-03-13T09:56:15Z",
+    "closed_at": "2014-03-13T09:56:15Z",
+    "author_association": "NONE",
+    "body": "Running bitcoin-qt 0.8.6-beta on Windows 8 64bit\n\nI'm running bticoin-qt with -datadir option set to external hard drive.\n\nFile: table/table_builder.cc\nLine: 97\nExpression: r->options.comparator->Compare(key, Slice(r->last_key)) > 0\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3333",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3333/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3333/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3333/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3333",
+    "id": 23515431,
+    "number": 3333,
+    "title": "bitcoin-qt segfault on corrupt wallet",
+    "user": {
+      "login": "RenaKunisaki",
+      "id": 1185585,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1185585?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/RenaKunisaki",
+      "html_url": "https://github.com/RenaKunisaki",
+      "followers_url": "https://api.github.com/users/RenaKunisaki/followers",
+      "following_url": "https://api.github.com/users/RenaKunisaki/following{/other_user}",
+      "gists_url": "https://api.github.com/users/RenaKunisaki/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/RenaKunisaki/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/RenaKunisaki/subscriptions",
+      "organizations_url": "https://api.github.com/users/RenaKunisaki/orgs",
+      "repos_url": "https://api.github.com/users/RenaKunisaki/repos",
+      "events_url": "https://api.github.com/users/RenaKunisaki/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/RenaKunisaki/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 149424,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Wallet",
+        "name": "Wallet",
+        "color": "08a781",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2013-11-30T05:00:37Z",
+    "updated_at": "2014-01-14T17:59:13Z",
+    "closed_at": "2014-01-14T17:59:13Z",
+    "author_association": "NONE",
+    "body": "With a corrupt wallet.dat, bitcoin-qt segfaults:\n\n```\nBitcoin version v0.8.5.0-gef14a26-beta ()\nUsing OpenSSL version OpenSSL 1.0.1e 11 Feb 2013\nStartup time: 2013-11-30 04:31:40\nDefault data directory /home/rena/.bitcoin\nUsing data directory /home/rena/.bitcoin\nUsing at most 7 connections (1024 file descriptors available)\nUsing 8 threads for script verification\ninit message: Verifying wallet...\ndbenv.open LogDir=/home/rena/.bitcoin/database ErrorFile=/home/rena/.bitcoin/db.log\nBound to [::]:8333\nBound to 0.0.0.0:8333\ninit message: Loading block index...\nOpening LevelDB in /home/rena/.bitcoin/blocks/index\nOpened LevelDB successfully\nOpening LevelDB in /home/rena/.bitcoin/chainstate\nOpened LevelDB successfully\nLoadBlockIndexDB(): last block file = 96\nLoadBlockIndexDB(): last block file info: CBlockFileInfo(blocks=142, size=39190683, heights=272083...272223, time=2013-11-29...2013-11-30)\nLoadBlockIndexDB(): transaction index disabled\nLoadBlockIndexDB(): hashBestChain=0000000000000004a4f5b35063a4ff280d5caf21010edab52a5bb8d67bf873a6  height=272223 date=2013-11-30 04:17:49\ninit message: Verifying blocks...\nVerifying last 288 blocks at level 3\nNo coin database inconsistencies in last 46 blocks (34503 transactions)\n block index            9900ms\ninit message: Loading wallet...\n wallet                 2010ms\ninit message: Rescanning...\nRescanning last 272223 blocks (from block 0)...\n rescan               360427ms\ninit message: Loading addresses...\nLoaded 15456 addresses from peers.dat  79ms\nmapBlockIndex.size() = 272226\nnBestHeight = 272223\nsetKeyPool.size() = 100\nmapWallet.size() = 4\nmapAddressBook.size() = 2\ndnsseed thread start\nmsghand thread start\nopencon thread start\nnet thread start\nupnp thread start\naddcon thread start\ndumpaddr thread start\nLoading addresses from DNS seeds (could take a while)\ninit message: Done loading\nERROR: CTransaction::CheckTransaction() : vout empty\nERROR: CTxMemPool::accept() : CheckTransaction failed\nERROR: CTransaction::CheckTransaction() : vout empty\nERROR: CTxMemPool::accept() : CheckTransaction failed\nERROR: CTransaction::CheckTransaction() : vout empty\nERROR: CTxMemPool::accept() : CheckTransaction failed\nERROR: CTransaction::CheckTransaction() : vout empty\nERROR: CTxMemPool::accept() : CheckTransaction failed\nrefreshWallet\nNov 29 23:37:53 guilmon kernel: [2249560.460653] bitcoin-qt[28291]: segfault at 118 ip 00007f43141e1f74 sp 00007fff4fc99c50 error 4 in libpthread-2.17.so[7f43141d8000+17000]\n```\n\nAn (empty) wallet that triggers this issue is here: https://dl.dropboxusercontent.com/u/105169324/broken-wallet.dat\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3317",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3317/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3317/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3317/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3317",
+    "id": 23309314,
+    "number": 3317,
+    "title": "Mavericks crash on blockchain download.",
+    "user": {
+      "login": "sthorley",
+      "id": 6040168,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6040168?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sthorley",
+      "html_url": "https://github.com/sthorley",
+      "followers_url": "https://api.github.com/users/sthorley/followers",
+      "following_url": "https://api.github.com/users/sthorley/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sthorley/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sthorley/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sthorley/subscriptions",
+      "organizations_url": "https://api.github.com/users/sthorley/orgs",
+      "repos_url": "https://api.github.com/users/sthorley/repos",
+      "events_url": "https://api.github.com/users/sthorley/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sthorley/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 234879,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/MacOSX",
+        "name": "MacOSX",
+        "color": "660000",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2013-11-26T11:51:01Z",
+    "updated_at": "2014-09-26T07:47:02Z",
+    "closed_at": "2014-01-17T16:00:50Z",
+    "author_association": "NONE",
+    "body": "Hi Bitcoin-Qt verison 0.85 beta crashed when downloading initial blockchain with this error. Worked fine after restart but thought someone might like the bug report. It had been launched from terminal with the parameter addpeer=192.168.1.105 to do a local download if that makes any difference.\n\nProcess:         Bitcoin-Qt [13290]\nPath:            /Applications/./Bitcoin-Qt.app/Contents/MacOS/Bitcoin-Qt\nIdentifier:      org.bitcoinfoundation.Bitcoin-Qt\nVersion:         0.8.5 (0.8.5)\nCode Type:       X86 (Native)\nParent Process:  bash [13227]\nResponsible:     Terminal [13223]\nUser ID:         501\n\nDate/Time:       2013-11-26 01:14:42.700 +1100\nOS Version:      Mac OS X 10.9 (13A603)\nReport Version:  11\nAnonymous UUID:  E61D74F1-3D9D-94FD-DC61-B38AF6C7C6BE\n\nSleep/Wake UUID: 5EAD2C8E-C417-437D-A849-8B489BA05592\n\nCrashed Thread:  0  Dispatch queue: com.apple.main-thread\n\nException Type:  EXC_CRASH (SIGABRT)\nException Codes: 0x0000000000000000, 0x0000000000000000\n\nApplication Specific Information:\nabort() called\n\nThread 0 Crashed:: Dispatch queue: com.apple.main-thread\n0   libsystem_kernel.dylib          0x9c1e5952 **pthread_kill + 10\n1   libsystem_pthread.dylib         0x908c9167 pthread_kill + 101\n2   libsystem_c.dylib               0x90ddc340 abort + 155\n3   libc++abi.dylib                 0x98e4d869 abort_message + 169\n4   libc++abi.dylib                 0x98e6e57b default_terminate_handler() + 264\n5   libc++abi.dylib                 0x98e6bdd0 std::__terminate(void (_)()) + 14\n6   libc++abi.dylib                 0x98e6b7eb __cxa_throw + 116\n7   libc++abi.dylib                 0x98e6bfb4 operator new(unsigned long) + 100\n8   QtGui                           0x00ee28c2 QPainter::begin(QPaintDevice_) + 1698\n9   QtGui                           0x00ee2e8a QPainter::QPainter(QPaintDevice_) + 250\n10  QtGui                           0x00e0438a QWidgetPrivate::drawWidget(QPaintDevice_, QRegion const&, QPoint const&, int, QPainter_, QWidgetBackingStore_) + 1498\n11  QtGui                           0x00d51309 QMacInputContext::reset() + 6745\n12  com.apple.AppKit                0x954cf90b -[NSView _drawRect:clip:] + 4033\n13  com.apple.AppKit                0x954ccce4 -[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:] + 2482\n14  com.apple.AppKit                0x954cd660 -[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:] + 4910\n15  com.apple.AppKit                0x954cbe90 -[NSThemeFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:] + 290\n16  com.apple.AppKit                0x954c91c1 -[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:] + 3645\n17  com.apple.AppKit                0x954a6cbc -[NSView displayIfNeeded] + 1414\n18  com.apple.AppKit                0x954c4cdc -[NSWindow displayIfNeeded] + 324\n19  com.apple.AppKit                0x9550e6f5 _handleWindowNeedsDisplayOrLayoutOrUpdateConstraints + 1107\n20  com.apple.AppKit                0x95b7cdab __83-[NSWindow _postWindowNeedsDisplayOrLayoutOrUpdateConstraintsUnlessPostingDisabled]_block_invoke1381 + 58\n21  com.apple.CoreFoundation        0x9168fb4d _runLoopObserverWithBlockContext + 29\n22  com.apple.CoreFoundation        0x9168f59e __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION** + 30\n23  com.apple.CoreFoundation        0x9168f4ef __CFRunLoopDoObservers + 399\n24  com.apple.CoreFoundation        0x9168039e __CFRunLoopRun + 974\n25  com.apple.CoreFoundation        0x9167fd5a CFRunLoopRunSpecific + 394\n26  com.apple.CoreFoundation        0x9167fbbb CFRunLoopRunInMode + 123\n27  com.apple.HIToolbox             0x97abee2d RunCurrentEventLoopInMode + 259\n28  com.apple.HIToolbox             0x97abebb2 ReceiveNextEventCommon + 526\n29  com.apple.HIToolbox             0x97abe98d _BlockUntilNextEventMatchingListInModeWithFilter + 92\n30  com.apple.AppKit                0x953685a9 _DPSNextEvent + 1602\n31  com.apple.AppKit                0x95367ad0 -[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:] + 119\n32  com.apple.AppKit                0x9535a35c -[NSApplication run] + 727\n33  QtGui                           0x00d657fa QDesktopWidget::resizeEvent(QResizeEvent*) + 12890\n34  QtCore                          0x019cf471 QEventLoop::processEvents(QFlagsQEventLoop::ProcessEventsFlag) + 65\n35  QtCore                          0x019cf84a QEventLoop::exec(QFlagsQEventLoop::ProcessEventsFlag) + 314\n36  QtCore                          0x019d1f26 QCoreApplication::exec() + 182\n37  org.bitcoinfoundation.Bitcoin-Qt    0x00023617 main + 7975\n38  org.bitcoinfoundation.Bitcoin-Qt    0x00020711 start + 53\n\nThread 1:: Dispatch queue: com.apple.libdispatch-manager\n0   libsystem_kernel.dylib          0x9c1e6992 kevent64 + 10\n1   libdispatch.dylib               0x926dc8bd _dispatch_mgr_invoke + 238\n2   libdispatch.dylib               0x926dc556 _dispatch_mgr_thread + 52\n\nThread 2:: com.apple.CFSocket.private\n0   libsystem_kernel.dylib          0x9c1e5ace __select + 10\n1   com.apple.CoreFoundation        0x916d0dc6 __CFSocketManager + 1158\n2   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n3   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n4   libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 3:\n0   libsystem_kernel.dylib          0x9c1e0f7a mach_msg_trap + 10\n1   libsystem_kernel.dylib          0x9c1e016c mach_msg + 68\n2   com.apple.CoreFoundation        0x91680f69 __CFRunLoopServiceMachPort + 169\n3   com.apple.CoreFoundation        0x91680541 __CFRunLoopRun + 1393\n4   com.apple.CoreFoundation        0x9167fd5a CFRunLoopRunSpecific + 394\n5   com.apple.CoreFoundation        0x9167fbbb CFRunLoopRunInMode + 123\n6   com.apple.AppKit                0x95511f18 _NSEventThread + 283\n7   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n8   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n9   libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 4:\n0   libsystem_kernel.dylib          0x9c1e5ace __select + 10\n1   QtCore                          0x01a01a90 qt_safe_select(int, fd_set_, fd_set_, fd_set_, timeval const_) + 320\n2   QtCore                          0x01a05dda QEventDispatcherUNIXPrivate::doSelect(QFlagsQEventLoop::ProcessEventsFlag, timeval*) + 394\n3   QtCore                          0x01a0626f QEventDispatcherUNIX::processEvents(QFlagsQEventLoop::ProcessEventsFlag) + 175\n4   QtCore                          0x019cf471 QEventLoop::processEvents(QFlagsQEventLoop::ProcessEventsFlag) + 65\n5   QtCore                          0x019cf84a QEventLoop::exec(QFlagsQEventLoop::ProcessEventsFlag) + 314\n6   QtCore                          0x018ada45 QThread::exec() + 261\n7   QtCore                          0x018b10d3 QThread::terminate() + 787\n8   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n9   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n10  libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 5:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccbd9 pthread_cond_wait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x000aff82 boost::condition_variable::wait(boost::unique_lockboost::mutex&) + 354\n4   org.bitcoinfoundation.Bitcoin-Qt    0x0011277d CCheckQueue<CScriptCheck>::Loop(bool) + 413\n5   org.bitcoinfoundation.Bitcoin-Qt    0x000c11c3 ThreadScriptCheck() + 67\n6   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n7   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n8   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n9   libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 6:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccbd9 pthread_cond_wait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x000aff82 boost::condition_variable::wait(boost::unique_lockboost::mutex&) + 354\n4   org.bitcoinfoundation.Bitcoin-Qt    0x0011277d CCheckQueue<CScriptCheck>::Loop(bool) + 413\n5   org.bitcoinfoundation.Bitcoin-Qt    0x000c11c3 ThreadScriptCheck() + 67\n6   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n7   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n8   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n9   libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 7:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccbd9 pthread_cond_wait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x000aff82 boost::condition_variable::wait(boost::unique_lockboost::mutex&) + 354\n4   org.bitcoinfoundation.Bitcoin-Qt    0x0011277d CCheckQueue<CScriptCheck>::Loop(bool) + 413\n5   org.bitcoinfoundation.Bitcoin-Qt    0x000c11c3 ThreadScriptCheck() + 67\n6   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n7   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n8   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n9   libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 8:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccc25 pthread_cond_timedwait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x00111b57 boost::this_thread::sleep_for(boost::chrono::duration<long long, boost::ratio<1ll, 1000000000ll> > const&) + 535\n4   org.bitcoinfoundation.Bitcoin-Qt    0x001125b6 void boost::this_thread::sleep_for<long long, boost::ratio<1ll, 1000ll> >(boost::chrono::duration<long long, boost::ratio<1ll, 1000ll> > const&) + 134\n5   org.bitcoinfoundation.Bitcoin-Qt    0x00143932 ThreadMapPort() + 706\n6   org.bitcoinfoundation.Bitcoin-Qt    0x0015329e void TraceThread<boost::function<void ()> >(char const_, boost::function<void ()>) + 206\n7   org.bitcoinfoundation.Bitcoin-Qt    0x0014d774 boost::detail::thread_data<boost::_bi::bind_t<void, void (_)(char const_, boost::function<void ()>), boost::_bi::list2<boost::_bi::value<char const_>, boost::_bi::value<void (*)()> > > >::run() + 132\n8   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n9   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n10  libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n11  libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 9:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccc25 pthread_cond_timedwait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x00111b57 boost::this_thread::sleep_for(boost::chrono::duration<long long, boost::ratio<1ll, 1000000000ll> > const&) + 535\n4   org.bitcoinfoundation.Bitcoin-Qt    0x001125b6 void boost::this_thread::sleep_for<long long, boost::ratio<1ll, 1000ll> >(boost::chrono::duration<long long, boost::ratio<1ll, 1000ll> > const&) + 134\n5   org.bitcoinfoundation.Bitcoin-Qt    0x00149eaa ThreadSocketHandler() + 5418\n6   org.bitcoinfoundation.Bitcoin-Qt    0x00150cce void TraceThread<void (*)()>(char const_, void (_)()) + 110\n7   org.bitcoinfoundation.Bitcoin-Qt    0x0014b1eb boost::detail::thread_data<boost::_bi::bind_t<void, void (*)(char const*, void (*)()), boost::_bi::list2<boost::_bi::value<char const*>, boost::_bi::value<void (*)()> > > >::run() + 59\n8   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n9   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n10  libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n11  libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 10:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccc25 pthread_cond_timedwait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x00111b57 boost::this_thread::sleep_for(boost::chrono::duration<long long, boost::ratio<1ll, 1000000000ll> > const&) + 535\n4   org.bitcoinfoundation.Bitcoin-Qt    0x001125b6 void boost::this_thread::sleep_for<long long, boost::ratio<1ll, 1000ll> >(boost::chrono::duration<long long, boost::ratio<1ll, 1000ll> > const&) + 134\n5   org.bitcoinfoundation.Bitcoin-Qt    0x001468cc ThreadOpenAddedConnections() + 2700\n6   org.bitcoinfoundation.Bitcoin-Qt    0x00150cce void TraceThread<void (*)()>(char const_, void (_)()) + 110\n7   org.bitcoinfoundation.Bitcoin-Qt    0x0014b1eb boost::detail::thread_data<boost::_bi::bind_t<void, void (*)(char const*, void (*)()), boost::_bi::list2<boost::_bi::value<char const*>, boost::_bi::value<void (*)()> > > >::run() + 59\n8   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n9   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n10  libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n11  libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 11:\n0   libsystem_kernel.dylib          0x9c1e5ace __select + 10\n1   org.bitcoinfoundation.Bitcoin-Qt    0x00091cd7 ConnectSocketDirectly(CService const&, unsigned int&, int) + 679\n2   org.bitcoinfoundation.Bitcoin-Qt    0x00094277 ConnectSocket(CService const&, unsigned int&, int) + 119\n3   org.bitcoinfoundation.Bitcoin-Qt    0x00140241 ConnectNode(CAddress, char const_) + 1105\n4   org.bitcoinfoundation.Bitcoin-Qt    0x001407d0 OpenNetworkConnection(CAddress const&, CSemaphoreGrant_, char const_, bool) + 496\n5   org.bitcoinfoundation.Bitcoin-Qt    0x001454e4 ThreadOpenConnections() + 2868\n6   org.bitcoinfoundation.Bitcoin-Qt    0x00150cce void TraceThread<void (_)()>(char const_, void (_)()) + 110\n7   org.bitcoinfoundation.Bitcoin-Qt    0x0014b1eb boost::detail::thread_data<boost::_bi::bind_t<void, void (*)(char const*, void (*)()), boost::_bi::list2<boost::_bi::value<char const*>, boost::_bi::value<void (*)()> > > >::run() + 59\n8   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n9   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n10  libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n11  libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 12:\n0   org.bitcoinfoundation.Bitcoin-Qt    0x0013c253 CNode::PushGetBlocks(CBlockIndex_, uint256) + 483\n1   org.bitcoinfoundation.Bitcoin-Qt    0x000d8770 ProcessBlock(CValidationState&, CNode_, CBlock_, CDiskBlockPos_) + 3568\n2   org.bitcoinfoundation.Bitcoin-Qt    0x000df39b ProcessMessage(CNode_, std::string, CDataStream&) + 19627\n3   org.bitcoinfoundation.Bitcoin-Qt    0x000e187c ProcessMessages(CNode_) + 972\n4   org.bitcoinfoundation.Bitcoin-Qt    0x00143f2c ThreadMessageHandler() + 828\n5   org.bitcoinfoundation.Bitcoin-Qt    0x00150cce void TraceThread<void (*)()>(char const_, void (_)()) + 110\n6   org.bitcoinfoundation.Bitcoin-Qt    0x0014b1eb boost::detail::thread_data<boost::_bi::bind_t<void, void (*)(char const*, void (*)()), boost::_bi::list2<boost::_bi::value<char const*>, boost::_bi::value<void (*)()> > > >::run() + 59\n7   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n8   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n9   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n10  libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 13:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccc25 pthread_cond_timedwait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x00111b57 boost::this_thread::sleep_for(boost::chrono::duration<long long, boost::ratio<1ll, 1000000000ll> > const&) + 535\n4   org.bitcoinfoundation.Bitcoin-Qt    0x001125b6 void boost::this_thread::sleep_for<long long, boost::ratio<1ll, 1000ll> >(boost::chrono::duration<long long, boost::ratio<1ll, 1000ll> > const&) + 134\n5   org.bitcoinfoundation.Bitcoin-Qt    0x00155a21 void LoopForever<void (*)()>(char const_, void (_)(), long long) + 145\n6   org.bitcoinfoundation.Bitcoin-Qt    0x0014b18e boost::detail::thread_data<boost::_bi::bind_t<void, void (*)(char const*, void (*)(), long long), boost::_bi::list3<boost::_bi::value<char const*>, boost::_bi::value<void (*)()>, boost::_bi::value<int> > > >::run() + 78\n7   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n8   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n9   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n10  libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 14:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccc25 pthread_cond_timedwait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x00111b57 boost::this_thread::sleep_for(boost::chrono::duration<long long, boost::ratio<1ll, 1000000000ll> > const&) + 535\n4   org.bitcoinfoundation.Bitcoin-Qt    0x001125b6 void boost::this_thread::sleep_for<long long, boost::ratio<1ll, 1000ll> >(boost::chrono::duration<long long, boost::ratio<1ll, 1000ll> > const&) + 134\n5   org.bitcoinfoundation.Bitcoin-Qt    0x00168d09 ThreadFlushWalletDB(std::string const&) + 329\n6   libboost_thread-mt.dylib        0x00cea845 boost::detail::thread_data_base::~thread_data_base() + 779\n7   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n8   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n9   libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 15:\n0   libsystem_kernel.dylib          0x9c1e57ca __psynch_cvwait + 10\n1   libsystem_pthread.dylib         0x908cad1d _pthread_cond_wait + 728\n2   libsystem_pthread.dylib         0x908ccbd9 pthread_cond_wait$UNIX2003 + 71\n3   org.bitcoinfoundation.Bitcoin-Qt    0x0030b0af leveldb::(anonymous namespace)::PosixEnv::BGThreadWrapper(void*) + 79\n4   libsystem_pthread.dylib         0x908c85fb _pthread_body + 144\n5   libsystem_pthread.dylib         0x908c8485 _pthread_start + 130\n6   libsystem_pthread.dylib         0x908cdcf2 thread_start + 34\n\nThread 0 crashed with X86 Thread State (32-bit):\n  eax: 0x00000000  ebx: 0xa03ffc0c  ecx: 0xbfffc64c  edx: 0x9c1e5952\n  edi: 0xa03b41a8  esi: 0x00000006  ebp: 0xbfffc668  esp: 0xbfffc64c\n   ss: 0x00000023  efl: 0x00200206  eip: 0x9c1e5952   cs: 0x0000000b\n   ds: 0x00000023   es: 0x00000023   fs: 0x00000000   gs: 0x0000000f\n  cr2: 0xa03fecf4\n\nLogical CPU:     0\nError Code:      0x00080148\nTrap Number:     132\n\nBinary Images:\n    0x1000 -   0x5fafeb +org.bitcoinfoundation.Bitcoin-Qt (0.8.5 - 0.8.5) <3D82C31C-70E3-780D-AA51-EC5D27B05EBD> /Applications/Bitcoin-Qt.app/Contents/MacOS/Bitcoin-Qt\n  0x894000 -   0x899fe7 +libqrencode.3.dylib (5.1) <9627FE72-1198-798B-1841-A64F967F32FB> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libqrencode.3.dylib\n  0x89d000 -   0x8a4ff7 +libminiupnpc.8.dylib (0) <2DBB7FA6-2198-8004-2ECF-F504F2081317> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libminiupnpc.8.dylib\n  0x8a8000 -   0x8f4fff +libssl.1.0.0.dylib (1) <641EBBF5-C97C-1D6C-EFF0-EB02A7FF7629> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libssl.1.0.0.dylib\n  0x90e000 -   0xa46fef +libcrypto.1.0.0.dylib (1) <0943ABB0-E2CA-20EC-B52D-E3D5E2340F02> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libcrypto.1.0.0.dylib\n  0xaaf000 -   0xc08fff +libdb_cxx-4.8.dylib (0) <A2028F0C-1E73-00A3-BA80-2DEF2EAC9ECB> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libdb_cxx-4.8.dylib\n  0xc32000 -   0xc35ff3 +libboost_system-mt.dylib (0) <DC2F474D-A848-B1CA-5E46-EAB30E94A639> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libboost_system-mt.dylib\n  0xc39000 -   0xc4cffb +libboost_filesystem-mt.dylib (0) <ED32F1B3-0C00-9EA8-A6E4-B4D69BBB090B> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libboost_filesystem-mt.dylib\n  0xc57000 -   0xc9bff3 +libboost_program_options-mt.dylib (0) <DAE91877-14DE-370A-9571-A2EC1D7AF3D8> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libboost_program_options-mt.dylib\n  0xce6000 -   0xcf8ff3 +libboost_thread-mt.dylib (0) <4F1F450A-6305-F698-98AC-E82075E11758> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libboost_thread-mt.dylib\n  0xd18000 -   0xd1dff3 +libboost_chrono-mt.dylib (0) <7619296E-C4A2-2674-20C7-398C0E5D6C40> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libboost_chrono-mt.dylib\n  0xd25000 -  0x16b5fe3 +QtGui (4.8.4) <C70071A5-F36B-C018-9BEB-181811A0759F> /Applications/Bitcoin-Qt.app/Contents/Frameworks/QtGui.framework/Versions/4/QtGui\n 0x188c000 -  0x1b3bffb +QtCore (4.8.4) <204CC6C5-048C-4746-D9AD-DF6FA3204CE7> /Applications/Bitcoin-Qt.app/Contents/Frameworks/QtCore.framework/Versions/4/QtCore\n 0x1bad000 -  0x1cd2ff7 +QtNetwork (4.8.4) <E7999879-10BE-D14A-6BBB-9F36A61819C0> /Applications/Bitcoin-Qt.app/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork\n 0x1d0e000 -  0x1d1ffe7 +libz.1.dylib (1.2.7) <04F507FA-B0BF-CD40-DB2E-CBF29500AF19> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libz.1.dylib\n 0x1d23000 -  0x1d44fe7 +libpng15.15.dylib (30) <2E174E7D-8E8B-9F51-6A39-53D3243C159E> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libpng15.15.dylib\n 0x1f88000 -  0x1f8cff3 +libqgif.dylib (0) <88247A6C-7963-6E25-F271-07D15F98CF45> /Applications/Bitcoin-Qt.app/Contents/PlugIns/imageformats/libqgif.dylib\n 0x2f00000 -  0x2fb0fff  ColorSyncDeprecated.dylib (426) <F54DBFF3-3165-3D15-8AE4-37B603502A5F> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ColorSync.framework/Versions/A/Resources/ColorSyncDeprecated.dylib\n 0x6134000 -  0x6134ffd +cl_kernels (???) <020E7BB0-24DD-4196-87F0-85B5F5FAB686> cl_kernels\n 0x6136000 -  0x6221ff7  unorm8_bgra.dylib (2.3.58) <44644D3C-3D0E-3CBB-9265-664D95EC791F> /System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/ImageFormats/unorm8_bgra.dylib\n 0x6a32000 -  0x6a36fff +libqico.dylib (0) <7AE39AE4-C88A-D835-F6DB-43C38C12D8C9> /Applications/Bitcoin-Qt.app/Contents/PlugIns/imageformats/libqico.dylib\n 0x6a3b000 -  0x6a3ffff +libqjpeg.dylib (0) <0D0902B6-EB00-4DEA-37B8-43EEB3552921> /Applications/Bitcoin-Qt.app/Contents/PlugIns/imageformats/libqjpeg.dylib\n 0x6a45000 -  0x6a75fe7 +libjpeg.8.dylib (13) <96B28C90-BE02-5517-87BC-EC348C2EE25C> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libjpeg.8.dylib\n 0x6a7b000 -  0x6a7eff7 +libqmng.dylib (0) <AED7B482-BE3B-C70A-3E5B-7575C58DBCE3> /Applications/Bitcoin-Qt.app/Contents/PlugIns/imageformats/libqmng.dylib\n 0x6a83000 -  0x6a85ffb +libqtga.dylib (0) <DF371BC0-F930-689E-9654-D687DE08B059> /Applications/Bitcoin-Qt.app/Contents/PlugIns/imageformats/libqtga.dylib\n 0x6a89000 -  0x6a8dffb +libqtiff.dylib (0) <D9486AA9-E3DB-C1BF-A248-E5689EC8B768> /Applications/Bitcoin-Qt.app/Contents/PlugIns/imageformats/libqtiff.dylib\n 0x6a92000 -  0x6a9dffa  com.apple.CommerceCore (1.0 - 42) <E59717F2-6770-3DBC-8510-F7AA61E60F57> /System/Library/PrivateFrameworks/CommerceKit.framework/Versions/A/Frameworks/CommerceCore.framework/Versions/A/CommerceCore\n 0x9669000 -  0x96b6fe7 +libmng.1.dylib (2) <1A7593E8-6C76-5533-E1BE-51976CB1873C> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libmng.1.dylib\n 0x96cb000 -  0x96f3fe7 +liblcms.1.dylib (2.19) <81794FD6-C0FC-79D3-7188-36318A86427A> /Applications/Bitcoin-Qt.app/Contents/Frameworks/liblcms.1.dylib\n 0x96fd000 -  0x974ffe7 +libtiff.3.dylib (13.7) <27FC7F5B-604D-360A-9D36-7567BEA4D1AD> /Applications/Bitcoin-Qt.app/Contents/Frameworks/libtiff.3.dylib\n 0xab09000 -  0xab2eff9  com.apple.framework.familycontrols (4.1 - 410) <A33A97EE-C735-38BA-9B49-5D78DAA3DEDA> /System/Library/PrivateFrameworks/FamilyControls.framework/Versions/A/FamilyControls\n 0xae4f000 -  0xae8aff3 +libqtaccessiblewidgets.dylib (0) <D256CDF3-59B6-AAC8-D553-A348D30AFD9C> /Applications/Bitcoin-Qt.app/Contents/PlugIns/accessible/libqtaccessiblewidgets.dylib\n0x8fe0f000 - 0x8fe41417  dyld (239.3) <4B280BB1-55F8-313F-86A6-8ADD644ED69E> /usr/lib/dyld\n0x90008000 - 0x900e3ff7  com.apple.LaunchServices (572.23 - 572.23) <7E52FB5C-9ECF-3CB9-BF18-6652B8D8CDE0> /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/LaunchServices\n0x900e4000 - 0x904dcff3  com.apple.CoreGraphics (1.600.0 - 599.7) <DB004990-F06F-3768-AE4C-191B3C748EFC> /System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics\n0x904dd000 - 0x90507fff  libxslt.1.dylib (13) <249D54AB-1D82-38FE-ABEC-0D575450C73B> /usr/lib/libxslt.1.dylib\n0x9053b000 - 0x90555ff7  com.apple.GenerationalStorage (2.0 - 160.2) <8755F7F1-2402-387C-A32A-2270E7D680C8> /System/Library/PrivateFrameworks/GenerationalStorage.framework/Versions/A/GenerationalStorage\n0x90561000 - 0x9059eff7  libauto.dylib (185.5) <CD008E66-4A0C-35F5-8D72-80D76A716A03> /usr/lib/libauto.dylib\n0x9059f000 - 0x905a7fee  libcldcpuengine.dylib (2.3.58) <713322D8-A643-3B9F-8194-9C4020D8A4D6> /System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/libcldcpuengine.dylib\n0x905a8000 - 0x905eeff7  libFontRegistry.dylib (127) <A0930DB2-A6C6-3C6E-B4A2-119E0D76FD7D> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ATS.framework/Versions/A/Resources/libFontRegistry.dylib\n0x90641000 - 0x90679fff  com.apple.LDAPFramework (2.4.28 - 194.5) <0C42A932-15E8-3CD1-AC35-1DF7D41B25A2> /System/Library/Frameworks/LDAP.framework/Versions/A/LDAP\n0x9067a000 - 0x9067effa  libGIF.dylib (1038) <5CEB4EDF-B0B6-33A6-BDDE-8C0D3226FA72> /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libGIF.dylib\n0x9069f000 - 0x906a0ffd  libunc.dylib (28) <22A126A1-DCFB-3BE5-A66B-C973F0A5D839> /usr/lib/system/libunc.dylib\n0x906a1000 - 0x906b1ff5  com.apple.LangAnalysis (1.7.0 - 1.7.0) <71DE7754-0A47-3F35-B1BF-B1FE7E1311E0> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/LangAnalysis.framework/Versions/A/LangAnalysis\n0x906b2000 - 0x906b4ffb  libRadiance.dylib (1038) <F0D3F13B-5628-3DF9-8B86-A4D914567B25> /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libRadiance.dylib\n0x906b5000 - 0x90761ffb  libvMisc.dylib (423.32) <43873EFF-FB43-3301-BEE8-F2C3A046D7A6> /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libvMisc.dylib\n0x90762000 - 0x90771fff  libGL.dylib (9.0.83) <E76D1F2A-D98B-3464-AD0B-FC1EBBADF027> /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib\n0x90785000 - 0x9078efff  com.apple.speech.recognition.framework (4.2.4 - 4.2.4) <CF8E5706-F744-3139-8A51-D52BF055D19F> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/SpeechRecognition.framework/Versions/A/SpeechRecognition\n0x9078f000 - 0x90797fff  libsystem_dnssd.dylib (522.1.11) <1C015806-B971-34F9-B162-3DF7897351D0> /usr/lib/system/libsystem_dnssd.dylib\n0x90798000 - 0x907c9ffd  com.apple.GSS (4.0 - 2.0) <6BA01155-4DAD-30EE-B480-D224650EA010> /System/Library/Frameworks/GSS.framework/Versions/A/GSS\n0x907ca000 - 0x907f2fff  libsystem_info.dylib (449.1.3) <BB68E8CC-422F-3121-8C86-D0F766FB696D> /usr/lib/system/libsystem_info.dylib\n0x907f3000 - 0x90841ff9  com.apple.HIServices (1.22 - 466) <30636237-408A-3552-90C1-1279348DF7CB> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/HIServices\n0x90842000 - 0x908adff9  com.apple.Heimdal (4.0 - 2.0) <E3091095-A893-3089-8DA1-8705B3BE5BF9> /System/Library/PrivateFrameworks/Heimdal.framework/Versions/A/Heimdal\n0x908b6000 - 0x908c3fff  com.apple.Librarian (1.2 - 1) <F85681E3-3398-327B-829B-1D8078C38C22> /System/Library/PrivateFrameworks/Librarian.framework/Versions/A/Librarian\n0x908c4000 - 0x908c6ffe  libCVMSPluginSupport.dylib (9.0.83) <BD30BDD1-DD5B-3F31-A09B-C274EA93CD7C> /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libCVMSPluginSupport.dylib\n0x908c7000 - 0x908ceffb  libsystem_pthread.dylib (53.1.4) <8B1B7B84-1B5D-32A8-AC0D-1E689E5C8A4C> /usr/lib/system/libsystem_pthread.dylib\n0x908e6000 - 0x90947ff7  com.apple.Symbolication (1.4 - 129) <E5948C08-6ADF-3D86-9134-6AE49CF1DA0F> /System/Library/PrivateFrameworks/Symbolication.framework/Versions/A/Symbolication\n0x90948000 - 0x90948fff  com.apple.ApplicationServices (48 - 48) <7967F6FA-2984-3CC3-AD9A-7B9AEC562A2A> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices\n0x90949000 - 0x9099efff  libc++.1.dylib (120) <10C0A136-64F9-3CC2-9420-013247032120> /usr/lib/libc++.1.dylib\n0x90aaa000 - 0x90af0fff  libcurl.4.dylib (78) <EC84399F-5EA8-321B-B122-99730CC557C8> /usr/lib/libcurl.4.dylib\n0x90d75000 - 0x90d7efff  com.apple.audio.SoundManager (4.1 - 4.1) <68B7CEB7-AF09-3E24-8548-6ABF065B5186> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/CarbonSound.framework/Versions/A/CarbonSound\n0x90d7f000 - 0x90e11ffe  libsystem_c.dylib (997.1.1) <D06FD754-8CE3-3EB7-BE05-2EF939BBE05F> /usr/lib/system/libsystem_c.dylib\n0x90e12000 - 0x90e16ffa  libcache.dylib (62) <9730D7F2-D226-3F30-8D26-BF598CB781F6> /usr/lib/system/libcache.dylib\n0x90e17000 - 0x90e33fff  libCRFSuite.dylib (34) <FFF76EBA-DF35-3A5F-857F-3F4B1C9F4C77> /usr/lib/libCRFSuite.dylib\n0x90e34000 - 0x9115fff6  com.apple.Foundation (6.9 - 1056) <C8AE9C03-3460-354A-A8B6-EF4955BE600D> /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation\n0x9125f000 - 0x91264ff6  libcompiler_rt.dylib (35) <9924DF2E-D80B-3A21-920D-544A4597203F> /usr/lib/system/libcompiler_rt.dylib\n0x91265000 - 0x912c3ffd  com.apple.AE (665.5 - 665.5) <54F2F247-160C-3A22-A6E3-5D49655A67AB> /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/AE.framework/Versions/A/AE\n0x913f2000 - 0x913f5ff7  com.apple.help (1.3.3 - 46) <AB6292FA-D3BC-3D56-B3A5-2BE630A503E7> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/Help.framework/Versions/A/Help\n0x913f6000 - 0x91426ff7  com.apple.CoreServicesInternal (184.8 - 184.8) <88528205-9452-3EEC-BB27-DAAA7EC81E04> /System/Library/PrivateFrameworks/CoreServicesInternal.framework/Versions/A/CoreServicesInternal\n0x91427000 - 0x9144fff7  libRIP.A.dylib (599.7) <461297C0-DDA9-3613-8F27-D7F1AC57208F> /System/Library/Frameworks/CoreGraphics.framework/Versions/A/Resources/libRIP.A.dylib\n0x91482000 - 0x91486ffc  libpam.2.dylib (20) <50623D44-795F-3E28-AA85-23E0E7E2AE0E> /usr/lib/libpam.2.dylib\n0x91547000 - 0x9159cff7  com.apple.audio.CoreAudio (4.2.0 - 4.2.0) <0F1C111F-1E64-33BB-A69F-14643B3037D5> /System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio\n0x9159d000 - 0x915aaff7  com.apple.HelpData (2.1.4 - 90) <5BACC236-5B40-33AC-B088-87EDEFAF1D3E> /System/Library/PrivateFrameworks/HelpData.framework/Versions/A/HelpData\n0x9160a000 - 0x9180cff7  com.apple.CoreFoundation (6.9 - 855.11) <50F70E07-043A-3A2F-87EF-A36BA6C5C9D9> /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation\n0x9180d000 - 0x91849ff4  com.apple.RemoteViewServices (2.0 - 94) <BEEE6ADF-7DA3-3D68-BCB0-9863BE1A1F46> /System/Library/PrivateFrameworks/RemoteViewServices.framework/Versions/A/RemoteViewServices\n0x9184a000 - 0x91873ff5  com.apple.shortcut (2.6 - 2.6) <F9F32E6F-E641-36D0-B648-058D5E146D38> /System/Library/PrivateFrameworks/Shortcut.framework/Versions/A/Shortcut\n0x91874000 - 0x919caff0  libBLAS.dylib (1094.5) <74310C2F-4FDB-3995-A01A-5AFB83010A43> /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib\n0x919cb000 - 0x919ceff9  com.apple.TCC (1.0 - 1) <A5FCF7AA-3F56-3A19-9DF1-661F1F02F79D> /System/Library/PrivateFrameworks/TCC.framework/Versions/A/TCC\n0x919cf000 - 0x91b7bff1  com.apple.QuartzCore (1.8 - 332.0) <07F9B77F-35A2-3D21-99FA-CD3FCE5B9C7B> /System/Library/Frameworks/QuartzCore.framework/Versions/A/QuartzCore\n0x91b7c000 - 0x91b86ff7  com.apple.speech.synthesis.framework (4.6.2 - 4.6.2) <16E20DCD-89F4-3C8E-9DBA-EED359807038> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/SpeechSynthesis.framework/Versions/A/SpeechSynthesis\n0x91b87000 - 0x91c73ff7  libxml2.2.dylib (26) <32040145-6FD6-3AD2-B98B-39F73BF9AC47> /usr/lib/libxml2.2.dylib\n0x91c9d000 - 0x91ca6ffa  com.apple.CommonAuth (4.0 - 2.0) <6CB82D57-3C55-39E5-9036-8047DF3E6F57> /System/Library/PrivateFrameworks/CommonAuth.framework/Versions/A/CommonAuth\n0x91ca7000 - 0x91cd6fff  com.apple.framework.SystemAdministration (1.0 - 1.0) <05E81260-7DC7-3546-B45D-15B3E5DF056D> /System/Library/PrivateFrameworks/SystemAdministration.framework/Versions/A/SystemAdministration\n0x91cd7000 - 0x91cdcff7  com.apple.print.framework.Print (9.0 - 260) <A6C465F6-C5D1-353A-9F33-19B9CEDBBC2A> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/Print.framework/Versions/A/Print\n0x91d48000 - 0x91d48ffd  com.apple.audio.units.AudioUnit (1.9 - 1.9) <8A37963C-DF6F-3DFF-94E9-407DC5DFEDA9> /System/Library/Frameworks/AudioUnit.framework/Versions/A/AudioUnit\n0x91d49000 - 0x91d62fff  com.apple.Kerberos (3.0 - 1) <91F17EB2-C70C-359C-B09D-96B52D2A9C9F> /System/Library/Frameworks/Kerberos.framework/Versions/A/Kerberos\n0x91d63000 - 0x91dfffff  com.apple.QD (3.50 - 298) <F73FD4D4-17A4-37D6-AC06-7CA5A8BA1212> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/QD.framework/Versions/A/QD\n0x926d9000 - 0x926f1ffd  libdispatch.dylib (339.1.9) <6249BAE5-044F-3A7A-9CCC-03FF7E6B405B> /usr/lib/system/libdispatch.dylib\n0x926f2000 - 0x926f8ffb  libunwind.dylib (35.3) <099D1A6F-A1F0-3D05-BF1C-0A7BB32D39C2> /usr/lib/system/libunwind.dylib\n0x926f9000 - 0x927dfff7  com.apple.coreui (2.1 - 231) <1C1AE894-C5C2-3F1C-BF29-B152ECD9BD88> /System/Library/PrivateFrameworks/CoreUI.framework/Versions/A/CoreUI\n0x9313b000 - 0x932e34af  libobjc.A.dylib (551.1) <31CBE178-E972-30D1-ADC6-4B8345CAE326> /usr/lib/libobjc.A.dylib\n0x933eb000 - 0x934dffff  libFontParser.dylib (111.1) <D8F9B2A4-41A6-3407-8D80-13A841F97BE5> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ATS.framework/Versions/A/Resources/libFontParser.dylib\n0x93559000 - 0x93559fff  libkeymgr.dylib (28) <1B097DEA-011E-3B1C-86D5-6C7FAD5C765A> /usr/lib/system/libkeymgr.dylib\n0x9355a000 - 0x935daff7  com.apple.CoreServices.OSServices (600.4 - 600.4) <1227DF22-E2DA-3764-A1CA-10CC0CEBE377> /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/OSServices.framework/Versions/A/OSServices\n0x935db000 - 0x935dfffe  libCoreVMClient.dylib (58.1) <0EB8FFD7-AFED-3A63-810E-29629831D43D> /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libCoreVMClient.dylib\n0x935e0000 - 0x93677ff7  com.apple.ink.framework (10.9 - 207) <EF00BCCB-B270-3F3D-9424-EF5F4BC23E25> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/Ink.framework/Versions/A/Ink\n0x938ad000 - 0x9399dffb  libiconv.2.dylib (41) <848FEBA7-2E3E-3ECB-BD59-007F32468787> /usr/lib/libiconv.2.dylib\n0x9399e000 - 0x93c88fd2  com.apple.vImage (7.0 - 7.0) <256972F0-3DBC-3CE1-9EE8-B48243868729> /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vImage.framework/Versions/A/vImage\n0x93c89000 - 0x93c8cffb  libutil.dylib (34) <B496031E-E763-3DEB-84D2-85C0F3DF2012> /usr/lib/libutil.dylib\n0x93c8d000 - 0x93c8dfff  com.apple.CoreServices (59 - 59) <06747539-5035-3307-8645-9BC4E7F89023> /System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices\n0x93cf5000 - 0x93d0dff7  libsystem_malloc.dylib (23.1.10) <69F485C9-B3E7-3E36-A06C-D7DFD29D22E1> /usr/lib/system/libsystem_malloc.dylib\n0x93f74000 - 0x93f76fff  com.apple.securityhi (9.0 - 55005) <51765C73-80D1-33E3-9589-3E88380CE007> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/SecurityHI.framework/Versions/A/SecurityHI\n0x940fc000 - 0x94194ff7  com.apple.Metadata (10.7.0 - 800.12) <0AE4CD6B-FDFC-31ED-9F2C-FE870155CAF9> /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Metadata\n0x94195000 - 0x941f1ffa  com.apple.print.framework.PrintCore (9.0 - 428) <3E248391-2669-328B-B84F-8763FE8E92BB> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/PrintCore.framework/Versions/A/PrintCore\n0x941f2000 - 0x941f2fff  com.apple.Carbon (154 - 157) <6E680560-FD53-3C00-BDF7-7AFA28747DC8> /System/Library/Frameworks/Carbon.framework/Versions/A/Carbon\n0x941f3000 - 0x94217fff  libJPEG.dylib (1038) <212B0986-9227-397C-9493-BCB190EC020E> /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libJPEG.dylib\n0x94218000 - 0x94226fff  libxar.1.dylib (202) <B73748D4-F830-3C71-98B3-7A3ABF5136FD> /usr/lib/libxar.1.dylib\n0x94227000 - 0x9427afff  com.apple.htmlrendering (77 - 1.1.4) <408FA30F-4FE9-3162-9FFD-677E8569C1EA> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HTMLRendering.framework/Versions/A/HTMLRendering\n0x9427c000 - 0x94297ff5  com.apple.openscripting (1.4 - 157) <5C161A52-8D2F-3D56-A988-05727BED7A59> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/OpenScripting.framework/Versions/A/OpenScripting\n0x94298000 - 0x942b5ffb  libresolv.9.dylib (54) <3EC12A7F-6BA1-3976-9F1F-6A4B76303028> /usr/lib/libresolv.9.dylib\n0x942b6000 - 0x94302ff7  libcups.2.dylib (372) <9A2BE8DC-37E4-3019-B665-1036FE7868EA> /usr/lib/libcups.2.dylib\n0x94307000 - 0x94390fff  com.apple.CoreSymbolication (3.0 - 141) <178DDF5C-B6DA-39BD-84F5-FD3FA7E93BF8> /System/Library/PrivateFrameworks/CoreSymbolication.framework/Versions/A/CoreSymbolication\n0x94391000 - 0x94392fff  libremovefile.dylib (33) <ED35EA79-EB06-3B84-A6D4-B1A9D6B8648D> /usr/lib/system/libremovefile.dylib\n0x94432000 - 0x94594ff3  com.apple.CFNetwork (673.0.3 - 673.0.3) <5E0E9AE8-073B-3F2B-B0C7-A0129DE787F6> /System/Library/Frameworks/CFNetwork.framework/Versions/A/CFNetwork\n0x94595000 - 0x946a1fff  com.apple.ImageIO.framework (3.3.0 - 1038) <0B4A6607-9FBC-3A6C-984A-0542DE8385FB> /System/Library/Frameworks/ImageIO.framework/Versions/A/ImageIO\n0x949e9000 - 0x94a39ff7  libcorecrypto.dylib (161.1) <135FD99E-2211-3DF4-825C-C9F816107F0C> /usr/lib/system/libcorecrypto.dylib\n0x94a3a000 - 0x94a3bffc  com.apple.TrustEvaluationAgent (2.0 - 25) <064B485D-56E0-3DD7-BBE2-E08A5BFFF8B3> /System/Library/PrivateFrameworks/TrustEvaluationAgent.framework/Versions/A/TrustEvaluationAgent\n0x94a3c000 - 0x94ab1ff1  com.apple.ApplicationServices.ATS (360 - 363.1) <5C9BC698-0CC1-3F6A-9F9D-BCC3A9C3D6DC> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ATS.framework/Versions/A/ATS\n0x94ab2000 - 0x94ae3ffa  libsystem_m.dylib (3047.16) <28E614E8-7802-3E84-960A-AD4721EF10F7> /usr/lib/system/libsystem_m.dylib\n0x94ae4000 - 0x94af1ff7  com.apple.AppleFSCompression (56 - 1.0) <0C44B3E4-C4A7-3A65-9C1A-334CA3E35BDB> /System/Library/PrivateFrameworks/AppleFSCompression.framework/Versions/A/AppleFSCompression\n0x94af2000 - 0x94b91ff7  libCoreStorage.dylib (380) <55467C87-E1A3-3057-B428-9BCEFD39E36D> /usr/lib/libCoreStorage.dylib\n0x94b92000 - 0x94b9cff7  com.apple.DirectoryService.Framework (10.9 - 173.1.1) <D6735614-EF4B-389F-BF99-7D8416A504BA> /System/Library/Frameworks/DirectoryService.framework/Versions/A/DirectoryService\n0x94b9d000 - 0x94becfff  com.apple.opencl (2.3.57 - 2.3.57) <93385E1C-00D9-31BE-9652-7F3C09484B3E> /System/Library/Frameworks/OpenCL.framework/Versions/A/OpenCL\n0x94c5d000 - 0x94c79ff9  com.apple.Ubiquity (1.3 - 289) <1CEDC83D-7282-3B4D-8CF7-4FE045012391> /System/Library/PrivateFrameworks/Ubiquity.framework/Versions/A/Ubiquity\n0x94c7a000 - 0x94caaff3  libtidy.A.dylib (15.12) <3DBE95FE-8FA7-3584-9202-E37B54B3B064> /usr/lib/libtidy.A.dylib\n0x94cab000 - 0x94cb6fff  com.apple.CrashReporterSupport (10.9 - 538) <7A5FF845-433C-33E3-99B5-F6AA5B825734> /System/Library/PrivateFrameworks/CrashReporterSupport.framework/Versions/A/CrashReporterSupport\n0x94cb7000 - 0x94cc3ffe  libkxld.dylib (2422.1.72) <F9B35FA5-C936-3286-A055-2B0780A674AC> /usr/lib/system/libkxld.dylib\n0x94cc4000 - 0x94cccff7  libCGCMS.A.dylib (599.7) <A7404924-9A2B-3324-A934-BD08953E7098> /System/Library/Frameworks/CoreGraphics.framework/Versions/A/Resources/libCGCMS.A.dylib\n0x94ccd000 - 0x94d05ff7  com.apple.MediaKit (15 - 709) <82E0F8C0-313C-379C-9994-4D21587D0C0C> /System/Library/PrivateFrameworks/MediaKit.framework/Versions/A/MediaKit\n0x94d06000 - 0x94d0affc  com.apple.IOSurface (91 - 91) <DECEEB72-3C7E-3C21-9237-E5AD293F8B09> /System/Library/Frameworks/IOSurface.framework/Versions/A/IOSurface\n0x94de7000 - 0x94deffff  liblaunch.dylib (842.1.4) <3798500D-4436-3AEB-B273-7F2428C33A4A> /usr/lib/system/liblaunch.dylib\n0x94ecd000 - 0x94f02ffd  libssl.0.9.8.dylib (50) <F3BEA2DF-DB84-37F0-B4C7-97C0A4DF19C9> /usr/lib/libssl.0.9.8.dylib\n0x94f03000 - 0x94f0bffe  libGFXShared.dylib (9.0.83) <35644AAA-B1E7-367C-90C0-378024F8A46A> /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGFXShared.dylib\n0x94f0c000 - 0x94f18ff7  com.apple.OpenDirectory (10.9 - 173.1.1) <2AA24814-2DC6-3E28-B71B-186B686F0F19> /System/Library/Frameworks/OpenDirectory.framework/Versions/A/OpenDirectory\n0x94f19000 - 0x94f1cffa  libCGXType.A.dylib (599.7) <2738FF52-4B47-31AD-B7E5-412F6AFACC2A> /System/Library/Frameworks/CoreGraphics.framework/Versions/A/Resources/libCGXType.A.dylib\n0x94f1d000 - 0x94f5cff7  com.apple.bom (12.0 - 192) <50F9D23C-9C9A-38BF-B4E2-66D93BE2A174> /System/Library/PrivateFrameworks/Bom.framework/Versions/A/Bom\n0x94f5d000 - 0x94f64ff2  com.apple.NetFS (6.0 - 4.0) <915AA303-C02B-3B0C-8208-D8AAA4350DB4> /System/Library/Frameworks/NetFS.framework/Versions/A/NetFS\n0x94f65000 - 0x951d2ff6  com.apple.security (7.0 - 55471) <5FCF76B2-92C6-3404-87D3-91B3F6E203AA> /System/Library/Frameworks/Security.framework/Versions/A/Security\n0x951d3000 - 0x95201ff3  com.apple.DebugSymbols (106 - 106) <FC70F4C9-B2A6-352F-9563-6C085E9DDDB8> /System/Library/PrivateFrameworks/DebugSymbols.framework/Versions/A/DebugSymbols\n0x95202000 - 0x95208ff7  com.apple.AOSNotification (1.7.0 - 760.3) <63F7E7F8-6FA3-38D3-9907-CDF360CA9354> /System/Library/PrivateFrameworks/AOSNotification.framework/Versions/A/AOSNotification\n0x95209000 - 0x952d9fef  libvDSP.dylib (423.32) <E2FA7230-A001-3F6B-9ACF-6998C51AD7DC> /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libvDSP.dylib\n0x95341000 - 0x95f5cff3  com.apple.AppKit (6.9 - 1265) <AE258D94-0272-394F-BBB7-9B5C165A4A78> /System/Library/Frameworks/AppKit.framework/Versions/C/AppKit\n0x9625f000 - 0x96264ff3  libsystem_platform.dylib (24.1.4) <875321B9-34EF-3FCC-880C-633FA05223F5> /usr/lib/system/libsystem_platform.dylib\n0x9631a000 - 0x96418fff  libJP2.dylib (1038) <EE0B9985-625D-39E6-B425-03FB75BA2594> /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libJP2.dylib\n0x96419000 - 0x96422fff  libsystem_notify.dylib (121) <623269F5-1518-3035-A916-8AF83C972154> /usr/lib/system/libsystem_notify.dylib\n0x96425000 - 0x964f2ff7  com.apple.backup.framework (1.5 - 1.5) <E33257DD-A751-3230-89B7-B4B79F70A8FB> /System/Library/PrivateFrameworks/Backup.framework/Versions/A/Backup\n0x964fe000 - 0x964fffff  libSystem.B.dylib (1197.1.1) <C58F0CC9-C1FD-3024-9358-D3359A6BBCAD> /usr/lib/libSystem.B.dylib\n0x96500000 - 0x9650eff7  libz.1.dylib (53) <858B4D9F-D87E-3D81-B07A-DF9632BD185F> /usr/lib/libz.1.dylib\n0x9650f000 - 0x96510fff  libsystem_blocks.dylib (63) <2AC67D5E-ECD4-3644-A53C-9684F9B7AA33> /usr/lib/system/libsystem_blocks.dylib\n0x96514000 - 0x96517ffe  com.apple.LoginUICore (3.0 - 3.0) <6FE961A4-3C17-3004-B50B-FD78FDC28350> /System/Library/PrivateFrameworks/LoginUIKit.framework/Versions/A/Frameworks/LoginUICore.framework/Versions/A/LoginUICore\n0x96518000 - 0x96518fff  com.apple.Accelerate (1.9 - Accelerate 1.9) <C85070A7-D942-3CFA-981F-5864480788C8> /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate\n0x96519000 - 0x9680bff8  com.apple.CoreImage (9.0.54) <D7BC3E53-EF5B-3A14-8808-8D45EE505B48> /System/Library/Frameworks/QuartzCore.framework/Versions/A/Frameworks/CoreImage.framework/Versions/A/CoreImage\n0x96868000 - 0x9686afff  libsystem_configuration.dylib (596.12) <1C31C3F6-568D-3854-AE03-A5DA2F39297E> /usr/lib/system/libsystem_configuration.dylib\n0x9686b000 - 0x96873fff  libcopyfile.dylib (103) <1B1484BD-08B6-3BA9-94CA-A7C24B610EB3> /usr/lib/system/libcopyfile.dylib\n0x96874000 - 0x96b75ff7  com.apple.CoreServices.CarbonCore (1077.13 - 1077.13) <C514A490-8689-3665-AD82-863B5FF8D6AE> /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/CarbonCore\n0x96b76000 - 0x96b76fff  com.apple.Accelerate.vecLib (3.9 - vecLib 3.9) <DDAC0B59-F886-3AB1-98E8-C71FFF161CD4> /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/vecLib\n0x96e9e000 - 0x96eb6fff  com.apple.CFOpenDirectory (10.9 - 173.1.1) <630A5CCF-8FC3-379D-B0BD-41DCE1F0B624> /System/Library/Frameworks/OpenDirectory.framework/Versions/A/Frameworks/CFOpenDirectory.framework/Versions/A/CFOpenDirectory\n0x96eb7000 - 0x96f2afff  com.apple.SearchKit (1.4.0 - 1.4.0) <6F607AB6-7553-37BA-BEC5-98FD7C27FAD7> /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/SearchKit.framework/Versions/A/SearchKit\n0x96f2b000 - 0x96f3fff9  com.apple.MultitouchSupport.framework (245.13 - 245.13) <6860A0D0-3654-3B02-B2E9-C4D2637167B8> /System/Library/PrivateFrameworks/MultitouchSupport.framework/Versions/A/MultitouchSupport\n0x96f40000 - 0x96f4eff7  com.apple.Sharing (132.2 - 132.2) <87DBFC7A-9689-3B8E-AD16-5A9DFF9DE625> /System/Library/PrivateFrameworks/Sharing.framework/Versions/A/Sharing\n0x96f4f000 - 0x97115ffb  libicucore.A.dylib (511.25) <44DDE9A4-578E-3D23-A41A-D8795D000A18> /usr/lib/libicucore.A.dylib\n0x97116000 - 0x97124ff3  com.apple.opengl (9.0.83 - 9.0.83) <16CFFD50-217E-3E18-88AF-7F2AD980628B> /System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL\n0x973a4000 - 0x974dbff3  com.apple.desktopservices (1.8 - 1.8) <4D853961-F911-3FE2-A7DF-3130EA1D8CEB> /System/Library/PrivateFrameworks/DesktopServicesPriv.framework/Versions/A/DesktopServicesPriv\n0x974dc000 - 0x975a3ff7  com.apple.DiscRecording (8.0 - 8000.4.6) <84A7EC09-3BBD-3E04-A88C-6D3B724448FF> /System/Library/Frameworks/DiscRecording.framework/Versions/A/DiscRecording\n0x975a4000 - 0x97687ff7  libcrypto.0.9.8.dylib (50) <B367D3A3-FC1F-326C-92EC-CAD81666524D> /usr/lib/libcrypto.0.9.8.dylib\n0x97688000 - 0x97698ff7  libsasl2.2.dylib (170) <CA1C07F6-8E17-315E-AE49-AB696DDE6707> /usr/lib/libsasl2.2.dylib\n0x97699000 - 0x9769affa  libsystem_sandbox.dylib (278.10) <F3C9C427-AF9F-3CE0-95FF-DC9ACA0B5760> /usr/lib/system/libsystem_sandbox.dylib\n0x976c1000 - 0x976e8fff  com.apple.CoreVideo (1.8 - 117.2) <A53FDD90-F200-3F7C-8A8E-5DE36D3DFBB0> /System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo\n0x976e9000 - 0x976f4fff  libcsfde.dylib (380) <C9E61AFB-1A9D-324B-9827-06B182CDD7B0> /usr/lib/libcsfde.dylib\n0x97803000 - 0x97815fff  libbsm.0.dylib (33) <1BE92DB5-0D2F-3BB5-BCC6-8A71EF2A3450> /usr/lib/libbsm.0.dylib\n0x97a93000 - 0x97e08ff9  com.apple.HIToolbox (2.1 - 695) <74E2DE33-E48E-3206-BD78-AFB988235A83> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/HIToolbox\n0x97ea4000 - 0x97ee2ff7  com.apple.NavigationServices (3.8 - 215) <A093AAF0-248E-313E-BA82-01F69E269895> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/NavigationServices.framework/Versions/A/NavigationServices\n0x97f2f000 - 0x97f31ff2  com.apple.EFILogin (2.0 - 2) <BC558029-74C0-3A69-B376-8F4CBF8C338F> /System/Library/PrivateFrameworks/EFILogin.framework/Versions/A/EFILogin\n0x97f32000 - 0x97f32fff  com.apple.Cocoa (6.8 - 20) <407DC9E6-BBCE-3D34-9BBB-00C90584FFDF> /System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa\n0x97f33000 - 0x97f36fff  libdyld.dylib (239.3) <729B32AC-EEE2-3739-8CE3-F90838D51906> /usr/lib/system/libdyld.dylib\n0x98e4d000 - 0x98e70ff7  libc++abi.dylib (48) <5367BE5A-D475-3FB4-972D-E1DC999A709A> /usr/lib/libc++abi.dylib\n0x99319000 - 0x9948bffb  com.apple.audio.toolbox.AudioToolbox (1.9 - 1.9) <E5FFD35D-18CF-333C-BECE-39F8E47BE707> /System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox\n0x998b2000 - 0x998c4fff  libsystem_asl.dylib (217.1.4) <51EB17C9-9F5B-39F3-B6CD-8EF238B05B89> /usr/lib/system/libsystem_asl.dylib\n0x998c5000 - 0x999d7ffc  libsqlite3.dylib (158) <B3DB0FED-FE4C-314D-8329-CF7708C8AAF4> /usr/lib/libsqlite3.dylib\n0x999d8000 - 0x99d9dff6  libLAPACK.dylib (1094.5) <E6286E68-3501-31AC-813E-75B3B3968011> /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libLAPACK.dylib\n0x99d9e000 - 0x99d9ffff  liblangid.dylib (117) <F18F76C6-7E4B-34AD-AE81-C1C031BF2F7D> /usr/lib/liblangid.dylib\n0x99da0000 - 0x99df6ff6  com.apple.ScalableUserInterface (1.0 - 1) <2C81641B-FA30-32FF-8B3E-3CB9BF53B2D9> /System/Library/Frameworks/QuartzCore.framework/Versions/A/Frameworks/ScalableUserInterface.framework/Versions/A/ScalableUserInterface\n0x9a71e000 - 0x9a749ff5  com.apple.ChunkingLibrary (2.0 - 155.1) <50BBBBF8-F30B-39EA-A512-11A47F429F2C> /System/Library/PrivateFrameworks/ChunkingLibrary.framework/Versions/A/ChunkingLibrary\n0x9a74b000 - 0x9a74bffd  libOpenScriptingUtil.dylib (157) <4D06E8ED-D312-34EA-A448-DFF45ADC3CE5> /usr/lib/libOpenScriptingUtil.dylib\n0x9a757000 - 0x9a75bfff  com.apple.CommonPanels (1.2.6 - 96) <E7CA63C6-CEE9-3F0A-93A7-C12C653FFB80> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/CommonPanels.framework/Versions/A/CommonPanels\n0x9a75c000 - 0x9a788ff7  com.apple.DictionaryServices (1.2 - 208) <33873336-BECD-3F62-A315-C45F24C1818C> /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/DictionaryServices.framework/Versions/A/DictionaryServices\n0x9a789000 - 0x9a793fff  com.apple.bsd.ServiceManagement (2.0 - 2.0) <B84F3916-236A-347B-9C1F-3DE571496737> /System/Library/Frameworks/ServiceManagement.framework/Versions/A/ServiceManagement\n0x9a794000 - 0x9a795fff  libDiagnosticMessagesClient.dylib (100) <B936B1D4-90BB-395D-8EA9-E1237608E7D0> /usr/lib/libDiagnosticMessagesClient.dylib\n0x9a796000 - 0x9a79aff7  libmacho.dylib (845) <D8E93E59-1F80-3413-B9CF-78B848F6E873> /usr/lib/system/libmacho.dylib\n0x9a7c4000 - 0x9a80cfff  com.apple.PerformanceAnalysis (1.47 - 47) <16935C0F-7F9F-316E-9D46-11973DE0904A> /System/Library/PrivateFrameworks/PerformanceAnalysis.framework/Versions/A/PerformanceAnalysis\n0x9a80d000 - 0x9a80ffff  libquarantine.dylib (71) <EE3B510E-1AEC-3171-8A1A-D6A5A42CF35C> /usr/lib/system/libquarantine.dylib\n0x9a9a7000 - 0x9a9b2ffb  libcommonCrypto.dylib (60049) <F8E60C43-22EE-3E0B-9546-3365056901F1> /usr/lib/system/libcommonCrypto.dylib\n0x9a9b3000 - 0x9aa0cffa  libTIFF.dylib (1038) <691DAAFD-D72B-3BE9-AE5C-84AF86BE66CD> /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libTIFF.dylib\n0x9aa63000 - 0x9aa6eff6  com.apple.NetAuth (5.0 - 5.0) <3B2E9615-EE12-38FC-BDCF-09529FF9464B> /System/Library/PrivateFrameworks/NetAuth.framework/Versions/A/NetAuth\n0x9ac37000 - 0x9ac74ffb  libGLImage.dylib (9.0.83) <FA15FEB5-54E4-313B-8E78-A2D2E6C88FE1> /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGLImage.dylib\n0x9ac75000 - 0x9aceaffb  com.apple.framework.IOKit (2.0.1 - 907.1.13) <86D72735-9DFB-35C8-83F7-CE0DCF17D354> /System/Library/Frameworks/IOKit.framework/Versions/A/IOKit\n0x9b285000 - 0x9b28bffc  libCGXCoreImage.A.dylib (599.7) <87F9F4B2-487E-3B11-A869-D6CBDAB39055> /System/Library/Frameworks/CoreGraphics.framework/Versions/A/Resources/libCGXCoreImage.A.dylib\n0x9b611000 - 0x9b624fff  com.apple.ImageCapture (9.0 - 9.0) <63D5C96F-1893-3F35-ADFB-EE451AFD87E6> /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/ImageCapture.framework/Versions/A/ImageCapture\n0x9b625000 - 0x9b676ff1  libstdc++.6.dylib (60) <354F284B-2343-3810-9CA2-E28038824F6E> /usr/lib/libstdc++.6.dylib\n0x9b677000 - 0x9b6e0fff  com.apple.SystemConfiguration (1.13 - 1.13) <542075CD-9085-3F30-B84B-DD0277D6A40E> /System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration\n0x9b76c000 - 0x9b775fff  com.apple.DiskArbitration (2.6 - 2.6) <6379523D-3196-370C-AE4A-8EA586E36909> /System/Library/Frameworks/DiskArbitration.framework/Versions/A/DiskArbitration\n0x9b7ca000 - 0x9b7cefff  libheimdal-asn1.dylib (323.12) <9EA2A221-301B-3B9A-BBF2-38134145B5A8> /usr/lib/libheimdal-asn1.dylib\n0x9b7cf000 - 0x9b805fff  com.apple.IconServices (25 - 25.17) <A4B5242B-765E-3D58-B066-BBEDB5947AAD> /System/Library/PrivateFrameworks/IconServices.framework/Versions/A/IconServices\n0x9b879000 - 0x9b8bbfff  libGLU.dylib (9.0.83) <0D9BFE5A-435E-3C66-AF96-D3567B8FC87B> /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGLU.dylib\n0x9b8bc000 - 0x9b8e0fff  libxpc.dylib (300.1.17) <252BC88F-A5CA-3E67-AEDB-3D7B9F4537E2> /usr/lib/system/libxpc.dylib\n0x9b8e1000 - 0x9b90cff7  libsystem_network.dylib (241.3) <71EBA489-386D-3608-ADE6-CB50EBD1AB1B> /usr/lib/system/libsystem_network.dylib\n0x9b90d000 - 0x9b9f8ff4  com.apple.DiskImagesFramework (10.9 - 371.1) <FC13BD5A-0FB7-35D5-A8DF-0510CFA996FE> /System/Library/PrivateFrameworks/DiskImages.framework/Versions/A/DiskImages\n0x9b9f9000 - 0x9be2dff7  com.apple.vision.FaceCore (3.0.0 - 3.0.0) <5B12F3E9-84F6-3183-B85D-FD19EF800ADB> /System/Library/PrivateFrameworks/FaceCore.framework/Versions/A/FaceCore\n0x9be2e000 - 0x9bea4ff3  com.apple.securityfoundation (6.0 - 55122) <25149798-A37E-316F-84AB-93029EAF33D8> /System/Library/Frameworks/SecurityFoundation.framework/Versions/A/SecurityFoundation\n0x9bed0000 - 0x9bf61fff  com.apple.ColorSync (4.9.0 - 4.9.0) <8366AE10-0396-3100-B87A-A176E8ECE7B6> /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ColorSync.framework/Versions/A/ColorSync\n0x9bf68000 - 0x9c1ccfff  com.apple.CoreData (107 - 481) <F699EC21-57D9-3AE6-A17B-C1D1092780BD> /System/Library/Frameworks/CoreData.framework/Versions/A/CoreData\n0x9c1cd000 - 0x9c1cdfff  libodfde.dylib (20) <98FC02AE-C596-3ED5-80D1-C502FF6115ED> /usr/lib/libodfde.dylib\n0x9c1ce000 - 0x9c1ebff4  libsystem_kernel.dylib (2422.1.72) <C5641F6C-E271-380A-A656-AE4C04345602> /usr/lib/system/libsystem_kernel.dylib\n0x9c1f8000 - 0x9c261fff  com.apple.datadetectorscore (5.0 - 354.0) <0C6C812D-3E7A-31A4-BFDE-CD3316AA35B6> /System/Library/PrivateFrameworks/DataDetectorsCore.framework/Versions/A/DataDetectorsCore\n0x9c262000 - 0x9c26effc  libbz2.1.0.dylib (29) <3CEF1E92-BA42-3F8A-8E8D-9E1F7658E5C7> /usr/lib/libbz2.1.0.dylib\n0x9c26f000 - 0x9c28aff6  libPng.dylib (1038) <F39168D4-ABEB-3C2D-A763-B9D3E1EF43BC> /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libPng.dylib\n0x9c28b000 - 0x9c34eff1  com.apple.CoreText (352.0 - 367.15) <746AD442-F7B4-3273-A36D-C7103D26F727> /System/Library/Frameworks/CoreText.framework/Versions/A/CoreText\n\nExternal Modification Summary:\n  Calls made by other processes targeting this process:\n    task_for_pid: 38\n    thread_create: 0\n    thread_set_state: 0\n  Calls made by this process:\n    task_for_pid: 0\n    thread_create: 0\n    thread_set_state: 0\n  Calls made by all processes on this machine:\n    task_for_pid: 27168\n    thread_create: 0\n    thread_set_state: 0\n\nVM Region Summary:\nReadOnly portion of Libraries: Total=167.9M resident=33.8M(20%) swapped_out_or_unallocated=134.1M(80%)\nWritable regions: Total=3.3G written=3.3G(98%) resident=264K(0%) swapped_out=3.3G(99%) unallocated=3.3G(100%)\n\nREGION TYPE                      VIRTUAL\n===========                      =======\nCG backing stores                  3064K\nCG image                              4K\nCG raster data                      104K\nCG shared images                    204K\nCoreGraphics                          8K\nCoreImage                             4K\nCoreServices                        256K\nFoundation                            4K\nKernel Alloc Once                     4K\nMALLOC                              3.3G\nMALLOC (admin)                       48K\nMemory Tag 242                       12K\nOpenCL                                8K\nStack                              70.7M\nVM_ALLOCATE                        16.6M\n__DATA                             14.4M\n__IMAGE                             528K\n__LINKEDIT                         49.5M\n__OBJC                             1896K\n__PAGEZERO                            4K\n__TEXT                            118.3M\n__UNICODE                           544K\nmapped file                       164.8M\nshared memory                         4K\n===========                      =======\nTOTAL                               3.7G\n\nModel: MacBookAir6,2, BootROM MBA61.0099.B04, 2 processors, Intel Core i5, 1.3 GHz, 4 GB, SMC 2.13f7\nGraphics: Intel HD Graphics 5000, Intel HD Graphics 5000, Built-In, 1024 MB\nMemory Module: BANK 0/DIMM0, 2 GB, DDR3, 1600 MHz, 0x02FE, 0x45424A3230554638454455302D474E2D4620\nMemory Module: BANK 1/DIMM0, 2 GB, DDR3, 1600 MHz, 0x02FE, 0x45424A3230554638454455302D474E2D4620\nAirPort: spairport_wireless_card_type_airport_extreme (0x14E4, 0x117), Broadcom BCM43xx 1.0 (6.30.223.154.45)\nBluetooth: Version 4.2.0f6 12982, 3 services, 23 devices, 1 incoming serial ports\nNetwork Service: Wi-Fi, AirPort, en0\nSerial ATA Device: APPLE SSD SM0128F, 121.33 GB\nUSB Device: Internal Memory Card Reader\nUSB Device: BRCM20702 Hub\nUSB Device: Bluetooth USB Host Controller\nThunderbolt Bus: MacBook Air, Apple Inc., 23.6\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3289",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3289/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3289/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3289/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3289",
+    "id": 23009041,
+    "number": 3289,
+    "title": "[qt] cannot read block",
+    "user": {
+      "login": "Commissar0617",
+      "id": 5993529,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/5993529?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Commissar0617",
+      "html_url": "https://github.com/Commissar0617",
+      "followers_url": "https://api.github.com/users/Commissar0617/followers",
+      "following_url": "https://api.github.com/users/Commissar0617/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Commissar0617/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Commissar0617/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Commissar0617/subscriptions",
+      "organizations_url": "https://api.github.com/users/Commissar0617/orgs",
+      "repos_url": "https://api.github.com/users/Commissar0617/repos",
+      "events_url": "https://api.github.com/users/Commissar0617/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Commissar0617/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2013-11-20T17:57:30Z",
+    "updated_at": "2014-01-25T10:29:03Z",
+    "closed_at": "2014-01-25T10:29:03Z",
+    "author_association": "NONE",
+    "body": "both my desktop, running win8 pro, and my laptop, running win7, throw \"cannot read block\", or \"failed to write block\" or \"failed to write undo data\". this happenes with litecoin-qt as well....\ni've tried reindex, and deleting... these are fresh installs as of midnight, last night...\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3274",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3274/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3274/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3274/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3274",
+    "id": 22805399,
+    "number": 3274,
+    "title": "\"No working boost sleep implementation\" libpthread required by librt",
+    "user": {
+      "login": "fryx",
+      "id": 5960047,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/5960047?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/fryx",
+      "html_url": "https://github.com/fryx",
+      "followers_url": "https://api.github.com/users/fryx/followers",
+      "following_url": "https://api.github.com/users/fryx/following{/other_user}",
+      "gists_url": "https://api.github.com/users/fryx/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/fryx/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/fryx/subscriptions",
+      "organizations_url": "https://api.github.com/users/fryx/orgs",
+      "repos_url": "https://api.github.com/users/fryx/repos",
+      "events_url": "https://api.github.com/users/fryx/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/fryx/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 61889416,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Build%20system",
+        "name": "Build system",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 15,
+    "created_at": "2013-11-17T21:20:32Z",
+    "updated_at": "2017-03-18T11:15:30Z",
+    "closed_at": "2014-11-25T04:27:27Z",
+    "author_association": "NONE",
+    "body": "libpthread not getting linked, required by librt. is this a librt problem?\n\nfull config.log at https://gist.github.com/fryx/bdf3bee728b8cbbac18a\n\nconfigure:11734: $? = 0\nconfigure:11748: result: yes\nconfigure:11886: g++ -o conftest -I/usr/local/BerkeleyDB.4.8/include -L/usr/local/BerkeleyDB.4.8/lib/ -Wall -Wextra -Wformat -Wformat-security -Wno-unused-parameter  -Wstack-protector -fPIE -fno-stack-protector -fstack-protector-all  -DBOOST_SPIRIT_THREADSAFE -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS  -D_FORTIFY_SOURCE=2 -Wl,-z,now  conftest.cpp  -L/usr/lib -lboost_system-mt -lboost_filesystem-mt -lboost_program_options-mt -lboost_thread-mt -lboost_chrono-mt >&5\n/usr/lib/gcc/x86_64-alpine-linux-uclibc/4.7.3/../../../../x86_64-alpine-linux-uclibc/bin/ld: /lib/librt.so.0.9.32: undefined reference to symbol 'pthread_cancel'\n/usr/lib/gcc/x86_64-alpine-linux-uclibc/4.7.3/../../../../x86_64-alpine-linux-uclibc/bin/ld: note: 'pthread_cancel' is defined in DSO /lib/libpthread.so.0.9.32 so try adding it to the linker command line\n/lib/libpthread.so.0.9.32: could not read symbols: Invalid operation\ncollect2: error: ld returned 1 exit status\nconfigure:11886: $? = 1\nconfigure: failed program was:\n| /\\* confdefs.h */\n| #define PACKAGE_NAME \"Bitcoin\"\n| #define PACKAGE_TARNAME \"bitcoin\"\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3245",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3245/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3245/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3245/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3245",
+    "id": 22587820,
+    "number": 3245,
+    "title": "Some netbase tests fail on WinXP",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 62963516,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Tests",
+        "name": "Tests",
+        "color": "d4c5f9",
+        "default": false
+      },
+      {
+        "id": 234877,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Windows",
+        "name": "Windows",
+        "color": "884400",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2013-11-13T12:22:52Z",
+    "updated_at": "2014-07-31T07:55:43Z",
+    "closed_at": "2013-11-16T13:30:06Z",
+    "author_association": "OWNER",
+    "body": "I just tried running the `test_bitcoin.exe` as produced by the pull tester on a WXP VM. For some reasons, there are many failures in netbase_tests.\n\n```\nRunning 103 test cases...\nnetbase_tests.cpp(16): error in \"netbase_networks\": check CNetAddr(\"2001::8888\").GetNetwork() == NET_IPV6 failed\nnetbase_tests.cpp(17): error in \"netbase_networks\": check CNetAddr(\"FD87:D87E:EB43:edb1:8e4:3588:e546:35ca\").GetNetwork() == NET_TOR failed\nnetbase_tests.cpp(23): error in \"netbase_properties\": check CNetAddr(\"::FFFF:192.168.1.1\").IsIPv4() failed\nnetbase_tests.cpp(28): error in \"netbase_properties\": check CNetAddr(\"2001:0DB8::\").IsRFC3849() failed\nnetbase_tests.cpp(30): error in \"netbase_properties\": check CNetAddr(\"2002::1\").IsRFC3964() failed\nnetbase_tests.cpp(31): error in \"netbase_properties\": check CNetAddr(\"FC00::\").IsRFC4193() failed\nnetbase_tests.cpp(32): error in \"netbase_properties\": check CNetAddr(\"2001::2\"). IsRFC4380() failed\nnetbase_tests.cpp(33): error in \"netbase_properties\": check CNetAddr(\"2001:10::\").IsRFC4843() failed\nnetbase_tests.cpp(34): error in \"netbase_properties\": check CNetAddr(\"FE80::\").IsRFC4862() failed\nnetbase_tests.cpp(35): error in \"netbase_properties\": check CNetAddr(\"64:FF9B::\").IsRFC6052() failed\nnetbase_tests.cpp(36): error in \"netbase_properties\": check CNetAddr(\"FD87:D87E:EB43:edb1:8e4:3588:e546:35ca\").IsTor() failed\nnetbase_tests.cpp(38): error in \"netbase_properties\": check CNetAddr(\"::1\").IsLocal() failed\nnetbase_tests.cpp(40): error in \"netbase_properties\": check CNetAddr(\"2001::1\"). IsRoutable() failed\nnetbase_tests.cpp(83): error in \"netbase_lookupnumeric\": check TestParse(\"::ffff:127.0.0.1\", \"127.0.0.1:65535\") failed\nnetbase_tests.cpp(84): error in \"netbase_lookupnumeric\": check TestParse(\"::\", \"[::]:65535\") failed\nnetbase_tests.cpp(85): error in \"netbase_lookupnumeric\": checkTestParse(\"[::]:8333\", \"[::]:8333\") failed\nnetbase_tests.cpp(95): error in \"onioncat_test\": check addr1 == addr2 failed\n\n*** 17 failures detected in test suite \"Bitcoin Test Suite\"\n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3216",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3216/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3216/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3216/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3216",
+    "id": 22242246,
+    "number": 3216,
+    "title": "paste not working in transactions tab in v 0.8.5 beta",
+    "user": {
+      "login": "dishwara",
+      "id": 1407782,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1407782?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dishwara",
+      "html_url": "https://github.com/dishwara",
+      "followers_url": "https://api.github.com/users/dishwara/followers",
+      "following_url": "https://api.github.com/users/dishwara/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dishwara/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dishwara/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dishwara/subscriptions",
+      "organizations_url": "https://api.github.com/users/dishwara/orgs",
+      "repos_url": "https://api.github.com/users/dishwara/repos",
+      "events_url": "https://api.github.com/users/dishwara/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dishwara/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2013-11-07T03:22:11Z",
+    "updated_at": "2013-11-07T07:32:39Z",
+    "closed_at": "2013-11-07T07:32:39Z",
+    "author_association": "NONE",
+    "body": "I searched for this issue, cant able to find, so opening a new issue.\nIn v 0.8.5 beta client, i cant able to paste any address or anything in the transactions tab.\nIf i try to copy paste an address from notepad or webpage or anything, the paste text is grayed out.\nBut i can copy any address from within bitcoin client & paste it, but cant paste from outside of bitcoin client.\n\n![bit0 85](https://f.cloud.github.com/assets/1407782/1488925/4f7897f4-475c-11e3-947e-198f93c240dc.jpg)\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3186",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3186/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3186/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3186/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3186",
+    "id": 21810836,
+    "number": 3186,
+    "title": "[Qt] assertion when removing -txindex flag",
+    "user": {
+      "login": "Diapolo",
+      "id": 1419649,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1419649?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Diapolo",
+      "html_url": "https://github.com/Diapolo",
+      "followers_url": "https://api.github.com/users/Diapolo/followers",
+      "following_url": "https://api.github.com/users/Diapolo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Diapolo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Diapolo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Diapolo/subscriptions",
+      "organizations_url": "https://api.github.com/users/Diapolo/orgs",
+      "repos_url": "https://api.github.com/users/Diapolo/repos",
+      "events_url": "https://api.github.com/users/Diapolo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Diapolo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2013-10-30T08:28:55Z",
+    "updated_at": "2013-11-14T20:18:01Z",
+    "closed_at": "2013-11-14T20:18:01Z",
+    "author_association": "NONE",
+    "body": "I got this after removing the `-txindex` flag from a testnet wallet (Win7 x64).\n\n![rem-txindex](https://f.cloud.github.com/assets/1419649/1435386/2b03af8c-413d-11e3-94b6-f5b58cf707d9.png)\n\n@sipa Can you take a look.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3136",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3136/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3136/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3136/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3136",
+    "id": 21453587,
+    "number": 3136,
+    "title": "[Qt] Do you want to rebuild the block database now? No -> crash",
+    "user": {
+      "login": "Diapolo",
+      "id": 1419649,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1419649?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Diapolo",
+      "html_url": "https://github.com/Diapolo",
+      "followers_url": "https://api.github.com/users/Diapolo/followers",
+      "following_url": "https://api.github.com/users/Diapolo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Diapolo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Diapolo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Diapolo/subscriptions",
+      "organizations_url": "https://api.github.com/users/Diapolo/orgs",
+      "repos_url": "https://api.github.com/users/Diapolo/repos",
+      "events_url": "https://api.github.com/users/Diapolo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Diapolo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 234877,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Windows",
+        "name": "Windows",
+        "color": "884400",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 15,
+    "created_at": "2013-10-23T13:30:20Z",
+    "updated_at": "2015-06-15T05:50:09Z",
+    "closed_at": "2015-03-24T07:32:50Z",
+    "author_association": "NONE",
+    "body": "I'm using -txindex in my normal environment, when using payment requests without the client running, the client is started without any parameters and detects the missing -txindex and asks me `Do you want to rebuild the block database now?` answering no here crashes the client.\n\nhttps://github.com/bitcoin/bitcoin/blob/master/src/init.cpp#L834\n\n@sipa Can you check that part of the code, as most of it was done by you :).\n\nEdit: Error is on Win7 x64 and it's a BEX (Buffer Overflow Exception).\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3120",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3120/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3120/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3120/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3120",
+    "id": 21311356,
+    "number": 3120,
+    "title": "Qt5 support broken in autotools",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 61889416,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Build%20system",
+        "name": "Build system",
+        "color": "5319e7",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2013-10-21T12:18:01Z",
+    "updated_at": "2014-01-10T11:23:03Z",
+    "closed_at": "2014-01-10T11:23:03Z",
+    "author_association": "OWNER",
+    "body": "Since merging autotools it is no longer possible to build with Qt5. Or at least it is not automatically detected.\n\nOnce this is resolved please revert documentation commit 62568f9.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3118",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3118/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3118/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3118/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3118",
+    "id": 21277846,
+    "number": 3118,
+    "title": "bitcoind walletpassphrase not working after upgrade from pre 0.8",
+    "user": {
+      "login": "bitstocoins",
+      "id": 5729818,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/5729818?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/bitstocoins",
+      "html_url": "https://github.com/bitstocoins",
+      "followers_url": "https://api.github.com/users/bitstocoins/followers",
+      "following_url": "https://api.github.com/users/bitstocoins/following{/other_user}",
+      "gists_url": "https://api.github.com/users/bitstocoins/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/bitstocoins/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/bitstocoins/subscriptions",
+      "organizations_url": "https://api.github.com/users/bitstocoins/orgs",
+      "repos_url": "https://api.github.com/users/bitstocoins/repos",
+      "events_url": "https://api.github.com/users/bitstocoins/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/bitstocoins/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2013-10-20T10:45:19Z",
+    "updated_at": "2015-05-18T09:33:33Z",
+    "closed_at": "2015-05-18T09:33:33Z",
+    "author_association": "NONE",
+    "body": "this is in reference to this issue here\n\nhttps://github.com/bitcoin/bitcoin/issues/916\n\nI am able to perfectly recreate the described issue\n\nIf you start with a wallet that is pre 0.8\n\nReplace the bitcoind in /daemon directory with any .8.0+ bitcoind\n\nexecute walletpassphrase command this will instantly crash bitcoind\n\nAlso there is adverse affects when creating a new btc address when using the getnewaddress method. The newly created address/accounts will not be added to the wallet. and any preceding call will fail. getinfo() etc...\n\nTo fix this issue which is a NON issue simply download the desired bitcoind and simply execute it with the command one time\n\nbitcoind.exe -upgradewallet\n\nThis simple error which is not technically an error cost me a great deal of time energy and effort. \n\nThe issue 916 is reproducible by running bitcoind with an out of date wallet pre 0.8 since this issue was closed i had to create this post here. Hopefully this will allow the developers to recreate the problem which they could not create before.    \n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3112",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3112/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3112/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3112/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3112",
+    "id": 21257879,
+    "number": 3112,
+    "title": "linearize.py AttributeError: 'dict' object has no attribute 'decode'",
+    "user": {
+      "login": "wtogami",
+      "id": 93665,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/93665?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/wtogami",
+      "html_url": "https://github.com/wtogami",
+      "followers_url": "https://api.github.com/users/wtogami/followers",
+      "following_url": "https://api.github.com/users/wtogami/following{/other_user}",
+      "gists_url": "https://api.github.com/users/wtogami/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/wtogami/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/wtogami/subscriptions",
+      "organizations_url": "https://api.github.com/users/wtogami/orgs",
+      "repos_url": "https://api.github.com/users/wtogami/repos",
+      "events_url": "https://api.github.com/users/wtogami/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/wtogami/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2013-10-19T06:47:15Z",
+    "updated_at": "2014-06-16T20:00:39Z",
+    "closed_at": "2013-10-26T07:31:28Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "Fedora 18 python-2.7.3-13.fc18.x86_64\n\nTraceback (most recent call last):\n  File \"/home/btc08/bin/linearize.py\", line 127, in <module>\n    get_blocks(settings)\n  File \"/home/btc08/bin/linearize.py\", line 79, in get_blocks\n    data = getblock(rpc, settings, height)\n  File \"/home/btc08/bin/linearize.py\", line 68, in getblock\n    data = hexdata.decode('hex')\nAttributeError: 'dict' object has no attribute 'decode'\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3110",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3110/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3110/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3110/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3110",
+    "id": 21235966,
+    "number": 3110,
+    "title": "linearize.py Gives Error on Both Windows and Debian Like Linux (Not Sure About Others)",
+    "user": {
+      "login": "Sammey1995",
+      "id": 3004762,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/3004762?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Sammey1995",
+      "html_url": "https://github.com/Sammey1995",
+      "followers_url": "https://api.github.com/users/Sammey1995/followers",
+      "following_url": "https://api.github.com/users/Sammey1995/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Sammey1995/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Sammey1995/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Sammey1995/subscriptions",
+      "organizations_url": "https://api.github.com/users/Sammey1995/orgs",
+      "repos_url": "https://api.github.com/users/Sammey1995/repos",
+      "events_url": "https://api.github.com/users/Sammey1995/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Sammey1995/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2013-10-18T18:18:50Z",
+    "updated_at": "2015-02-18T16:21:38Z",
+    "closed_at": "2015-02-18T16:21:38Z",
+    "author_association": "NONE",
+    "body": "$ python ./linearize.py /home/sammey/.bitcoin/bitcoin.conf\nTraceback (most recent call last):\n  File \"./linearize.py\", line 127, in <module>\n    get_blocks(settings)\n  File \"./linearize.py\", line 79, in get_blocks\n    data = getblock(rpc, settings, height)\n  File \"./linearize.py\", line 66, in getblock\n    hash = rpc.getblockhash(n)\n  File \"./linearize.py\", line 63, in getblockhash\n    return self.rpc('getblockhash', [index])\n  File \"./linearize.py\", line 43, in rpc\n    resp = self.conn.getresponse()\n  File \"/usr/lib/python2.7/httplib.py\", line 1045, in getresponse\n    response.begin()\n  File \"/usr/lib/python2.7/httplib.py\", line 409, in begin\n    version, status, reason = self._read_status()\n  File \"/usr/lib/python2.7/httplib.py\", line 373, in _read_status\n    raise BadStatusLine(line)\nhttplib.BadStatusLine: ''\n\nI get the same error no matter what my bitcoin.conf settings are...\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3090",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3090/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3090/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3090/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3090",
+    "id": 21005476,
+    "number": 3090,
+    "title": "CodeBug :  should compare return value from memcmp with zero.",
+    "user": {
+      "login": "imzhuli",
+      "id": 5689828,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/5689828?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/imzhuli",
+      "html_url": "https://github.com/imzhuli",
+      "followers_url": "https://api.github.com/users/imzhuli/followers",
+      "following_url": "https://api.github.com/users/imzhuli/following{/other_user}",
+      "gists_url": "https://api.github.com/users/imzhuli/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/imzhuli/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/imzhuli/subscriptions",
+      "organizations_url": "https://api.github.com/users/imzhuli/orgs",
+      "repos_url": "https://api.github.com/users/imzhuli/repos",
+      "events_url": "https://api.github.com/users/imzhuli/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/imzhuli/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2013-10-15T09:31:39Z",
+    "updated_at": "2013-10-30T08:03:25Z",
+    "closed_at": "2013-10-30T08:03:25Z",
+    "author_association": "NONE",
+    "body": "src/key.h:\n207     friend bool operator==(const CKey &a, const CKey &b) {\n208         return a.fCompressed == b.fCompressed && memcmp(&a.vch[0], &b.vch[0], 32);\n209     }\n\nshould compare return value from memcmp with zero.\n\nwhat's more,\nto be accurate , this function should return true only when both keys are valid.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3070",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3070/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3070/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3070/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3070",
+    "id": 20722277,
+    "number": 3070,
+    "title": "Makefile dependencies broken by autotools?",
+    "user": {
+      "login": "gavinandresen",
+      "id": 331997,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/331997?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/gavinandresen",
+      "html_url": "https://github.com/gavinandresen",
+      "followers_url": "https://api.github.com/users/gavinandresen/followers",
+      "following_url": "https://api.github.com/users/gavinandresen/following{/other_user}",
+      "gists_url": "https://api.github.com/users/gavinandresen/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/gavinandresen/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/gavinandresen/subscriptions",
+      "organizations_url": "https://api.github.com/users/gavinandresen/orgs",
+      "repos_url": "https://api.github.com/users/gavinandresen/repos",
+      "events_url": "https://api.github.com/users/gavinandresen/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/gavinandresen/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 61889416,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Build%20system",
+        "name": "Build system",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 6,
+    "created_at": "2013-10-09T04:43:03Z",
+    "updated_at": "2014-06-06T15:30:08Z",
+    "closed_at": "2014-06-06T15:30:08Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "So I compiled in my master branch, then checked out my 'smartfee' branch and re-compiled, and get:\n\n```\nUndefined symbols for architecture x86_64:\n  \"CTransaction::nMinRelayTxFee\", referenced from:\n      PaymentServer::processPaymentRequest(PaymentRequestPlus&, QList<SendCoinsRecipient>&) in libbitcoinqt.a(libbitcoinqt_a-paymentserver.o)\n```\n\nIndeed, CTransaction::nMinRelayTxFee is gone in the smartfee branch. But why didn't the new autotools make figure that out?\n\nWorkaround is to do a 'make clean', but dependencies should work properly or we'll spend a lot of time tracking down bugs that go away if we make clean and then recompile.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3063",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3063/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3063/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3063/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3063",
+    "id": 20595046,
+    "number": 3063,
+    "title": "autotools using $PATH/bin/moc-qt4 and not qt-bin-dir/moc",
+    "user": {
+      "login": "gavinandresen",
+      "id": 331997,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/331997?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/gavinandresen",
+      "html_url": "https://github.com/gavinandresen",
+      "followers_url": "https://api.github.com/users/gavinandresen/followers",
+      "following_url": "https://api.github.com/users/gavinandresen/following{/other_user}",
+      "gists_url": "https://api.github.com/users/gavinandresen/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/gavinandresen/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/gavinandresen/subscriptions",
+      "organizations_url": "https://api.github.com/users/gavinandresen/orgs",
+      "repos_url": "https://api.github.com/users/gavinandresen/repos",
+      "events_url": "https://api.github.com/users/gavinandresen/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/gavinandresen/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 61889416,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Build%20system",
+        "name": "Build system",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2013-10-07T06:48:55Z",
+    "updated_at": "2014-07-31T08:09:06Z",
+    "closed_at": "2014-07-31T08:09:06Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "Ran into this issue on the pull-tester machine cross-compiling for win32, where /usr/bin/moc-qt4 was for QT 4.6, which was used in preference to the moc in the --with-qt-bindir directory.\n\nWorkaround was to create a moc-qt4 link in the --with-qt-bindir directory.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3033",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3033/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3033/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3033/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3033",
+    "id": 20094415,
+    "number": 3033,
+    "title": "Assertion Expression: r->options.comparator->Compare(key, Slice(r->last_key)) > 0",
+    "user": {
+      "login": "lzrloveyou",
+      "id": 5547630,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/5547630?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lzrloveyou",
+      "html_url": "https://github.com/lzrloveyou",
+      "followers_url": "https://api.github.com/users/lzrloveyou/followers",
+      "following_url": "https://api.github.com/users/lzrloveyou/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lzrloveyou/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lzrloveyou/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lzrloveyou/subscriptions",
+      "organizations_url": "https://api.github.com/users/lzrloveyou/orgs",
+      "repos_url": "https://api.github.com/users/lzrloveyou/repos",
+      "events_url": "https://api.github.com/users/lzrloveyou/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lzrloveyou/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2013-09-26T07:42:34Z",
+    "updated_at": "2014-01-10T12:10:52Z",
+    "closed_at": "2014-01-10T12:10:52Z",
+    "author_association": "NONE",
+    "body": "## Win7 64bit\n## Microsoft Visual C++ Runtime Library\n\nAssertion failed!\n\nProgram: G:\\下载\\bt\\bitcoin-0.8.5-win32\\bitcoin-qt.exe\nFile: table/table_builder.cc\nLine: 97\n\nExpression: r->options.comparator->Compare(key, Slice(r->last_key)) > 0\n\nFor information on how your program can cause an assertion\nfailure, see the Visual C++ documentation on asserts\n\n(Press Retry to debug the application - JIT must be enabled)\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3007",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3007/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3007/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3007/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3007",
+    "id": 19614233,
+    "number": 3007,
+    "title": "sendtoaddress() returns wrong error code for message 'Insufficient funds'",
+    "user": {
+      "login": "Diapolo",
+      "id": 1419649,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1419649?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Diapolo",
+      "html_url": "https://github.com/Diapolo",
+      "followers_url": "https://api.github.com/users/Diapolo/followers",
+      "following_url": "https://api.github.com/users/Diapolo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Diapolo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Diapolo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Diapolo/subscriptions",
+      "organizations_url": "https://api.github.com/users/Diapolo/orgs",
+      "repos_url": "https://api.github.com/users/Diapolo/repos",
+      "events_url": "https://api.github.com/users/Diapolo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Diapolo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2013-09-17T13:32:07Z",
+    "updated_at": "2014-12-10T07:22:47Z",
+    "closed_at": "2014-12-10T07:22:36Z",
+    "author_association": "NONE",
+    "body": "Just reposting, see https://bitcointalk.org/index.php?topic=295947.0\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3003",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3003/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3003/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/3003/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/3003",
+    "id": 19570755,
+    "number": 3003,
+    "title": "configure error on OSX: No working boost sleep implementation found",
+    "user": {
+      "login": "ghost",
+      "id": 10137,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10137?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ghost",
+      "html_url": "https://github.com/ghost",
+      "followers_url": "https://api.github.com/users/ghost/followers",
+      "following_url": "https://api.github.com/users/ghost/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ghost/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ghost/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ghost/subscriptions",
+      "organizations_url": "https://api.github.com/users/ghost/orgs",
+      "repos_url": "https://api.github.com/users/ghost/repos",
+      "events_url": "https://api.github.com/users/ghost/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ghost/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 61889416,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Build%20system",
+        "name": "Build system",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 38,
+    "created_at": "2013-09-16T19:06:39Z",
+    "updated_at": "2017-11-26T13:53:46Z",
+    "closed_at": "2015-01-10T09:59:35Z",
+    "author_association": "NONE",
+    "body": "Trying to compile git head on OSX 10.7.5 with `./configure --without-qt --disable-tests --disable-debug`, it fails with:\n\n```\nchecking whether the Boost::Chrono library is available... yes\nchecking for exit in -lboost_chrono-mt... yes\nconfigure: error: No working boost sleep implementation found\n```\n\nI have boost installed with MacPorts:\n\n```\n> port installed | grep boost\nboost @1.54.0_0+no_single+no_static+python27 (active)\n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2998",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2998/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2998/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2998/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/2998",
+    "id": 19519953,
+    "number": 2998,
+    "title": "configure: error: libdb_cxx headers missing (netbsd)",
+    "user": {
+      "login": "paulogeyer",
+      "id": 348933,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/348933?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/paulogeyer",
+      "html_url": "https://github.com/paulogeyer",
+      "followers_url": "https://api.github.com/users/paulogeyer/followers",
+      "following_url": "https://api.github.com/users/paulogeyer/following{/other_user}",
+      "gists_url": "https://api.github.com/users/paulogeyer/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/paulogeyer/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/paulogeyer/subscriptions",
+      "organizations_url": "https://api.github.com/users/paulogeyer/orgs",
+      "repos_url": "https://api.github.com/users/paulogeyer/repos",
+      "events_url": "https://api.github.com/users/paulogeyer/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/paulogeyer/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 61889416,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Build%20system",
+        "name": "Build system",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 34,
+    "created_at": "2013-09-15T13:43:57Z",
+    "updated_at": "2018-03-03T15:22:12Z",
+    "closed_at": "2014-11-25T04:30:57Z",
+    "author_association": "NONE",
+    "body": "these files are located in /usr/pkg/include/db4\n\nsamsa% ls /usr/pkg/include/db4 \ndb.h      db_185.h  db_cxx.h\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2990",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2990/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2990/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2990/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/2990",
+    "id": 19449092,
+    "number": 2990,
+    "title": "Peers can cause incorrect warning about time and date",
+    "user": {
+      "login": "kuzetsa",
+      "id": 2875851,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/2875851?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/kuzetsa",
+      "html_url": "https://github.com/kuzetsa",
+      "followers_url": "https://api.github.com/users/kuzetsa/followers",
+      "following_url": "https://api.github.com/users/kuzetsa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/kuzetsa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/kuzetsa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/kuzetsa/subscriptions",
+      "organizations_url": "https://api.github.com/users/kuzetsa/orgs",
+      "repos_url": "https://api.github.com/users/kuzetsa/repos",
+      "events_url": "https://api.github.com/users/kuzetsa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/kuzetsa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 9,
+    "created_at": "2013-09-13T13:58:28Z",
+    "updated_at": "2018-03-06T18:06:26Z",
+    "closed_at": "2018-03-06T18:06:26Z",
+    "author_association": "NONE",
+    "body": "![bitcoin-0 8 5_nagbug](https://f.cloud.github.com/assets/2875851/1138715/02c77de0-1c7c-11e3-83c4-055f97ba78ea.png)\n\nTime is set correctly. System time is accurate to within 250ms of several stratum 2 / stratum 3 NTP servers.\n\n(Local NY timezone selected under windows control panel, hardware clock is NOT set to UTC because that's not how NT 6.1, 6.0, 5.1, 5.0, 4.0 or any version of windows handles such things)\n\nThis bug probably also affects other versions of windows as well.\n\nEdit @laanwj: renamed to make clear this is not a problem with timezone detection or windows\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2983",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2983/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2983/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/2983/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/2983",
+    "id": 19226591,
+    "number": 2983,
+    "title": "Failed to read block error",
+    "user": {
+      "login": "idevk",
+      "id": 5035682,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/5035682?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/idevk",
+      "html_url": "https://github.com/idevk",
+      "followers_url": "https://api.github.com/users/idevk/followers",
+      "following_url": "https://api.github.com/users/idevk/following{/other_user}",
+      "gists_url": "https://api.github.com/users/idevk/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/idevk/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/idevk/subscriptions",
+      "organizations_url": "https://api.github.com/users/idevk/orgs",
+      "repos_url": "https://api.github.com/users/idevk/repos",
+      "events_url": "https://api.github.com/users/idevk/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/idevk/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2013-09-09T22:17:18Z",
+    "updated_at": "2014-05-28T08:17:35Z",
+    "closed_at": "2014-05-28T08:17:35Z",
+    "author_association": "NONE",
+    "body": "Im a new user to bitcoin, unfortunately I have not been able to try it. \n\nThe program does not load at all.\n\nThese are the messages that show while the program loads\n\n1- Loading block index\n\n2- Verifying blocks\n\n3- Loading wallet\n\n4- Failed to read block\n\nI uninstalled 3 times, but still the same error occurs. \n"
+  }
+]

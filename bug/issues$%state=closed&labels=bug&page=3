@@ -1,0 +1,1846 @@
+[
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7596",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7596/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7596/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7596/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7596",
+    "id": 136285477,
+    "number": 7596,
+    "title": "Incoming block downloads repeatedly freezing in 0.12",
+    "user": {
+      "login": "jameshilliard",
+      "id": 3298484,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/3298484?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jameshilliard",
+      "html_url": "https://github.com/jameshilliard",
+      "followers_url": "https://api.github.com/users/jameshilliard/followers",
+      "following_url": "https://api.github.com/users/jameshilliard/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jameshilliard/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jameshilliard/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jameshilliard/subscriptions",
+      "organizations_url": "https://api.github.com/users/jameshilliard/orgs",
+      "repos_url": "https://api.github.com/users/jameshilliard/repos",
+      "events_url": "https://api.github.com/users/jameshilliard/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jameshilliard/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 98298007,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/P2P",
+        "name": "P2P",
+        "color": "006b75",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 9,
+    "created_at": "2016-02-25T05:27:45Z",
+    "updated_at": "2018-03-07T19:28:08Z",
+    "closed_at": "2018-03-07T19:28:08Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "I've been seeing a peer at IP 45.59.67.242 appear to repeatedly freeze incoming block downloads. \nThis appears to be timeout related as nearly exactly 20 minutes pass between the inv(2016-02-25 03:52:02.639084) and the download timeout(2016-02-25 04:12:02.649818).\n\nI'm not seeing a \"Requesting block\" before the timeout on the block download that freezes however.\n\nBest I can tell bitcoind thinks it's downloading a block starting at the inv but actually isn't at all.\n\nI enabled debug=net and got the following log for that particular ip address and got logs for two peers:\n\n2016-02-25 03:27:26.584941 Added connection to 45.59.67.242:23938 peer=5\n2016-02-25 03:27:26.594339 received: version (102 bytes) peer=5\n2016-02-25 03:27:26.594365 send version message: version 70012, blocks=399909, us=0.0.0.0:8333, them=45.59.67.242:23938, peer=5\n2016-02-25 03:27:26.594381 sending: version (102 bytes) peer=5\n2016-02-25 03:27:26.594420 sending: verack (0 bytes) peer=5\n2016-02-25 03:27:26.594456 receive version message: /Satoshi:0.11.2/: version 70002, blocks=398961, us=0.0.0.0:0, peer=5, peeraddr=45.59.67.242:23938\n2016-02-25 03:27:26.594492 sending: ping (8 bytes) peer=5\n2016-02-25 03:27:26.594531 initial getheaders (399908) to peer=5 (startheight:398961)\n2016-02-25 03:27:26.594557 sending: getheaders (997 bytes) peer=5\n2016-02-25 03:27:26.670222 received: verack (0 bytes) peer=5\n2016-02-25 03:27:26.745767 received: sendheaders (0 bytes) peer=5\n2016-02-25 03:27:26.745816 received: pong (8 bytes) peer=5\n2016-02-25 03:27:40.548265 SendMessages: sending inv peer=5 hash=0000000000000000055a8d660c231dc279ad443f9b9b4c0ce7871ca76fc2a26a\n2016-02-25 03:27:40.548399 sending: inv (37 bytes) peer=5\n2016-02-25 03:27:40.624387 received: getheaders (37 bytes) peer=5\n2016-02-25 03:27:40.624421 getheaders 399910 to 0000000000000000055a8d660c231dc279ad443f9b9b4c0ce7871ca76fc2a26a from peer=5\n2016-02-25 03:27:40.624443 sending: headers (82 bytes) peer=5\n2016-02-25 03:29:26.638425 sending: ping (8 bytes) peer=5\n2016-02-25 03:29:26.714478 received: pong (8 bytes) peer=5\n2016-02-25 03:31:26.670357 sending: ping (8 bytes) peer=5\n2016-02-25 03:31:26.746327 received: pong (8 bytes) peer=5\n2016-02-25 03:33:26.719860 sending: ping (8 bytes) peer=5\n2016-02-25 03:33:26.795763 received: pong (8 bytes) peer=5\n2016-02-25 03:35:26.735255 sending: ping (8 bytes) peer=5\n2016-02-25 03:35:26.811319 received: pong (8 bytes) peer=5\n2016-02-25 03:35:44.727049 received: inv (37 bytes) peer=5\n2016-02-25 03:35:44.727108 got inv: block 000000000000000005a43f5f8e3ba24d0c883f52c50fe1516d388c0beb82092e  have peer=5\n2016-02-25 03:37:26.768606 sending: ping (8 bytes) peer=5\n2016-02-25 03:37:26.844447 received: pong (8 bytes) peer=5\n2016-02-25 03:38:40.726377 received: inv (37 bytes) peer=5\n2016-02-25 03:38:40.726424 got inv: block 000000000000000003863fc0e1f681ee116bc1969d83c6fd79b7236f461b3dc8  have peer=5\n2016-02-25 03:39:26.852340 sending: ping (8 bytes) peer=5\n2016-02-25 03:39:26.928320 received: pong (8 bytes) peer=5\n2016-02-25 03:39:52.833825 received: inv (37 bytes) peer=5\n2016-02-25 03:39:52.833875 got inv: block 0000000000000000048d37e2e2ee7cc251a55c6db98f93d30d9514fccb1e05b2  have peer=5\n2016-02-25 03:39:52.909224 received: inv (37 bytes) peer=5\n2016-02-25 03:39:52.909267 got inv: block 000000000000000006a553939f586b491f63d3158b3baee1fbdf06bd3c41becc  have peer=5\n2016-02-25 03:39:52.909498 received: inv (37 bytes) peer=5\n2016-02-25 03:39:52.909532 got inv: block 0000000000000000040a1634cb04b7fc15fcbd497861f8c1e8ba2702aa0e5102  have peer=5\n2016-02-25 03:40:29.195452 received: inv (37 bytes) peer=5\n2016-02-25 03:40:29.195493 got inv: block 000000000000000006a553939f586b491f63d3158b3baee1fbdf06bd3c41becc  have peer=5\n2016-02-25 03:40:42.916763 sending: addr (31 bytes) peer=5\n2016-02-25 03:41:26.872496 sending: ping (8 bytes) peer=5\n2016-02-25 03:41:26.948482 received: pong (8 bytes) peer=5\n2016-02-25 03:41:32.723481 SendMessages: sending header 0000000000000000045c976c3bf82c2799c71e6ea68906421d21919aec653ba1 to peer=5\n2016-02-25 03:41:32.723507 sending: headers (82 bytes) peer=5\n2016-02-25 03:42:27.600880 SendMessages: sending header 0000000000000000004b4641818e1a05201a590172e96827e331810e6f7ef285 to peer=5\n2016-02-25 03:42:27.600899 sending: headers (82 bytes) peer=5\n2016-02-25 03:43:26.905505 sending: ping (8 bytes) peer=5\n2016-02-25 03:43:26.981511 received: pong (8 bytes) peer=5\n2016-02-25 03:44:13.689181 SendMessages: sending header 000000000000000001293c1a8c0496976d5df54e880cbf2137696e0f0f289f3b to peer=5\n2016-02-25 03:44:13.689209 sending: headers (82 bytes) peer=5\n2016-02-25 03:44:31.887382 received: inv (37 bytes) peer=5\n2016-02-25 03:44:31.887454 got inv: block 000000000000000006acbd2f1a0e688c5f88b9d6542f3168d709e7e0209c8776  have peer=5\n2016-02-25 03:45:26.988531 sending: ping (8 bytes) peer=5\n2016-02-25 03:45:27.064530 received: pong (8 bytes) peer=5\n2016-02-25 03:47:27.015442 sending: ping (8 bytes) peer=5\n2016-02-25 03:47:27.091397 received: pong (8 bytes) peer=5\n2016-02-25 03:47:57.151362 received: inv (37 bytes) peer=5\n2016-02-25 03:47:57.151426 got inv: block 000000000000000003863fc0e1f681ee116bc1969d83c6fd79b7236f461b3dc8  have peer=5\n2016-02-25 03:49:27.023873 sending: ping (8 bytes) peer=5\n2016-02-25 03:49:27.126229 received: pong (8 bytes) peer=5\n2016-02-25 03:51:27.063346 sending: ping (8 bytes) peer=5\n2016-02-25 03:51:27.139456 received: pong (8 bytes) peer=5\n2016-02-25 03:52:02.639023 received: inv (37 bytes) peer=5\n2016-02-25 03:52:02.639084 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  new peer=5\n2016-02-25 03:52:02.639110 sending: getheaders (997 bytes) peer=5\n2016-02-25 03:52:02.639167 getheaders (399913) 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf to peer=5\n2016-02-25 03:52:02.639189 sending: getdata (37 bytes) peer=5\n2016-02-25 03:52:20.407013 received: inv (37 bytes) peer=5\n2016-02-25 03:52:20.407065 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 03:53:27.078588 sending: ping (8 bytes) peer=5\n2016-02-25 03:53:27.155332 received: pong (8 bytes) peer=5\n2016-02-25 03:55:27.094616 sending: ping (8 bytes) peer=5\n2016-02-25 03:55:27.170600 received: pong (8 bytes) peer=5\n2016-02-25 03:56:09.845746 received: inv (37 bytes) peer=5\n2016-02-25 03:56:09.845785 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 03:57:22.595017 received: inv (37 bytes) peer=5\n2016-02-25 03:57:22.595051 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 03:57:27.095494 sending: ping (8 bytes) peer=5\n2016-02-25 03:57:27.175737 received: pong (8 bytes) peer=5\n2016-02-25 03:57:59.312015 received: inv (37 bytes) peer=5\n2016-02-25 03:57:59.312060 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 03:59:27.181473 sending: ping (8 bytes) peer=5\n2016-02-25 03:59:27.257374 received: pong (8 bytes) peer=5\n2016-02-25 04:01:27.190789 sending: ping (8 bytes) peer=5\n2016-02-25 04:01:27.290189 received: pong (8 bytes) peer=5\n2016-02-25 04:02:20.607148 received: inv (37 bytes) peer=5\n2016-02-25 04:02:20.607200 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 04:02:34.403450 sending: addr (31 bytes) peer=5\n2016-02-25 04:03:27.639512 sending: ping (8 bytes) peer=5\n2016-02-25 04:03:27.715490 received: pong (8 bytes) peer=5\n2016-02-25 04:03:57.964562 received: inv (37 bytes) peer=5\n2016-02-25 04:03:57.964628 got inv: block 000000000000000006968c648240001fd7d856f9732646763225b084f72404eb  have peer=5\n2016-02-25 04:04:15.959001 received: inv (37 bytes) peer=5\n2016-02-25 04:04:15.959043 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 04:05:27.663258 sending: ping (8 bytes) peer=5\n2016-02-25 04:05:27.739294 received: pong (8 bytes) peer=5\n2016-02-25 04:07:27.701216 sending: ping (8 bytes) peer=5\n2016-02-25 04:07:27.777073 received: pong (8 bytes) peer=5\n2016-02-25 04:08:26.259859 received: inv (37 bytes) peer=5\n2016-02-25 04:08:26.259903 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 04:09:27.719881 sending: ping (8 bytes) peer=5\n2016-02-25 04:09:27.795892 received: pong (8 bytes) peer=5\n2016-02-25 04:10:21.115286 received: inv (37 bytes) peer=5\n2016-02-25 04:10:21.115329 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 04:10:41.128117 received: inv (37 bytes) peer=5\n2016-02-25 04:10:41.128176 got inv: block 000000000000000006a553939f586b491f63d3158b3baee1fbdf06bd3c41becc  have peer=5\n2016-02-25 04:10:47.314680 received: inv (37 bytes) peer=5\n2016-02-25 04:10:47.314724 got inv: block 000000000000000003863fc0e1f681ee116bc1969d83c6fd79b7236f461b3dc8  have peer=5\n2016-02-25 04:10:47.891925 received: inv (37 bytes) peer=5\n2016-02-25 04:10:47.891975 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 04:11:27.721622 sending: ping (8 bytes) peer=5\n2016-02-25 04:11:27.797602 received: pong (8 bytes) peer=5\n2016-02-25 04:11:48.622047 received: inv (37 bytes) peer=5\n2016-02-25 04:11:48.622095 got inv: block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf  have peer=5\n2016-02-25 04:12:02.649818 Timeout downloading block 000000000000000005d165e5f2f5e1755c5beacdb577516badddb70f735d8abf from peer=5, disconnecting\n2016-02-25 04:12:02.650520 disconnecting peer=5\n\nSecond peer:\n2016-02-25 03:27:26.585853 Added connection to 45.59.67.242:24096 peer=8\n2016-02-25 03:27:26.594616 received: version (102 bytes) peer=8\n2016-02-25 03:27:26.594644 send version message: version 70012, blocks=399909, us=0.0.0.0:8333, them=45.59.67.242:24096, peer=8\n2016-02-25 03:27:26.594660 sending: version (102 bytes) peer=8\n2016-02-25 03:27:26.594692 sending: verack (0 bytes) peer=8\n2016-02-25 03:27:26.594727 receive version message: /Satoshi:0.11.2/: version 70002, blocks=398962, us=0.0.0.0:0, peer=8, peeraddr=45.59.67.242:24096\n2016-02-25 03:27:26.594748 sending: ping (8 bytes) peer=8\n2016-02-25 03:27:26.594784 initial getheaders (399908) to peer=8 (startheight:398962)\n2016-02-25 03:27:26.594803 sending: getheaders (997 bytes) peer=8\n2016-02-25 03:27:26.652033 received: verack (0 bytes) peer=8\n2016-02-25 03:27:26.709122 received: getaddr (0 bytes) peer=8\n2016-02-25 03:27:26.719489 received: pong (8 bytes) peer=8\n2016-02-25 03:27:39.272680 sending: addr (6691 bytes) peer=8\n2016-02-25 03:27:40.548476 SendMessages: sending inv peer=8 hash=0000000000000000055a8d660c231dc279ad443f9b9b4c0ce7871ca76fc2a26a\n2016-02-25 03:27:40.548605 sending: inv (37 bytes) peer=8\n2016-02-25 03:29:26.638499 sending: ping (8 bytes) peer=8\n2016-02-25 03:29:26.695970 received: pong (8 bytes) peer=8\n2016-02-25 03:31:26.670438 sending: ping (8 bytes) peer=8\n2016-02-25 03:31:26.727856 received: pong (8 bytes) peer=8\n2016-02-25 03:33:26.719910 sending: ping (8 bytes) peer=8\n2016-02-25 03:33:26.777217 received: pong (8 bytes) peer=8\n2016-02-25 03:35:26.735296 sending: ping (8 bytes) peer=8\n2016-02-25 03:35:26.792777 received: pong (8 bytes) peer=8\n2016-02-25 03:37:26.768651 sending: ping (8 bytes) peer=8\n2016-02-25 03:37:26.826034 received: pong (8 bytes) peer=8\n2016-02-25 03:39:26.852381 sending: ping (8 bytes) peer=8\n2016-02-25 03:39:26.909663 received: pong (8 bytes) peer=8\n2016-02-25 03:41:26.872553 sending: ping (8 bytes) peer=8\n2016-02-25 03:41:26.929941 received: pong (8 bytes) peer=8\n2016-02-25 03:41:32.723573 SendMessages: sending inv peer=8 hash=0000000000000000045c976c3bf82c2799c71e6ea68906421d21919aec653ba1\n2016-02-25 03:41:32.723641 sending: inv (37 bytes) peer=8\n2016-02-25 03:42:27.600944 SendMessages: sending inv peer=8 hash=0000000000000000004b4641818e1a05201a590172e96827e331810e6f7ef285\n2016-02-25 03:42:27.625760 sending: inv (37 bytes) peer=8\n2016-02-25 03:43:26.905566 sending: ping (8 bytes) peer=8\n2016-02-25 03:43:26.963017 received: pong (8 bytes) peer=8\n2016-02-25 03:44:13.689271 SendMessages: sending inv peer=8 hash=000000000000000001293c1a8c0496976d5df54e880cbf2137696e0f0f289f3b\n2016-02-25 03:44:13.689335 sending: inv (37 bytes) peer=8\n2016-02-25 03:45:26.988599 sending: ping (8 bytes) peer=8\n2016-02-25 03:45:27.046023 received: pong (8 bytes) peer=8\n2016-02-25 03:47:27.015494 sending: ping (8 bytes) peer=8\n2016-02-25 03:47:27.072934 received: pong (8 bytes) peer=8\n2016-02-25 03:49:27.023920 sending: ping (8 bytes) peer=8\n2016-02-25 03:49:27.082058 received: pong (8 bytes) peer=8\n2016-02-25 03:51:27.063410 sending: ping (8 bytes) peer=8\n2016-02-25 03:51:27.120803 received: pong (8 bytes) peer=8\n2016-02-25 03:53:20.479954 sending: addr (31 bytes) peer=8\n2016-02-25 03:53:27.078641 sending: ping (8 bytes) peer=8\n2016-02-25 03:53:27.136045 received: pong (8 bytes) peer=8\n2016-02-25 03:55:27.094669 sending: ping (8 bytes) peer=8\n2016-02-25 03:55:27.152122 received: pong (8 bytes) peer=8\n2016-02-25 03:57:27.095562 sending: ping (8 bytes) peer=8\n2016-02-25 03:57:27.156677 received: pong (8 bytes) peer=8\n2016-02-25 03:58:17.120629 sending: addr (31 bytes) peer=8\n2016-02-25 03:59:27.181538 sending: ping (8 bytes) peer=8\n2016-02-25 03:59:27.238915 received: pong (8 bytes) peer=8\n2016-02-25 04:01:27.190862 sending: ping (8 bytes) peer=8\n2016-02-25 04:01:27.248246 received: pong (8 bytes) peer=8\n2016-02-25 04:03:08.118377 sending: addr (31 bytes) peer=8\n2016-02-25 04:03:27.639584 sending: ping (8 bytes) peer=8\n2016-02-25 04:03:27.711646 received: pong (8 bytes) peer=8\n2016-02-25 04:05:27.663313 sending: ping (8 bytes) peer=8\n2016-02-25 04:05:27.720738 received: pong (8 bytes) peer=8\n2016-02-25 04:07:27.701263 sending: ping (8 bytes) peer=8\n2016-02-25 04:07:27.758529 received: pong (8 bytes) peer=8\n2016-02-25 04:08:45.591612 sending: addr (31 bytes) peer=8\n2016-02-25 04:09:27.719929 sending: ping (8 bytes) peer=8\n2016-02-25 04:09:27.777268 received: pong (8 bytes) peer=8\n2016-02-25 04:11:27.721667 sending: ping (8 bytes) peer=8\n2016-02-25 04:11:27.779075 received: pong (8 bytes) peer=8\n\nThere appear to also be two connections from that same IP(this was taken after restarting bitcoind again):\n  {\n    \"id\": 4,\n    \"addr\": \"45.59.67.242:64468\",\n    \"services\": \"0000000000000001\",\n    \"relaytxes\": false,\n    \"lastsend\": 1456376513,\n    \"lastrecv\": 1456376447,\n    \"bytessent\": 7918,\n    \"bytesrecv\": 206,\n    \"conntime\": 1456376447,\n    \"timeoffset\": -92955,\n    \"pingtime\": 0.072335,\n    \"minping\": 0.072335,\n    \"version\": 70002,\n    \"subver\": \"/Satoshi:0.11.2/\",\n    \"inbound\": true,\n    \"startingheight\": 398962,\n    \"banscore\": 0,\n    \"synced_headers\": -1,\n    \"synced_blocks\": -1,\n    \"inflight\": [\n    ],\n    \"whitelisted\": false\n  }, \n  {\n    \"id\": 11,\n    \"addr\": \"45.59.67.242:64537\",\n    \"services\": \"0000000000000001\",\n    \"relaytxes\": false,\n    \"lastsend\": 1456376502,\n    \"lastrecv\": 1456376554,\n    \"bytessent\": 1319,\n    \"bytesrecv\": 572,\n    \"conntime\": 1456376447,\n    \"timeoffset\": -93290,\n    \"pingtime\": 0.07256899999999999,\n    \"minping\": 0.07256899999999999,\n    \"version\": 70002,\n    \"subver\": \"/Satoshi:0.11.2/\",\n    \"inbound\": true,\n    \"startingheight\": 398961,\n    \"banscore\": 0,\n    \"synced_headers\": 399923,\n    \"synced_blocks\": 399922,\n    \"inflight\": [\n      399923\n    ],\n    \"whitelisted\": false\n  }, \n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7580",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7580/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7580/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7580/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7580",
+    "id": 135732091,
+    "number": 7580,
+    "title": "Fix for #7080 breaks LibreSSL ???",
+    "user": {
+      "login": "AliceWonderMiscreations",
+      "id": 9934518,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/9934518?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/AliceWonderMiscreations",
+      "html_url": "https://github.com/AliceWonderMiscreations",
+      "followers_url": "https://api.github.com/users/AliceWonderMiscreations/followers",
+      "following_url": "https://api.github.com/users/AliceWonderMiscreations/following{/other_user}",
+      "gists_url": "https://api.github.com/users/AliceWonderMiscreations/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/AliceWonderMiscreations/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/AliceWonderMiscreations/subscriptions",
+      "organizations_url": "https://api.github.com/users/AliceWonderMiscreations/orgs",
+      "repos_url": "https://api.github.com/users/AliceWonderMiscreations/repos",
+      "events_url": "https://api.github.com/users/AliceWonderMiscreations/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/AliceWonderMiscreations/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 9,
+    "created_at": "2016-02-23T13:07:36Z",
+    "updated_at": "2016-02-24T06:31:23Z",
+    "closed_at": "2016-02-23T14:20:19Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "LibreSSL 2.3.2 on CentOS 7 (x86_64) - 0.11.2 builds just dandy and even works. 0.12.0 fails to build.\n\n```\nIn file included from addrman.h:13:0,\n                 from init.cpp:12:\ninit.cpp: In function 'bool AppInit2(boost::thread_group&, CScheduler&)':\ninit.cpp:1081:61: error: 'OPENSSL_VERSION' was not declared in this scope\n     LogPrintf(\"Using OpenSSL version %s\\n\", OpenSSL_version(OPENSSL_VERSION));\n                                                             ^\nutil.h:77:39: note: in definition of macro 'LogPrintf'\n #define LogPrintf(...) LogPrint(NULL, __VA_ARGS__)\n                                   ^\ninit.cpp:1081:76: error: 'OpenSSL_version' was not declared in this scope\n     LogPrintf(\"Using OpenSSL version %s\\n\", OpenSSL_version(OPENSSL_VERSION));\n```\n\nIt looks like that might be caused by the fix for issue #7080 ??\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7494",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7494/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7494/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7494/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7494",
+    "id": 132587553,
+    "number": 7494,
+    "title": "\"last wallet synchronisation goes beyond pruned data\" on totally new pruned node",
+    "user": {
+      "login": "gmaxwell",
+      "id": 858454,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/858454?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/gmaxwell",
+      "html_url": "https://github.com/gmaxwell",
+      "followers_url": "https://api.github.com/users/gmaxwell/followers",
+      "following_url": "https://api.github.com/users/gmaxwell/following{/other_user}",
+      "gists_url": "https://api.github.com/users/gmaxwell/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/gmaxwell/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/gmaxwell/subscriptions",
+      "organizations_url": "https://api.github.com/users/gmaxwell/orgs",
+      "repos_url": "https://api.github.com/users/gmaxwell/repos",
+      "events_url": "https://api.github.com/users/gmaxwell/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/gmaxwell/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 149424,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Wallet",
+        "name": "Wallet",
+        "color": "08a781",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 10,
+    "created_at": "2016-02-10T01:48:06Z",
+    "updated_at": "2016-02-11T07:58:27Z",
+    "closed_at": "2016-02-11T07:58:08Z",
+    "author_association": "MEMBER",
+    "body": "Coping from: https://bitcointalk.org/index.php?topic=1347286.msg13832507#msg13832507\n\n\"I've been testing out 0.12.0rc3 in pruned mode, and have run into the following error message when restarting Bitcoin Core: \"last wallet synchronisation goes beyond pruned data. You need to -reindex (download the whole blockchain again in case of pruned node)\"\n\nTo reproduce:\n0.) Start from scratch, deleting the entire Bitcoin data directory if it exists (leaving no wallet file or blockchain data).\n1.) Install Bitcoin Core\n2.) Create Bitcoin data directory if it doesn't exist, create bitcoin.conf, set \"prune=550\" without quotes\n3.) Run Bitcoin Core\n4.) After you've verified, say, 100,000 blocks, close Bitcoin Core. Wait until the warning window to not shutdown/restart computer completely closes.\n5.) Run Bitcoin Core again, let it verify some more, close it again.\n6.) Rinse and repeat step 5...\n\nAt some point, I get the above error message on starting Bitcoin Core.\n\nI don't know what exactly is causing this, but if you're like me and you've verified a large amount of blocks and then you're told that you have to start completely over, you'll probably be pissed.\n\nThis error message is not new, as a related fix for this kind of error, when converting non-pruned nodes to pruned nodes was made here: https://github.com/bitcoin/bitcoin/issues/6345\n\nWhile it's obviously easy to reproduce this error _if_ you try plopping an _already existing_ wallet.dat file into a pruned node data directory and then running Core -- that's not what I've been experiencing. I've been seeing this error with a brand new wallet.dat that was created from scratch _alongside_ a fresh, pruned node.\"\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7420",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7420/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7420/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7420/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7420",
+    "id": 128820193,
+    "number": 7420,
+    "title": "bitcoin-cli not working on Ubuntu 12.04 due to glibc 2.17 dependency",
+    "user": {
+      "login": "dlogemann",
+      "id": 260401,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/260401?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dlogemann",
+      "html_url": "https://github.com/dlogemann",
+      "followers_url": "https://api.github.com/users/dlogemann/followers",
+      "following_url": "https://api.github.com/users/dlogemann/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dlogemann/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dlogemann/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dlogemann/subscriptions",
+      "organizations_url": "https://api.github.com/users/dlogemann/orgs",
+      "repos_url": "https://api.github.com/users/dlogemann/repos",
+      "events_url": "https://api.github.com/users/dlogemann/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dlogemann/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 61889416,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Build%20system",
+        "name": "Build system",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2016-01-26T13:31:59Z",
+    "updated_at": "2016-01-27T10:31:18Z",
+    "closed_at": "2016-01-27T10:31:18Z",
+    "author_association": "NONE",
+    "body": "I tested the 0.12.0rc2 release on my server running Ubuntu 12.04.5 LTS and got the following error:\n\n```\nbitcoin@server:~$ ~bitcoin/bitcoin-0.12.0/bin/bitcoin-cli\n/home/bitcoin/bitcoin-0.12.0/bin/bitcoin-cli: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.17' not found (required by /home/bitcoin/bitcoin-0.12.0/bin/bitcoin-cli)\n```\n\nUbuntu 12.04 is currently shipped with this glibc version:\n\n```\nbitcoin@server:~$ ldd --version\nldd (Ubuntu EGLIBC 2.15-0ubuntu10.12) 2.15\n```\n\nUnfortunately I am not very familiar with linker dependencies to resolve this myself, but this might help:\n\n```\nbitcoin@server:~$ objdump -T ~bitcoin/bitcoin-0.12.0/bin/bitcoin-cli |grep GLIBC_2.17\n0000000000000000      DF *UND*  0000000000000000  GLIBC_2.17  clock_gettime\n```\n\nUbuntu 12.04 is still actively maintained and I cannot switch to a current Ubuntu release in the near future so I hope this issue can be resolved. \n\nbitcoind seems to be OK, could be started and is running.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7418",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7418/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7418/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7418/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7418",
+    "id": 128692957,
+    "number": 7418,
+    "title": "Can't ctrl + tab off of peers tab",
+    "user": {
+      "login": "PRabahy",
+      "id": 429961,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/429961?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/PRabahy",
+      "html_url": "https://github.com/PRabahy",
+      "followers_url": "https://api.github.com/users/PRabahy/followers",
+      "following_url": "https://api.github.com/users/PRabahy/following{/other_user}",
+      "gists_url": "https://api.github.com/users/PRabahy/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/PRabahy/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/PRabahy/subscriptions",
+      "organizations_url": "https://api.github.com/users/PRabahy/orgs",
+      "repos_url": "https://api.github.com/users/PRabahy/repos",
+      "events_url": "https://api.github.com/users/PRabahy/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/PRabahy/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2016-01-26T01:35:52Z",
+    "updated_at": "2016-01-29T11:51:59Z",
+    "closed_at": "2016-01-29T11:51:59Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "I can navigate between the tabs (in disablewallet=1 mode) with just ctrl + tab and ctrl + shift + tab, but once I go to the peers tab, I get stuck there until I use the mouse or a more complex key combination.\n\nI only noticed this in 0.12.0rc2, so I don't know if this was existing or a regression.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7381",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7381/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7381/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7381/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/7381",
+    "id": 127634828,
+    "number": 7381,
+    "title": "[walletdb] Fix syntax error in key parser",
+    "user": {
+      "login": "MarcoFalke",
+      "id": 6399679,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6399679?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MarcoFalke",
+      "html_url": "https://github.com/MarcoFalke",
+      "followers_url": "https://api.github.com/users/MarcoFalke/followers",
+      "following_url": "https://api.github.com/users/MarcoFalke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MarcoFalke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MarcoFalke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MarcoFalke/subscriptions",
+      "organizations_url": "https://api.github.com/users/MarcoFalke/orgs",
+      "repos_url": "https://api.github.com/users/MarcoFalke/repos",
+      "events_url": "https://api.github.com/users/MarcoFalke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MarcoFalke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 149424,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Wallet",
+        "name": "Wallet",
+        "color": "08a781",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/milestones/19",
+      "html_url": "https://github.com/bitcoin/bitcoin/milestone/19",
+      "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/milestones/19/labels",
+      "id": 1092458,
+      "number": 19,
+      "title": "0.12.0",
+      "description": "",
+      "creator": {
+        "login": "laanwj",
+        "id": 126646,
+        "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/laanwj",
+        "html_url": "https://github.com/laanwj",
+        "followers_url": "https://api.github.com/users/laanwj/followers",
+        "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+        "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+        "organizations_url": "https://api.github.com/users/laanwj/orgs",
+        "repos_url": "https://api.github.com/users/laanwj/repos",
+        "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/laanwj/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 0,
+      "closed_issues": 78,
+      "state": "closed",
+      "created_at": "2015-05-01T12:31:35Z",
+      "updated_at": "2016-09-26T14:08:41Z",
+      "due_on": null,
+      "closed_at": "2016-08-16T10:17:40Z"
+    },
+    "comments": 6,
+    "created_at": "2016-01-20T09:06:01Z",
+    "updated_at": "2016-01-20T21:05:11Z",
+    "closed_at": "2016-01-20T12:08:20Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/7381",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/7381",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/7381.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/7381.patch"
+    },
+    "body": "This needs backport to all versions of bitcoin/altcoins after merge.\n\nA dump may look like:\n\n```\nVERSION=3\nformat=bytevalue\ndatabase=main\ntype=btree\ndb_pagesize=4096\nHEADER=END\n<{Data}>\nDATA=END\n```\n\nSo the current parser gives us odd data like:\n\n`keyHex=\"DATA=END\";`\n`valueHex=\"\";`\n\n(sometimes the other way round)\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7366",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7366/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7366/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7366/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7366",
+    "id": 127119054,
+    "number": 7366,
+    "title": "[Qt] Unable to open options menu",
+    "user": {
+      "login": "achow101",
+      "id": 3782274,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/3782274?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/achow101",
+      "html_url": "https://github.com/achow101",
+      "followers_url": "https://api.github.com/users/achow101/followers",
+      "following_url": "https://api.github.com/users/achow101/following{/other_user}",
+      "gists_url": "https://api.github.com/users/achow101/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/achow101/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/achow101/subscriptions",
+      "organizations_url": "https://api.github.com/users/achow101/orgs",
+      "repos_url": "https://api.github.com/users/achow101/repos",
+      "events_url": "https://api.github.com/users/achow101/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/achow101/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 22,
+    "created_at": "2016-01-17T19:55:34Z",
+    "updated_at": "2016-03-14T13:09:55Z",
+    "closed_at": "2016-01-27T16:53:55Z",
+    "author_association": "MEMBER",
+    "body": "When I try to open the options menu in 0.12.0rc1, Bitcoin Core just crashes.\n\nI get this in the debug.log when it happens:\n\n```\nGUI: ASSERT failure in QList<T>::at: \"index out of range\", file /usr/include/x86_64-linux-gnu/qt5/QtCore/qlist.h, line 478\n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7278",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7278/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7278/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7278/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7278",
+    "id": 124656955,
+    "number": 7278,
+    "title": "Bug in amount calculation",
+    "user": {
+      "login": "FabioCarpi",
+      "id": 6897978,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6897978?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/FabioCarpi",
+      "html_url": "https://github.com/FabioCarpi",
+      "followers_url": "https://api.github.com/users/FabioCarpi/followers",
+      "following_url": "https://api.github.com/users/FabioCarpi/following{/other_user}",
+      "gists_url": "https://api.github.com/users/FabioCarpi/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/FabioCarpi/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/FabioCarpi/subscriptions",
+      "organizations_url": "https://api.github.com/users/FabioCarpi/orgs",
+      "repos_url": "https://api.github.com/users/FabioCarpi/repos",
+      "events_url": "https://api.github.com/users/FabioCarpi/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/FabioCarpi/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2016-01-03T16:18:48Z",
+    "updated_at": "2016-01-05T12:02:12Z",
+    "closed_at": "2016-01-05T12:02:12Z",
+    "author_association": "NONE",
+    "body": "Im using the version 0.11.2\nThe scenario is:\nI will send some coins to a address\nI typed the address and the value\nI added a new send field and specify another value\nWhen i removed the new field, the program does not recalculated the change, in information area above\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7275",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7275/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7275/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7275/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7275",
+    "id": 124653831,
+    "number": 7275,
+    "title": "Why is OP_CHECKLOCKTIMEVERIFY using a signed value?",
+    "user": {
+      "login": "ciyam",
+      "id": 1311212,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1311212?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ciyam",
+      "html_url": "https://github.com/ciyam",
+      "followers_url": "https://api.github.com/users/ciyam/followers",
+      "following_url": "https://api.github.com/users/ciyam/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ciyam/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ciyam/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ciyam/subscriptions",
+      "organizations_url": "https://api.github.com/users/ciyam/orgs",
+      "repos_url": "https://api.github.com/users/ciyam/repos",
+      "events_url": "https://api.github.com/users/ciyam/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ciyam/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 30,
+    "created_at": "2016-01-03T15:36:48Z",
+    "updated_at": "2016-01-08T10:01:54Z",
+    "closed_at": "2016-01-08T10:01:54Z",
+    "author_association": "NONE",
+    "body": "I was able to successfully create a \"regtest\" CLTV redeem script for a P2SH address using the block number 0x7f but if I change it to 0xff (which I thought should be block 255) it won't work (giving me a \"Negative locktime\" error).\n\nAs nLockTime is unsigned I don't understand why the op code is reading a signed value and testing for it being negative.\n\nDid I miss something?\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7228",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7228/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7228/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7228/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/7228",
+    "id": 122893272,
+    "number": 7228,
+    "title": "Bitcoind bad_alloc -> ConnectBlock fail",
+    "user": {
+      "login": "sipa",
+      "id": 548488,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/548488?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sipa",
+      "html_url": "https://github.com/sipa",
+      "followers_url": "https://api.github.com/users/sipa/followers",
+      "following_url": "https://api.github.com/users/sipa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sipa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sipa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sipa/subscriptions",
+      "organizations_url": "https://api.github.com/users/sipa/orgs",
+      "repos_url": "https://api.github.com/users/sipa/repos",
+      "events_url": "https://api.github.com/users/sipa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sipa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2015-12-18T07:00:32Z",
+    "updated_at": "2017-02-25T09:04:29Z",
+    "closed_at": "2017-02-25T09:04:29Z",
+    "author_association": "OWNER",
+    "body": "Master branch of a few days ago, ARM CPU, 1 GiB RAM, pruning enabled, IBD:\n\n```\n2015-12-18 05:00:46 UpdateTip: new best=00000000000000000661605e4cade89011b5ec8733f12179ea7e94ca1ae31776  height=329691  log2_work=81.429488  tx=51224700  date=2014-11-12 14:19:18 progress=0.477754  cache=316.5MiB(227077tx)\n2015-12-18 05:00:47 UpdateTip: new best=00000000000000000f4bb7e7f47239591fab8ea45157e7fb393436fd0c69e5b1  height=329692  log2_work=81.429563  tx=51224930  date=2014-11-12 14:22:13 progress=0.477758  cache=316.8MiB(227214tx)\n2015-12-18 05:00:49 Pre-allocating up to position 0x8000000 in blk00194.dat\n2015-12-18 05:00:50 Prune: UnlinkPrunedFiles deleted blk/rev (00188)\n\n\n************************\nEXCEPTION: St9bad_alloc\nstd::bad_alloc\nbitcoin in ProcessMessages()\n\n2015-12-18 05:01:19\n\n************************\nEXCEPTION: St9bad_alloc\nstd::bad_alloc\nbitcoin in ProcessMessages()\n\n2015-12-18 05:01:19 ProcessMessages(block, 736950 bytes) FAILED peer=22\n2015-12-18 05:01:19 ERROR: ConnectBlock(): inputs missing/spent\n2015-12-18 05:01:19 InvalidChainFound: invalid block=000000000000000008c189d4cd55d898cfbab27454f9eca7f8c5dbef3720161c  height=329693  log2_work=81.429639  date=2014-11-12 14:44:01\n2015-12-18 05:01:19 InvalidChainFound:  current best=00000000000000000f4bb7e7f47239591fab8ea45157e7fb393436fd0c69e5b1  height=329692  log2_work=81.429563  date=2014-11-12 14:22:13\n2015-12-18 05:01:19 ERROR: ConnectTip(): ConnectBlock 000000000000000008c189d4cd55d898cfbab27454f9eca7f8c5dbef3720161c failed\n2015-12-18 05:01:20 InvalidChainFound: invalid block=000000000000000008c189d4cd55d898cfbab27454f9eca7f8c5dbef3720161c  height=329693  log2_work=81.429639  date=2014-11-12 14:44:01\n2015-12-18 05:01:20 InvalidChainFound:  current best=00000000000000000f4bb7e7f47239591fab8ea45157e7fb393436fd0c69e5b1  height=329692  log2_work=81.429563  date=2014-11-12 14:22:13\n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7105",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7105/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7105/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7105/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/7105",
+    "id": 119100927,
+    "number": 7105,
+    "title": "Keep track of explicit wallet conflicts instead of using mempool",
+    "user": {
+      "login": "sipa",
+      "id": 548488,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/548488?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sipa",
+      "html_url": "https://github.com/sipa",
+      "followers_url": "https://api.github.com/users/sipa/followers",
+      "following_url": "https://api.github.com/users/sipa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sipa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sipa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sipa/subscriptions",
+      "organizations_url": "https://api.github.com/users/sipa/orgs",
+      "repos_url": "https://api.github.com/users/sipa/repos",
+      "events_url": "https://api.github.com/users/sipa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sipa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 149424,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Wallet",
+        "name": "Wallet",
+        "color": "08a781",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/milestones/19",
+      "html_url": "https://github.com/bitcoin/bitcoin/milestone/19",
+      "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/milestones/19/labels",
+      "id": 1092458,
+      "number": 19,
+      "title": "0.12.0",
+      "description": "",
+      "creator": {
+        "login": "laanwj",
+        "id": 126646,
+        "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/laanwj",
+        "html_url": "https://github.com/laanwj",
+        "followers_url": "https://api.github.com/users/laanwj/followers",
+        "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+        "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+        "organizations_url": "https://api.github.com/users/laanwj/orgs",
+        "repos_url": "https://api.github.com/users/laanwj/repos",
+        "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/laanwj/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 0,
+      "closed_issues": 78,
+      "state": "closed",
+      "created_at": "2015-05-01T12:31:35Z",
+      "updated_at": "2016-09-26T14:08:41Z",
+      "due_on": null,
+      "closed_at": "2016-08-16T10:17:40Z"
+    },
+    "comments": 22,
+    "created_at": "2015-11-26T20:49:06Z",
+    "updated_at": "2015-12-01T08:22:23Z",
+    "closed_at": "2015-12-01T08:22:23Z",
+    "author_association": "OWNER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/7105",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/7105",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/7105.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/7105.patch"
+    },
+    "body": "This is an alternative approach for #7067. It stores the earlier block which conflicts (directly or indirectly) with transactions. The wallet relies on being told about conflicts, so this may need rescanning to discover conflicts with historical transactions (but those aren't reliably detectable anyway, even with other approaches).\n\nNew semantics:\n- A negative confirmation count -N means that there is a block (with N confirms) that directly or indirectly (via other wallet transactions) conflicts with a given transaction.\n- Unconfirmed coins received from self are only considered spendable when they are in the mempool.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7103",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7103/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7103/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/7103/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/7103",
+    "id": 119039067,
+    "number": 7103,
+    "title": "[wallet, rpc tests] Fix settxfee, paytxfee",
+    "user": {
+      "login": "MarcoFalke",
+      "id": 6399679,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6399679?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MarcoFalke",
+      "html_url": "https://github.com/MarcoFalke",
+      "followers_url": "https://api.github.com/users/MarcoFalke/followers",
+      "following_url": "https://api.github.com/users/MarcoFalke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MarcoFalke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MarcoFalke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MarcoFalke/subscriptions",
+      "organizations_url": "https://api.github.com/users/MarcoFalke/orgs",
+      "repos_url": "https://api.github.com/users/MarcoFalke/repos",
+      "events_url": "https://api.github.com/users/MarcoFalke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MarcoFalke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 149424,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Wallet",
+        "name": "Wallet",
+        "color": "08a781",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/milestones/19",
+      "html_url": "https://github.com/bitcoin/bitcoin/milestone/19",
+      "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/milestones/19/labels",
+      "id": 1092458,
+      "number": 19,
+      "title": "0.12.0",
+      "description": "",
+      "creator": {
+        "login": "laanwj",
+        "id": 126646,
+        "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/laanwj",
+        "html_url": "https://github.com/laanwj",
+        "followers_url": "https://api.github.com/users/laanwj/followers",
+        "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+        "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+        "organizations_url": "https://api.github.com/users/laanwj/orgs",
+        "repos_url": "https://api.github.com/users/laanwj/repos",
+        "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/laanwj/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 0,
+      "closed_issues": 78,
+      "state": "closed",
+      "created_at": "2015-05-01T12:31:35Z",
+      "updated_at": "2016-09-26T14:08:41Z",
+      "due_on": null,
+      "closed_at": "2016-08-16T10:17:40Z"
+    },
+    "comments": 5,
+    "created_at": "2015-11-26T12:51:51Z",
+    "updated_at": "2015-11-30T11:22:32Z",
+    "closed_at": "2015-11-30T11:18:31Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/7103",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/7103",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/7103.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/7103.patch"
+    },
+    "body": "This comes without the GUI changes, so it should be easier to review and backport. GUI: #7096\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6970",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6970/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6970/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6970/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6970",
+    "id": 115823020,
+    "number": 6970,
+    "title": "Fix crash in validateaddress with -disablewallet",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 98279177,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/RPC/REST/ZMQ",
+        "name": "RPC/REST/ZMQ",
+        "color": "0052cc",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 11,
+    "created_at": "2015-11-09T07:45:08Z",
+    "updated_at": "2015-11-09T23:20:42Z",
+    "closed_at": "2015-11-09T10:57:49Z",
+    "author_association": "OWNER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6970",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6970",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6970.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6970.patch"
+    },
+    "body": "Fix a null pointer dereference in validateaddress with -disablewallet. Also add a regression testcase.\n\nProblem reported here: https://github.com/bitcoin/bitcoin/issues/6963#issuecomment-154548880\n\nI think this needs to be backported to 0.11 as well.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6963",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6963/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6963/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6963/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/6963",
+    "id": 115588583,
+    "number": 6963,
+    "title": "hard crash when validateaddress RPC endpoint is requested",
+    "user": {
+      "login": "jlopp",
+      "id": 288011,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/288011?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jlopp",
+      "html_url": "https://github.com/jlopp",
+      "followers_url": "https://api.github.com/users/jlopp/followers",
+      "following_url": "https://api.github.com/users/jlopp/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jlopp/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jlopp/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jlopp/subscriptions",
+      "organizations_url": "https://api.github.com/users/jlopp/orgs",
+      "repos_url": "https://api.github.com/users/jlopp/repos",
+      "events_url": "https://api.github.com/users/jlopp/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jlopp/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 30,
+    "created_at": "2015-11-06T21:01:21Z",
+    "updated_at": "2015-11-11T13:56:55Z",
+    "closed_at": "2015-11-10T15:29:22Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "I'm running 4ee149a compiled on an ARM architecture and using bitcoind to solo mine on testnet with cgminer. However, now that I updated to 4ee149a, bitcoind crashes hard during the first request for a block template from cgminer. I set debug=1 and this is all the output I get before the crash:\n\n```\n 2015-11-06 20:56:31 Received a POST request for / from 192.168.1.14:59243\n 2015-11-06 20:56:31 CreateNewBlock(): total size 1000\n 2015-11-06 20:56:31       - Connect 1 transactions: 0.11ms (0.111ms/tx, 0.000ms/txin) [0.12s]\n 2015-11-06 20:56:31     - Verify 0 txins: 0.71ms (0.000ms/txin) [1.60s]\n 2015-11-06 20:56:31 Received a POST request for / from 192.168.1.14:59243\n 2015-11-06 20:56:31 Received a POST request for / from 192.168.1.14:59243\n 2015-11-06 20:56:31 ThreadRPCServer method=validateaddress\n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6889",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6889/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6889/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6889/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6889",
+    "id": 113360585,
+    "number": 6889,
+    "title": "fix locking issue with new mempool limiting",
+    "user": {
+      "login": "jonasschnelli",
+      "id": 178464,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/178464?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jonasschnelli",
+      "html_url": "https://github.com/jonasschnelli",
+      "followers_url": "https://api.github.com/users/jonasschnelli/followers",
+      "following_url": "https://api.github.com/users/jonasschnelli/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jonasschnelli/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jonasschnelli/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jonasschnelli/subscriptions",
+      "organizations_url": "https://api.github.com/users/jonasschnelli/orgs",
+      "repos_url": "https://api.github.com/users/jonasschnelli/repos",
+      "events_url": "https://api.github.com/users/jonasschnelli/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jonasschnelli/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2015-10-26T13:57:42Z",
+    "updated_at": "2015-10-27T22:28:03Z",
+    "closed_at": "2015-10-27T07:48:31Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6889",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6889",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6889.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6889.patch"
+    },
+    "body": "Current master crashes on OSX with an exception: \"boost: mutex lock failed in pthread_mutex_lock: Invalid argument\".\n\n`mempool` is a global object and gets initialized over `cxx_global_var_init()`. Calling `LOCK()` within constructor (of a object in global scope) is problematic (at least on OSX).\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6840",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6840/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6840/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6840/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/6840",
+    "id": 111810613,
+    "number": 6840,
+    "title": "Not syncing blocks after upgrading to 0.11.1",
+    "user": {
+      "login": "PRabahy",
+      "id": 429961,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/429961?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/PRabahy",
+      "html_url": "https://github.com/PRabahy",
+      "followers_url": "https://api.github.com/users/PRabahy/followers",
+      "following_url": "https://api.github.com/users/PRabahy/following{/other_user}",
+      "gists_url": "https://api.github.com/users/PRabahy/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/PRabahy/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/PRabahy/subscriptions",
+      "organizations_url": "https://api.github.com/users/PRabahy/orgs",
+      "repos_url": "https://api.github.com/users/PRabahy/repos",
+      "events_url": "https://api.github.com/users/PRabahy/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/PRabahy/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 10,
+    "created_at": "2015-10-16T11:14:55Z",
+    "updated_at": "2015-10-22T11:11:26Z",
+    "closed_at": "2015-10-21T08:49:46Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "I appear to be stuck on block 378906. I'm not exactly sure what I am looking for, but here is the log from after I upgraded.\n\n2015-10-15 01:23:19 Bitcoin version v0.11.1 (2015-10-12 20:58:31 +0200)\n2015-10-15 01:23:19 Using OpenSSL version OpenSSL 1.0.1k 8 Jan 2015\n2015-10-15 01:23:19 Using BerkeleyDB version Berkeley DB 4.8.30: (April  9, 2010)\n2015-10-15 01:23:19 Default data directory C:\\Users\\PRabahy\\AppData\\Roaming\\Bitcoin\n2015-10-15 01:23:19 Using data directory C:\\Users\\PRabahy\\AppData\\Roaming\\Bitcoin\n2015-10-15 01:23:19 Using config file C:\\Users\\PRabahy\\AppData\\Roaming\\Bitcoin\\bitcoin.conf\n2015-10-15 01:23:19 Using at most 125 connections (2048 file descriptors available)\n2015-10-15 01:23:19 Using 4 threads for script verification\n2015-10-15 01:23:19 scheduler thread start\n2015-10-15 01:23:19 Binding RPC on address ::1 port 8332 (IPv4+IPv6 bind any: 0)\n2015-10-15 01:23:19 Binding RPC on address 127.0.0.1 port 8332 (IPv4+IPv6 bind any: 0)\n2015-10-15 01:23:19 Bound to [::]:8333\n2015-10-15 01:23:19 Bound to 0.0.0.0:8333\n2015-10-15 01:23:19 Cache configuration:\n2015-10-15 01:23:19 \\* Using 2.0MiB for block index database\n2015-10-15 01:23:19 \\* Using 70.0MiB for chain state database\n2015-10-15 01:23:19 \\* Using 178.0MiB for in-memory UTXO set\n2015-10-15 01:23:19 init message: Loading block index...\n2015-10-15 01:23:19 Opening LevelDB in C:\\Users\\PRabahy\\AppData\\Roaming\\Bitcoin\\blocks\\index\n2015-10-15 01:23:20 Opened LevelDB successfully\n2015-10-15 01:23:20 Opening LevelDB in C:\\Users\\PRabahy\\AppData\\Roaming\\Bitcoin\\chainstate\n2015-10-15 01:23:20 Opened LevelDB successfully\n2015-10-15 01:23:25 LoadBlockIndexDB: last block file = 355\n2015-10-15 01:23:25 LoadBlockIndexDB: last block file info: CBlockFileInfo(blocks=114, size=63165871, heights=378794...378907, time=2015-10-14...2015-10-14)\n2015-10-15 01:23:25 Checking all blk files are present...\n2015-10-15 01:23:26 LoadBlockIndexDB: transaction index disabled\n2015-10-15 01:23:26 LoadBlockIndexDB: hashBestChain=000000000000000001177ede53f989994350ff591954fb59a547b9f5683eb2b2 height=378906 date=2015-10-14 21:02:44 progress=0.999815\n2015-10-15 01:23:26 init message: Verifying blocks...\n2015-10-15 01:23:26 Verifying last 288 blocks at level 3\n2015-10-15 01:23:48 No coin database inconsistencies in last 14 blocks (14480 transactions)\n2015-10-15 01:23:48  block index           28384ms\n2015-10-15 01:23:48 Wallet disabled!\n2015-10-15 01:23:48 init message: Activating best chain...\n2015-10-15 01:23:48 mapBlockIndex.size() = 379407\n2015-10-15 01:23:48 nBestHeight = 378906\n2015-10-15 01:23:48 setKeyPool.size() = 0\n2015-10-15 01:23:48 mapWallet.size() = 0\n2015-10-15 01:23:48 mapAddressBook.size() = 0\n2015-10-15 01:23:48 init message: Loading addresses...\n2015-10-15 01:23:48 Loaded 66066 addresses from peers.dat  218ms\n2015-10-15 01:23:48 dnsseed thread start\n2015-10-15 01:23:48 net thread start\n2015-10-15 01:23:48 addcon thread start\n2015-10-15 01:23:48 opencon thread start\n2015-10-15 01:23:48 msghand thread start\n2015-10-15 01:23:48 init message: Done loading\n2015-10-15 01:23:48 receive version message: /Satoshi:0.9.99/: version 70002, blocks=-1, us=68.34.102.231:8333, peer=1\n2015-10-15 01:23:48 Added time data, samples 2, offset -4 (+0 minutes)\n2015-10-15 01:23:48 GUI: PaymentServer::LoadRootCAs: Loaded  39  root certificates\n2015-10-15 01:23:49 receive version message: /Satoshi:0.11.0/: version 70002, blocks=378937, us=68.34.102.231:61836, peer=2\n2015-10-15 01:23:49 Added time data, samples 3, offset -2 (+0 minutes)\n2015-10-15 01:23:49 ERROR: AcceptBlockHeader: block is marked invalid\n2015-10-15 01:23:49 ERROR: invalid header received\n2015-10-15 01:23:49 ProcessMessages(headers, 2593 bytes) FAILED peer=2\n2015-10-15 01:23:51 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:23:58 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:23:59 P2P peers available. Skipped DNS seeding.\n2015-10-15 01:23:59 dnsseed thread exit\n2015-10-15 01:24:01 receive version message: /Satoshi:0.9.2.1/: version 70002, blocks=378937, us=68.34.102.231:61841, peer=3\n2015-10-15 01:24:01 Added time data, samples 4, offset -3 (+0 minutes)\n2015-10-15 01:24:02 ERROR: AcceptBlockHeader: block is marked invalid\n2015-10-15 01:24:02 ERROR: invalid header received\n2015-10-15 01:24:02 ProcessMessages(headers, 2593 bytes) FAILED peer=3\n2015-10-15 01:24:04 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:24:04 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:24:05 ERROR: AcceptToMemoryPool: nonstandard transaction: dust\n2015-10-15 01:24:07 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:24:08 ERROR: AcceptToMemoryPool: nonstandard transaction: dust\n2015-10-15 01:24:13 receive version message: /bitcoinj:0.14SNAPSHOT/: version 70001, blocks=378937, us=127.0.0.1:8333, peer=4\n2015-10-15 01:24:13 Added time data, samples 5, offset -2 (+0 minutes)\n2015-10-15 01:24:13 nTimeOffset = -2  (+0 minutes)\n2015-10-15 01:24:14 receive version message: /Satoshi:0.9.99/: version 70002, blocks=-1, us=68.34.102.231:8333, peer=5\n2015-10-15 01:24:14 Added time data, samples 6, offset -1 (+0 minutes)\n2015-10-15 01:24:16 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:24:20 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:24:29 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:24:30 receive version message: /Satoshi:0.11.0/: version 70002, blocks=375495, us=68.34.102.231:8333, peer=6\n2015-10-15 01:24:30 Added time data, samples 7, offset -1 (+0 minutes)\n2015-10-15 01:24:30 nTimeOffset = -2  (+0 minutes)\n2015-10-15 01:24:38 receive version message: /Satoshi:0.11.0/: version 70002, blocks=375915, us=68.34.102.231:8333, peer=7\n2015-10-15 01:24:38 Added time data, samples 8, offset -2 (+0 minutes)\n2015-10-15 01:24:38 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:24:52 receive version message: /bitcoinj:0.14SNAPSHOT/: version 70001, blocks=378937, us=127.0.0.1:8333, peer=8\n2015-10-15 01:24:52 Added time data, samples 9, offset -1 (+0 minutes)\n2015-10-15 01:24:52 nTimeOffset = -2  (+0 minutes)\n2015-10-15 01:24:54 receive version message: /bitnodes.21.co:0.1/: version 70002, blocks=378936, us=68.34.102.231:8333, peer=9\n2015-10-15 01:24:54 Added time data, samples 10, offset -2 (+0 minutes)\n2015-10-15 01:24:54 receive version message: /bitcoinseeder:0.01/: version 60000, blocks=230000, us=68.34.102.231:8333, peer=10\n2015-10-15 01:24:54 Added time data, samples 11, offset -19 (+0 minutes)\n2015-10-15 01:24:54 nTimeOffset = -2  (+0 minutes)\n2015-10-15 01:24:56 receive version message: /Satoshi:0.9.3/: version 70002, blocks=377855, us=68.34.102.231:61867, peer=11\n2015-10-15 01:24:56 Added time data, samples 12, offset -1 (+0 minutes)\n2015-10-15 01:24:59 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:01 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:03 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:06 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:08 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:08 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:10 ERROR: AcceptToMemoryPool: nonstandard transaction: dust\n2015-10-15 01:25:10 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:11 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:11 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:12 receive version message: /bitcoinseeder:0.01/: version 60000, blocks=230000, us=68.34.102.231:8333, peer=12\n2015-10-15 01:25:12 Added time data, samples 13, offset -2 (+0 minutes)\n2015-10-15 01:25:12 nTimeOffset = -2  (+0 minutes)\n2015-10-15 01:25:15 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:15 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:15 ERROR: AcceptToMemoryPool: nonstandard transaction: dust\n2015-10-15 01:25:16 receive version message: /Snoopy:0.2.1/: version 70001, blocks=0, us=68.34.102.231:8333, peer=13\n2015-10-15 01:25:16 Added time data, samples 14, offset -1 (+0 minutes)\n2015-10-15 01:25:19 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:28 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:29 ERROR: AcceptToMemoryPool: nonstandard transaction: dust\n2015-10-15 01:25:36 receive version message: /Satoshi:0.9.2.1/: version 70002, blocks=354548, us=68.34.102.231:8333, peer=14\n2015-10-15 01:25:36 Added time data, samples 15, offset -1 (+0 minutes)\n2015-10-15 01:25:36 nTimeOffset = -2  (+0 minutes)\n2015-10-15 01:25:39 ERROR: CScriptCheck(): 26f9721a3b748fb69fb57c6fd927931a6d8e53632789edca55abd7c7cbd1bcf0:0 VerifySignature failed: Non-canonical signature: S value is unnecessarily high\n2015-10-15 01:25:39 ERROR: AcceptToMemoryPool: ConnectInputs failed 26f9721a3b748fb69fb57c6fd927931a6d8e53632789edca55abd7c7cbd1bcf0\n2015-10-15 01:25:53 ERROR: CScriptCheck(): dd52cc689d6531de0c68077df409286c2b9799af37f299f1f9ca7868cc0dc9bb:0 VerifySignature failed: Non-canonical signature: S value is unnecessarily high\n2015-10-15 01:25:53 ERROR: AcceptToMemoryPool: ConnectInputs failed dd52cc689d6531de0c68077df409286c2b9799af37f299f1f9ca7868cc0dc9bb\n2015-10-15 01:25:54 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:59 ERROR: AcceptToMemoryPool: non-final\n2015-10-15 01:25:59 ERROR: CScriptCheck(): 13863052ce70d262fe33ca8b266bb5151251370ba9558625e7f63fac5c82e2b8:0 VerifySignature failed: Non-canonical signature: S value is unnecessarily high\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6777",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6777/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6777/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6777/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6777",
+    "id": 110346023,
+    "number": 6777,
+    "title": "Unobfuscate chainstate data in CCoinsViewDB::GetStats",
+    "user": {
+      "login": "jamesob",
+      "id": 73197,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/73197?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jamesob",
+      "html_url": "https://github.com/jamesob",
+      "followers_url": "https://api.github.com/users/jamesob/followers",
+      "following_url": "https://api.github.com/users/jamesob/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jamesob/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jamesob/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jamesob/subscriptions",
+      "organizations_url": "https://api.github.com/users/jamesob/orgs",
+      "repos_url": "https://api.github.com/users/jamesob/repos",
+      "events_url": "https://api.github.com/users/jamesob/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jamesob/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 15,
+    "created_at": "2015-10-08T00:16:35Z",
+    "updated_at": "2015-10-13T10:24:04Z",
+    "closed_at": "2015-10-13T10:24:04Z",
+    "author_association": "CONTRIBUTOR",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6777",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6777",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6777.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6777.patch"
+    },
+    "body": "Per the [thread on the mailing list](http://lists.linuxfoundation.org/pipermail/bitcoin-dev/2015-October/011474.html), we missed (at least) one use of `CLevelDBWrapper` when adding chainstate obfuscation.\n\nPreferably, this PR (or a followup) will also add automated tests that prevent future bugs of this kind. Subsequently we should also introduce an abstraction that prevents this sort of leak when performing iteration with `CLevelDBWrapper`.\n\ncc @domob1812 @dexX7\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6749",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6749/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6749/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6749/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/6749",
+    "id": 109464634,
+    "number": 6749,
+    "title": "Setting an invalid proxy in GUI settings prevents program from starting",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 9,
+    "created_at": "2015-10-02T10:04:46Z",
+    "updated_at": "2016-10-18T14:05:29Z",
+    "closed_at": "2015-11-25T08:05:39Z",
+    "author_association": "OWNER",
+    "body": "Catch 22:\n\n```\n<arnep> hey guys i need some help, pls.\n<arnep> trying to open bitcore, \"error proxy adress 0.0.0.0 3888\n<arnep> so i can't open the damn program\n<buZz> oh you're using a proxy?\n<buZz> maybe try disabling that\n<arnep> can't get in the program, where i put it o\n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6735",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6735/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6735/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6735/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/6735",
+    "id": 108890742,
+    "number": 6735,
+    "title": "Assertion failure in scheduler.cpp after Ctrl-Cing in AppInit2",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2015-09-29T15:09:44Z",
+    "updated_at": "2017-11-08T03:04:04Z",
+    "closed_at": "2017-11-08T03:04:04Z",
+    "author_association": "OWNER",
+    "body": "This is probably a similar problem to that solved with de9de2d, but in the task scheduler instead of HTTP server (e.g. the assumption that `threadGroup.join()` will be called before `StopXXX`).\n\n```\norion@lethe:~/bitcoin$ src/bitcoind                                   \n^C\n^Cassertion \"nThreadsServicingQueue == 0\" failed: file \"scheduler.cpp\", line 19, function \"~CScheduler\"\nAbort trap (core dumped) \n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6715",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6715/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6715/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6715/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6715",
+    "id": 107982251,
+    "number": 6715,
+    "title": "Fix mempool packages",
+    "user": {
+      "login": "sdaftuar",
+      "id": 7463573,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/7463573?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sdaftuar",
+      "html_url": "https://github.com/sdaftuar",
+      "followers_url": "https://api.github.com/users/sdaftuar/followers",
+      "following_url": "https://api.github.com/users/sdaftuar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sdaftuar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sdaftuar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sdaftuar/subscriptions",
+      "organizations_url": "https://api.github.com/users/sdaftuar/orgs",
+      "repos_url": "https://api.github.com/users/sdaftuar/repos",
+      "events_url": "https://api.github.com/users/sdaftuar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sdaftuar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2015-09-23T18:47:09Z",
+    "updated_at": "2015-09-24T10:26:33Z",
+    "closed_at": "2015-09-24T10:25:14Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6715",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6715",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6715.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6715.patch"
+    },
+    "body": "This fixes an edge case (introduced by #6654 and reported by @sipa here: https://github.com/bitcoin/bitcoin/pull/6654#issuecomment-142345556) in removing an entry from the mempool during the middle of a reorg, where the entry has an in-block ancestor which has not yet had its descendant state updated for the transaction being removed.\n\nThe first commit updates the `mempool_packages.py` rpc-test to include a test that demonstrates the bug; the second commit provides a fix.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6704",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6704/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6704/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6704/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6704",
+    "id": 107378427,
+    "number": 6704,
+    "title": "Backport bugfixes to 0.10",
+    "user": {
+      "login": "luke-jr",
+      "id": 1095675,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1095675?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/luke-jr",
+      "html_url": "https://github.com/luke-jr",
+      "followers_url": "https://api.github.com/users/luke-jr/followers",
+      "following_url": "https://api.github.com/users/luke-jr/following{/other_user}",
+      "gists_url": "https://api.github.com/users/luke-jr/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/luke-jr/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/luke-jr/subscriptions",
+      "organizations_url": "https://api.github.com/users/luke-jr/orgs",
+      "repos_url": "https://api.github.com/users/luke-jr/repos",
+      "events_url": "https://api.github.com/users/luke-jr/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/luke-jr/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2015-09-20T07:48:44Z",
+    "updated_at": "2015-09-22T16:07:05Z",
+    "closed_at": "2015-09-22T16:07:05Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6704",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6704",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6704.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6704.patch"
+    },
+    "body": ""
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6703",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6703/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6703/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6703/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6703",
+    "id": 107377844,
+    "number": 6703,
+    "title": "Backport bugfixes to 0.11",
+    "user": {
+      "login": "luke-jr",
+      "id": 1095675,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1095675?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/luke-jr",
+      "html_url": "https://github.com/luke-jr",
+      "followers_url": "https://api.github.com/users/luke-jr/followers",
+      "following_url": "https://api.github.com/users/luke-jr/following{/other_user}",
+      "gists_url": "https://api.github.com/users/luke-jr/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/luke-jr/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/luke-jr/subscriptions",
+      "organizations_url": "https://api.github.com/users/luke-jr/orgs",
+      "repos_url": "https://api.github.com/users/luke-jr/repos",
+      "events_url": "https://api.github.com/users/luke-jr/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/luke-jr/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2015-09-20T07:31:15Z",
+    "updated_at": "2015-09-23T12:12:58Z",
+    "closed_at": "2015-09-23T12:12:58Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6703",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6703",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6703.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6703.patch"
+    },
+    "body": "Travis is failing this weirdly, and I'm not sure why. Working on troubleshooting it, but I need to go to bed... so tomorrow I guess.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6702",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6702/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6702/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6702/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/6702",
+    "id": 107369491,
+    "number": 6702,
+    "title": "GetTempPath has unchecked error conditions",
+    "user": {
+      "login": "luke-jr",
+      "id": 1095675,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1095675?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/luke-jr",
+      "html_url": "https://github.com/luke-jr",
+      "followers_url": "https://api.github.com/users/luke-jr/followers",
+      "following_url": "https://api.github.com/users/luke-jr/following{/other_user}",
+      "gists_url": "https://api.github.com/users/luke-jr/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/luke-jr/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/luke-jr/subscriptions",
+      "organizations_url": "https://api.github.com/users/luke-jr/orgs",
+      "repos_url": "https://api.github.com/users/luke-jr/repos",
+      "events_url": "https://api.github.com/users/luke-jr/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/luke-jr/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2015-09-20T03:06:20Z",
+    "updated_at": "2016-06-22T10:43:40Z",
+    "closed_at": "2016-06-22T10:43:40Z",
+    "author_association": "MEMBER",
+    "body": "GetTempPath can fail, but its callers do not (all?) check for this failure.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6701",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6701/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6701/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6701/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/6701",
+    "id": 107369445,
+    "number": 6701,
+    "title": "GetTempPath is insecure",
+    "user": {
+      "login": "luke-jr",
+      "id": 1095675,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1095675?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/luke-jr",
+      "html_url": "https://github.com/luke-jr",
+      "followers_url": "https://api.github.com/users/luke-jr/followers",
+      "following_url": "https://api.github.com/users/luke-jr/following{/other_user}",
+      "gists_url": "https://api.github.com/users/luke-jr/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/luke-jr/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/luke-jr/subscriptions",
+      "organizations_url": "https://api.github.com/users/luke-jr/orgs",
+      "repos_url": "https://api.github.com/users/luke-jr/repos",
+      "events_url": "https://api.github.com/users/luke-jr/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/luke-jr/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2015-09-20T03:05:51Z",
+    "updated_at": "2016-06-22T09:06:12Z",
+    "closed_at": "2016-06-22T08:04:19Z",
+    "author_association": "MEMBER",
+    "body": "A number of standards (C89, POSIX, etc) had similar functions and people quickly learned it is not secure to generate temporary filenames until they are confirmed created (not merely opened). For example, an attacker may create symlinks in a race pointing to an arbitrary file the user owns that he wishes to corrupt. Boost may guarantee a unique filename, but there is a split-second before we open that file for an attacker to set up a link.\n\nThis was fixed by mkstemp which ensures the file is newly created securely. We should do something similar.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6688",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6688/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6688/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6688/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6688",
+    "id": 107082365,
+    "number": 6688,
+    "title": "Fix locking in GetTransaction.",
+    "user": {
+      "login": "morcos",
+      "id": 4360349,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/4360349?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/morcos",
+      "html_url": "https://github.com/morcos",
+      "followers_url": "https://api.github.com/users/morcos/followers",
+      "following_url": "https://api.github.com/users/morcos/following{/other_user}",
+      "gists_url": "https://api.github.com/users/morcos/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/morcos/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/morcos/subscriptions",
+      "organizations_url": "https://api.github.com/users/morcos/orgs",
+      "repos_url": "https://api.github.com/users/morcos/repos",
+      "events_url": "https://api.github.com/users/morcos/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/morcos/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2015-09-17T21:55:08Z",
+    "updated_at": "2015-09-23T14:53:59Z",
+    "closed_at": "2015-09-23T14:53:59Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6688",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6688",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6688.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6688.patch"
+    },
+    "body": "GetTransaction needs to lock cs_main until ReadBlockFromDisk completes because the data inside CBlockIndex's can change since pruning.  This lock was held by all calls to GetTransaction except rest_tx.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6595",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6595/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6595/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6595/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6595",
+    "id": 103617301,
+    "number": 6595,
+    "title": "Fix removal of timelocked-txn from mempool during reorg",
+    "user": {
+      "login": "TheBlueMatt",
+      "id": 649246,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/649246?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/TheBlueMatt",
+      "html_url": "https://github.com/TheBlueMatt",
+      "followers_url": "https://api.github.com/users/TheBlueMatt/followers",
+      "following_url": "https://api.github.com/users/TheBlueMatt/following{/other_user}",
+      "gists_url": "https://api.github.com/users/TheBlueMatt/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/TheBlueMatt/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/TheBlueMatt/subscriptions",
+      "organizations_url": "https://api.github.com/users/TheBlueMatt/orgs",
+      "repos_url": "https://api.github.com/users/TheBlueMatt/repos",
+      "events_url": "https://api.github.com/users/TheBlueMatt/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/TheBlueMatt/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 164208572,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Mempool",
+        "name": "Mempool",
+        "color": "fef2c0",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 7,
+    "created_at": "2015-08-27T23:43:11Z",
+    "updated_at": "2015-11-05T19:00:10Z",
+    "closed_at": "2015-11-05T19:00:10Z",
+    "author_association": "CONTRIBUTOR",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6595",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6595",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6595.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6595.patch"
+    },
+    "body": ""
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6582",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6582/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6582/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6582/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/6582",
+    "id": 102635148,
+    "number": 6582,
+    "title": "Wallet salvage searches for `wallet.dat` in the current directory rather than .bitcoin",
+    "user": {
+      "login": "apoelstra",
+      "id": 1351933,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1351933?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/apoelstra",
+      "html_url": "https://github.com/apoelstra",
+      "followers_url": "https://api.github.com/users/apoelstra/followers",
+      "following_url": "https://api.github.com/users/apoelstra/following{/other_user}",
+      "gists_url": "https://api.github.com/users/apoelstra/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/apoelstra/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/apoelstra/subscriptions",
+      "organizations_url": "https://api.github.com/users/apoelstra/orgs",
+      "repos_url": "https://api.github.com/users/apoelstra/repos",
+      "events_url": "https://api.github.com/users/apoelstra/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/apoelstra/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 149424,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Wallet",
+        "name": "Wallet",
+        "color": "08a781",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2015-08-23T16:18:21Z",
+    "updated_at": "2015-11-24T09:21:28Z",
+    "closed_at": "2015-11-24T09:21:28Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "If you try to start bitcoind with a corrupted wallet, it will attempt to run `CWalletDB::Recover`, which moves `wallet.dat` to some other name, reads all the records, and writes them to a fresh `wallet.dat`.\n\nHowever, when moving `wallet.dat`, it searches the current directory rather than `.bitcoin`, so if you start `bitcoind` from anywhere else, it'll fail. To see this, run\n\n```\necho \"I'm not a real wallet!\" > ~/.bitcoin/wallet.dat  ## MOVE YOUR REAL WALLET OUT OF THE WAY\nbitcoind\n```\n\nThe output on stdout is simply \"Error:\" with no additional information. In debug.log you will see something like\n\n```\n2015-08-23 16:13:17 CDBEnv::Open: LogDir=/home/apoelstra/.bitcoin/database ErrorFile=/home/apoelstra/.bitcoin/db.log\n2015-08-23 16:13:17 Failed to rename wallet.dat to wallet.1440346397.bak (err -1)\n2015-08-23 16:13:17 errno 2: No such file or directory\n```\n\n(The errno line won't appear; I added that while investigating the bug.)\n\nOn the other hand, if you run bitcoind from `~/.bitcoin` itself, it will rename the wallet successfully (and instead fail trying to read records from \"I'm not a wallet!\" :)).\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6571",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6571/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6571/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6571/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6571",
+    "id": 101711139,
+    "number": 6571,
+    "title": "libbitcoinconsensus: avoid a crash in multi-threaded environments",
+    "user": {
+      "login": "theuni",
+      "id": 417043,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/417043?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/theuni",
+      "html_url": "https://github.com/theuni",
+      "followers_url": "https://api.github.com/users/theuni/followers",
+      "following_url": "https://api.github.com/users/theuni/following{/other_user}",
+      "gists_url": "https://api.github.com/users/theuni/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/theuni/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/theuni/subscriptions",
+      "organizations_url": "https://api.github.com/users/theuni/orgs",
+      "repos_url": "https://api.github.com/users/theuni/repos",
+      "events_url": "https://api.github.com/users/theuni/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/theuni/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 241832923,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Utils/log/libs",
+        "name": "Utils/log/libs",
+        "color": "5319e7",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2015-08-18T17:47:44Z",
+    "updated_at": "2015-08-20T22:35:51Z",
+    "closed_at": "2015-08-20T14:33:55Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6571",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6571",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6571.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6571.patch"
+    },
+    "body": "tl;dr: EC_KEY_new_by_curve_name() affects global state in some versions/configs of openssl, leading to crashes when called by multiple threads. Avoid the issue by only calling it once at startup and caching the resulting group.\n\nThis is likely unnecessary for master with libsecp256k1-verification landing soon, but I think it makes sense for backports.\n\nThis is a real-world issue for libbitcoinconsensus as reported by Tamas Blummer here: https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2015-August/010219.html\n\nWhen calling EC_KEY_new_by_curve_name(), openssl internally checks to see how to setup the curve's EC_METHOD (simple, montgomery, or nist).\n\nUnfortunately, in all released OpenSSL versions (as far as I can tell master is the only branch that has fixed this issue), it's tested like so:\n- Try a method. If it fails, set a global error and return.\n- If the global error is set, try a different method.\n\nPrior to OpenSSL 1.0.0, these were tested in the order:\nEC_GFp_nist_method -> EC_GFp_mont_method. The secp256k1 curve fails the ec_GFp_nist_group_set_curve test and sets the global error. That error is then checked for failure, and EC_GFp_mont_method is tried (and succeeds).\n\nObviously that global error usage is dangerous, especially since it happens for _each_ transaction verification in libbitcoinconsensus. In a multi-threaded environment, a crash is guaranteed within a few seconds.\n\nHowever, OpenSSL 1.0.1 reversed the order, trying EC_GFp_mont_method first, so that the global error doesn't end up being used: https://github.com/openssl/openssl/commit/17674bfdf75bffa4e225f8328b9d42cb74504005\n\nThis was backported from master back to 1.0.1, but not to 1.0.0 or 0.9.8.\n\nSo that change (accidentally) \"solved\" the problem. As you can see, it's still possible to hit the reversed order in the !defined(OPENSSL_BN_ASM_MONT) case. That's easily tested by building OpenSSL with the -no-asm config option. It's probably also the case for obscure architectures and OSs, but I haven't looked deeply into that. In that case, it's reasonable to assume that this crash would likely occur on such platforms.\n\nAlso, OSX, even the latest version (10.10 as of now), still ships with OpenSSL 0.9.8. Which is how Tamas ran into it.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6565",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6565/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6565/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6565/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6565",
+    "id": 101515041,
+    "number": 6565,
+    "title": "Make sure we re-acquire lock if a task throws",
+    "user": {
+      "login": "casey",
+      "id": 1945,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1945?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/casey",
+      "html_url": "https://github.com/casey",
+      "followers_url": "https://api.github.com/users/casey/followers",
+      "following_url": "https://api.github.com/users/casey/following{/other_user}",
+      "gists_url": "https://api.github.com/users/casey/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/casey/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/casey/subscriptions",
+      "organizations_url": "https://api.github.com/users/casey/orgs",
+      "repos_url": "https://api.github.com/users/casey/repos",
+      "events_url": "https://api.github.com/users/casey/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/casey/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 15,
+    "created_at": "2015-08-17T21:35:24Z",
+    "updated_at": "2015-08-31T16:59:26Z",
+    "closed_at": "2015-08-19T14:27:41Z",
+    "author_association": "CONTRIBUTOR",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6565",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6565",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6565.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6565.patch"
+    },
+    "body": "This fixes #6394\n\nPretty simple, it just makes sure to re-acquire the lock in case f throws, so that we don't touch nThreadsServicingQueue without the lock. The empty throw statement re-raises the current exception.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6556",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6556/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6556/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/6556/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/6556",
+    "id": 101086592,
+    "number": 6556,
+    "title": "Fix masking of irrelevant bits in address groups.",
+    "user": {
+      "login": "morcos",
+      "id": 4360349,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/4360349?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/morcos",
+      "html_url": "https://github.com/morcos",
+      "followers_url": "https://api.github.com/users/morcos/followers",
+      "following_url": "https://api.github.com/users/morcos/following{/other_user}",
+      "gists_url": "https://api.github.com/users/morcos/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/morcos/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/morcos/subscriptions",
+      "organizations_url": "https://api.github.com/users/morcos/orgs",
+      "repos_url": "https://api.github.com/users/morcos/repos",
+      "events_url": "https://api.github.com/users/morcos/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/morcos/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 8,
+    "created_at": "2015-08-14T19:27:28Z",
+    "updated_at": "2015-08-20T14:46:07Z",
+    "closed_at": "2015-08-20T14:45:46Z",
+    "author_association": "MEMBER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/6556",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/6556",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/6556.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/6556.patch"
+    },
+    "body": "If I'm reading this right, I believe the intent is to keep the high order nBits and mask away the others with 1's.  But before this fix it was keeping the high order (8 - nBits).   I don't think there was any effect, because the only time this was used was in the case of he.net /36 IPv6 groups so nBits was 4.\n"
+  }
+]

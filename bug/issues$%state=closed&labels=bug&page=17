@@ -1,0 +1,1721 @@
+[
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/483",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/483/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/483/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/483/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/483",
+    "id": 1547223,
+    "number": 483,
+    "title": "JSON-RPC setaccount creates a new address?",
+    "user": {
+      "login": "elis",
+      "id": 101744,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/101744?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/elis",
+      "html_url": "https://github.com/elis",
+      "followers_url": "https://api.github.com/users/elis/followers",
+      "following_url": "https://api.github.com/users/elis/following{/other_user}",
+      "gists_url": "https://api.github.com/users/elis/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/elis/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/elis/subscriptions",
+      "organizations_url": "https://api.github.com/users/elis/orgs",
+      "repos_url": "https://api.github.com/users/elis/repos",
+      "events_url": "https://api.github.com/users/elis/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/elis/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-09-02T00:24:42Z",
+    "updated_at": "2014-04-29T13:50:05Z",
+    "closed_at": "2014-04-29T13:50:05Z",
+    "author_association": "NONE",
+    "body": "When I try to use `setaccount` method with the same `address` more than once on the same `account` I get new addresses assigned to that account.\n\nIs this a but or just undocumented feature? :)\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/482",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/482/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/482/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/482/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/482",
+    "id": 1535268,
+    "number": 482,
+    "title": "Wallet encryption could cause duplicate coinbase txes",
+    "user": {
+      "login": "TheBlueMatt",
+      "id": 649246,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/649246?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/TheBlueMatt",
+      "html_url": "https://github.com/TheBlueMatt",
+      "followers_url": "https://api.github.com/users/TheBlueMatt/followers",
+      "following_url": "https://api.github.com/users/TheBlueMatt/following{/other_user}",
+      "gists_url": "https://api.github.com/users/TheBlueMatt/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/TheBlueMatt/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/TheBlueMatt/subscriptions",
+      "organizations_url": "https://api.github.com/users/TheBlueMatt/orgs",
+      "repos_url": "https://api.github.com/users/TheBlueMatt/repos",
+      "events_url": "https://api.github.com/users/TheBlueMatt/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/TheBlueMatt/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 149424,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Wallet",
+        "name": "Wallet",
+        "color": "08a781",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2011-08-31T19:56:46Z",
+    "updated_at": "2011-09-09T13:34:38Z",
+    "closed_at": "2011-09-09T13:34:38Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "Quote from https://github.com/bitcoin/bitcoin/commit/59ed5cb398f3817cebd8f5c6aeba3424de2acefe#commitcomment-562434\n\nThis edit states that the \"default key\" will be used as the target for payouts for mining. If this is correct, then it might be problematic and could result in a loss of funds to miners. When miners mine more than one block using the same payout address, the coinbase transactions in each block are identical, which results in them having an identical sha256 hash, which results in all but the first one being unidentifiable and hence unspendable. I suppose you might be aware of that, but wanted to point this out just to prevent the possibility of it being an expensive consequence for somebody else.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/478",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/478/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/478/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/478/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/478",
+    "id": 1504385,
+    "number": 478,
+    "title": "JSON-RPC validateaddress is acting weird",
+    "user": {
+      "login": "elis",
+      "id": 101744,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/101744?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/elis",
+      "html_url": "https://github.com/elis",
+      "followers_url": "https://api.github.com/users/elis/followers",
+      "following_url": "https://api.github.com/users/elis/following{/other_user}",
+      "gists_url": "https://api.github.com/users/elis/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/elis/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/elis/subscriptions",
+      "organizations_url": "https://api.github.com/users/elis/orgs",
+      "repos_url": "https://api.github.com/users/elis/repos",
+      "events_url": "https://api.github.com/users/elis/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/elis/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 148216,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Docs",
+        "name": "Docs",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-08-28T17:25:02Z",
+    "updated_at": "2012-02-19T18:47:16Z",
+    "closed_at": "2012-02-19T18:47:16Z",
+    "author_association": "NONE",
+    "body": "If you provide a valid address but from a different block-chain (I guess) for example 1Cm554iqhU9dLnZsi2LA5s1b576DdfM1GM`when working on`testnet` the bitcoind returns the following object:\n\n`address: \"msH2N7opWVat7u3VRbJXunDuw6gvdoTbc2\"\nismine: false\nisvalid: true`\n\nCompletely unrelated to my original request.\n\nHaven't tested it thoroughly yet, will update when I have more data.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/473",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/473/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/473/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/473/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/473",
+    "id": 1415882,
+    "number": 473,
+    "title": "bitcoin crashes on the close",
+    "user": {
+      "login": "vasisualiy",
+      "id": 979857,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/979857?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/vasisualiy",
+      "html_url": "https://github.com/vasisualiy",
+      "followers_url": "https://api.github.com/users/vasisualiy/followers",
+      "following_url": "https://api.github.com/users/vasisualiy/following{/other_user}",
+      "gists_url": "https://api.github.com/users/vasisualiy/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/vasisualiy/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/vasisualiy/subscriptions",
+      "organizations_url": "https://api.github.com/users/vasisualiy/orgs",
+      "repos_url": "https://api.github.com/users/vasisualiy/repos",
+      "events_url": "https://api.github.com/users/vasisualiy/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/vasisualiy/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-08-16T15:17:19Z",
+    "updated_at": "2011-12-21T19:54:44Z",
+    "closed_at": "2011-12-21T19:54:44Z",
+    "author_association": "NONE",
+    "body": "every time I close the bitcoin it raises:\n\n---\n\nUNKNOWN EXCEPTION  \nbitcoin in CMyApp::OnUnhandledException()\n\nwith segfault\n\nI have a NVIDIA GeForce4Ti4200, driver nouveau\n\n$ uname -a\nLinux linuxhost 3.0-ARCH #1 SMP PREEMPT Sat Aug 6 16:49:00 CEST 2011 i686 AMD Athlon(TM) XP AuthenticAMD GNU/Linux\n\n]$ X -version\n\nThis is a pre-release version of the X server from The X.Org Foundation.\nIt is not supported in any way.\nBugs may be filed in the bugzilla at http://bugs.freedesktop.org/.\nSelect the \"xorg\" product for bugs you find in this release.\nBefore reporting bugs in pre-release versions please check the\nlatest version in the X.Org Foundation git repository.\nSee http://wiki.x.org/wiki/GitPage for git access instructions.\n\nX.Org X Server 1.10.3.901 (1.10.4 RC 1)\nRelease Date: 2011-07-29\nX Protocol Version 11, Revision 0\nBuild Operating System: Linux 3.0.0-ARCH i686 \nCurrent Operating System: Linux linuxhost 3.0-ARCH #1 SMP PREEMPT Sat Aug 6 16:49:00 CEST 2011 i686\nKernel command line: BOOT_IMAGE=arch-fallback ro root=801\nBuild Date: 08 August 2011  08:28:07AM\n\nCurrent version of pixman: 0.22.2\n        Before reporting problems, check http://wiki.x.org\n        to make sure that you have the latest version.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/471",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/471/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/471/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/471/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/471",
+    "id": 1411844,
+    "number": 471,
+    "title": "DbException after Ctrl+C on bitcoind.exe (Windows)",
+    "user": {
+      "login": "Plasma",
+      "id": 229209,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/229209?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Plasma",
+      "html_url": "https://github.com/Plasma",
+      "followers_url": "https://api.github.com/users/Plasma/followers",
+      "following_url": "https://api.github.com/users/Plasma/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Plasma/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Plasma/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Plasma/subscriptions",
+      "organizations_url": "https://api.github.com/users/Plasma/orgs",
+      "repos_url": "https://api.github.com/users/Plasma/repos",
+      "events_url": "https://api.github.com/users/Plasma/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Plasma/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 64583,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Feature",
+        "name": "Feature",
+        "color": "7cf575",
+        "default": false
+      },
+      {
+        "id": 234877,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Windows",
+        "name": "Windows",
+        "color": "884400",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2011-08-16T00:39:03Z",
+    "updated_at": "2013-11-04T14:33:17Z",
+    "closed_at": "2013-11-04T14:27:31Z",
+    "author_association": "NONE",
+    "body": "Hi,\n\nI notice that if I run bitcoind.exe, I get the windows console as expected.\n\nHowever, pressing CTRL+C (or clicking the 'X' to close the window) causes an exception to occur:\n## \n\nterminate called after throwing an instance of 'DbException'\n  what():  DbEnv::close: Invalid argument\n\nThis application has requested the Runtime to terminate it in an unusual way.\n## Please contact the application's support team for more information.\n\nI realise there is a 'stop' RPC command, but would it be possible to also allow termination this way?\n\nThanks\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/469",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/469/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/469/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/469/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/469",
+    "id": 1404548,
+    "number": 469,
+    "title": "Xorg server eats all of CPU time, while bitcoin is running",
+    "user": {
+      "login": "vasisualiy",
+      "id": 979857,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/979857?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/vasisualiy",
+      "html_url": "https://github.com/vasisualiy",
+      "followers_url": "https://api.github.com/users/vasisualiy/followers",
+      "following_url": "https://api.github.com/users/vasisualiy/following{/other_user}",
+      "gists_url": "https://api.github.com/users/vasisualiy/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/vasisualiy/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/vasisualiy/subscriptions",
+      "organizations_url": "https://api.github.com/users/vasisualiy/orgs",
+      "repos_url": "https://api.github.com/users/vasisualiy/repos",
+      "events_url": "https://api.github.com/users/vasisualiy/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/vasisualiy/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 10,
+    "created_at": "2011-08-14T22:09:19Z",
+    "updated_at": "2011-12-03T18:45:58Z",
+    "closed_at": "2011-12-03T18:45:58Z",
+    "author_association": "NONE",
+    "body": "Xorg server eats all available CPU time, while bitcoin is running.\n\nversion 0.3.24-beta\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/465",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/465/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/465/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/465/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/465",
+    "id": 1392516,
+    "number": 465,
+    "title": "listtransactions rpc call crash",
+    "user": {
+      "login": "djpnewton",
+      "id": 42459,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/42459?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/djpnewton",
+      "html_url": "https://github.com/djpnewton",
+      "followers_url": "https://api.github.com/users/djpnewton/followers",
+      "following_url": "https://api.github.com/users/djpnewton/following{/other_user}",
+      "gists_url": "https://api.github.com/users/djpnewton/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/djpnewton/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/djpnewton/subscriptions",
+      "organizations_url": "https://api.github.com/users/djpnewton/orgs",
+      "repos_url": "https://api.github.com/users/djpnewton/repos",
+      "events_url": "https://api.github.com/users/djpnewton/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/djpnewton/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2011-08-12T03:51:42Z",
+    "updated_at": "2011-08-12T19:40:07Z",
+    "closed_at": "2011-08-12T19:40:07Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "if a wallet has no transactions and the 'from' parameter of listtransactions is used the bitcoin client crashes\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/455",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/455/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/455/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/455/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/455",
+    "id": 1363888,
+    "number": 455,
+    "title": "rpcpassword supposedly unset with -testnet",
+    "user": {
+      "login": "Plasma",
+      "id": 229209,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/229209?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Plasma",
+      "html_url": "https://github.com/Plasma",
+      "followers_url": "https://api.github.com/users/Plasma/followers",
+      "following_url": "https://api.github.com/users/Plasma/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Plasma/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Plasma/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Plasma/subscriptions",
+      "organizations_url": "https://api.github.com/users/Plasma/orgs",
+      "repos_url": "https://api.github.com/users/Plasma/repos",
+      "events_url": "https://api.github.com/users/Plasma/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Plasma/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 148216,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Docs",
+        "name": "Docs",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-08-08T08:49:12Z",
+    "updated_at": "2012-07-05T21:40:10Z",
+    "closed_at": "2012-07-05T21:40:10Z",
+    "author_association": "NONE",
+    "body": "PROBLEM\nHi,\n\nRunning bitcoind.exe under Windows with the -testnet flag shows:\n## \n\nC:\\Program Files (x86)\\Bitcoin\\daemon>bitcoind.exe -testnet\nWarning: To use bitcoind, you must set rpcpassword=<password>\nin the configuration file: C:/Users/Andrew/AppData/Roaming/Bitcoin/testnet/bitcoin.conf\n## If the file does not exist, create it with owner-readable-only file permissions.\n\nI created and verified this file existed at the location, and had the rpcpassword (and rpcuser etc lines) all set.\n\nThe error persisted.\n\nI then round Issue #78 which indicates the config file really being read is at C:/Users/Andrew/AppData/Roaming/Bitcoin/bitcoin.conf for -testnet (contrary to what the error message says).\n\nI then created C:/Users/Andrew/AppData/Roaming/Bitcoin/testnet.conf and then ran:\n\nbitcoind.exe -testnet -conf=testnet.conf\n\nAnd my problem disappeared.\n\nSOLUTION\nThe error message should be updated to point to the right config file that bitcoind.exe is looking for, instead of being misleading.\n\nThanks\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/453",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/453/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/453/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/453/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/453",
+    "id": 1352221,
+    "number": 453,
+    "title": "Deadlock in key generation due to CCryptoKeyStore",
+    "user": {
+      "login": "TheBlueMatt",
+      "id": 649246,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/649246?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/TheBlueMatt",
+      "html_url": "https://github.com/TheBlueMatt",
+      "followers_url": "https://api.github.com/users/TheBlueMatt/followers",
+      "following_url": "https://api.github.com/users/TheBlueMatt/following{/other_user}",
+      "gists_url": "https://api.github.com/users/TheBlueMatt/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/TheBlueMatt/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/TheBlueMatt/subscriptions",
+      "organizations_url": "https://api.github.com/users/TheBlueMatt/orgs",
+      "repos_url": "https://api.github.com/users/TheBlueMatt/repos",
+      "events_url": "https://api.github.com/users/TheBlueMatt/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/TheBlueMatt/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 7,
+    "created_at": "2011-08-05T16:31:22Z",
+    "updated_at": "2011-09-01T18:59:35Z",
+    "closed_at": "2011-09-01T18:59:35Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "From the forum: https://bitcointalk.org/index.php?topic=34642.0\n\nThis is in the latest version in Git.  This is not in the released client.\n\nCreating a new key can freeze the client.  It appears to be much more frequent when there are blocks and transactions to download.\n\nI've been digging in the code to try and find the cause, and I think this is the reason:\n\nCAddressBookDialog::OnButtonNew grabs the cs_vMasterKey, then calls pwalletMain->GetOrReuseKeyFromPool()\nGetOrReuseKeyFromPool() calls ReserveKeyFromKeyPool() which attempts to grab cs_main\n\nMeanwhile..\n\nProcessMessages grabs cs_main and then calls ProcessMessage\nProcessMessage() calls SyncWithWallets, either directly when receiving \"tx\" or indirectly when receiving a block (via ProcessBlock -> AcceptBlock -> AddToBlockIndex -> SetBestChain -> ConnectBlock -> SyncWithWallets)\nSyncWithWallets calls AddToWalletIfInvolvingMe\nAddToWalletIfInvolvingMe calls CWallet::IsMine, which calls the global ::IsMine\nIsMine(const CKeyStore &keystore, const CScript& scriptPubKey) then calls keystore.GetPubKey\nCCryptoKeyStore::GetPubKey then grabs cs_vMasterKey\n\nDeadlock.\n\nMost of the critical sections protect something small well-defined, though I'm not quite sure what cs_main is supposed to be protecting.\n\nI would generate a pull request, except that \n1. I have an ugly hack but not a good fix.  I'm not sure what the final strategy is going to be on wallet encryption, and whether the public keys are going to be encrypted too.\n2. I am new to git and I am not yet skilled at rebasing commits to include only the changes I want.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/447",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/447/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/447/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/447/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/447",
+    "id": 1335567,
+    "number": 447,
+    "title": "RPC 'sendfrom' with invalid address crashes bitcoind",
+    "user": {
+      "login": "dooglus",
+      "id": 573356,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/573356?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dooglus",
+      "html_url": "https://github.com/dooglus",
+      "followers_url": "https://api.github.com/users/dooglus/followers",
+      "following_url": "https://api.github.com/users/dooglus/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dooglus/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dooglus/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dooglus/subscriptions",
+      "organizations_url": "https://api.github.com/users/dooglus/orgs",
+      "repos_url": "https://api.github.com/users/dooglus/repos",
+      "events_url": "https://api.github.com/users/dooglus/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dooglus/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-08-03T07:59:21Z",
+    "updated_at": "2011-12-05T16:22:56Z",
+    "closed_at": "2011-12-03T18:56:20Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "$ bitcoind sendfrom '' a1 1\nerror: no response from server\n\nI compiled with debugging, and it crashed on an assert() in bash58.h:\n#2  0x00000037510296e6 in __assert_fail () from /lib64/libc.so.6\n#3  0x00000000004dd82e in CBitcoinAddress::GetHash160 (this=0x41801170)\n\n```\nat base58.h:300\n```\n#4  0x00000000004dd886 in CScript::SetBitcoinAddress (this=0x41800e40,\n\n```\naddress=...) at script.h:643\n```\n#5  0x00000000004ca57d in CWallet::SendMoneyToBitcoinAddress (this=0x1276e70,\n\n```\naddress=..., nValue=1, wtxNew=..., fAskFee=false) at wallet.cpp:1122\n```\n#6  0x00000000004f7c42 in sendfrom (params=..., fHelp=false) at rpc.cpp:834\n#7  0x00000000004fec0c in ThreadRPCServer2 (parg=0x0) at rpc.cpp:2232\n\nDo we need to check address.IsValid() in rpc.cpp before calling SendMoneyToBitcoinAddress()?\n\nI think other RPC calls which take an address have the same problem too.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/445",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/445/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/445/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/445/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/445",
+    "id": 1321343,
+    "number": 445,
+    "title": "-keypool=0 leads to permanent coin loss",
+    "user": {
+      "login": "dooglus",
+      "id": 573356,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/573356?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dooglus",
+      "html_url": "https://github.com/dooglus",
+      "followers_url": "https://api.github.com/users/dooglus/followers",
+      "following_url": "https://api.github.com/users/dooglus/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dooglus/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dooglus/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dooglus/subscriptions",
+      "organizations_url": "https://api.github.com/users/dooglus/orgs",
+      "repos_url": "https://api.github.com/users/dooglus/repos",
+      "events_url": "https://api.github.com/users/dooglus/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dooglus/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2011-08-01T08:18:02Z",
+    "updated_at": "2015-10-29T06:28:55Z",
+    "closed_at": "2011-09-08T20:24:17Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "$ rm -f ~/.bitcoin/wallet.dat; ./bitcoind -daemon -keypool=0\nbitcoin server starting\n$ ./bitcoind getaccountaddress foo\n1HT7xU2Ngenf7D4yocz2SAcnNLW7rK8d4E\n$ ./bitcoind getaccountaddress bar\n1HT7xU2Ngenf7D4yocz2SAcnNLW7rK8d4E\n$ pkill bitcoind\n$ rm -f ~/.bitcoin/wallet.dat; ./bitcoind -daemon -keypool=0\nbitcoin server starting\n$ ./bitcoind getaccountaddress foo\n1HT7xU2Ngenf7D4yocz2SAcnNLW7rK8d4E\n$ ./bitcoind getaccountaddress bar\n1HT7xU2Ngenf7D4yocz2SAcnNLW7rK8d4E\n\nI get the same address generated for multiple accounts in multiple wallets.  There are over 60 BTC in the address already, apparently permanently lost.  See https://bitcointalk.org/index.php?topic=8728.msg203511#msg203511\n\nPerhaps I shouldn't be trying to use -keypool=0, but if so it shouldn't be allowed.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/441",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/441/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/441/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/441/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/441",
+    "id": 1318212,
+    "number": 441,
+    "title": "nolisten when running over Tor",
+    "user": {
+      "login": "gavinandresen",
+      "id": 331997,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/331997?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/gavinandresen",
+      "html_url": "https://github.com/gavinandresen",
+      "followers_url": "https://api.github.com/users/gavinandresen/followers",
+      "following_url": "https://api.github.com/users/gavinandresen/following{/other_user}",
+      "gists_url": "https://api.github.com/users/gavinandresen/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/gavinandresen/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/gavinandresen/subscriptions",
+      "organizations_url": "https://api.github.com/users/gavinandresen/orgs",
+      "repos_url": "https://api.github.com/users/gavinandresen/repos",
+      "events_url": "https://api.github.com/users/gavinandresen/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/gavinandresen/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-07-31T12:04:54Z",
+    "updated_at": "2011-10-25T16:27:37Z",
+    "closed_at": "2011-10-25T16:27:37Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "Report from a security researcher:\nyou should be disabling the listener on 8333/tcp when fTor is set\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/440",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/440/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/440/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/440/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/440",
+    "id": 1317826,
+    "number": 440,
+    "title": "RPC getaccountaddress - not same as GUI?",
+    "user": {
+      "login": "codler",
+      "id": 102052,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/102052?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/codler",
+      "html_url": "https://github.com/codler",
+      "followers_url": "https://api.github.com/users/codler/followers",
+      "following_url": "https://api.github.com/users/codler/following{/other_user}",
+      "gists_url": "https://api.github.com/users/codler/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/codler/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/codler/subscriptions",
+      "organizations_url": "https://api.github.com/users/codler/orgs",
+      "repos_url": "https://api.github.com/users/codler/repos",
+      "events_url": "https://api.github.com/users/codler/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/codler/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-07-31T08:55:38Z",
+    "updated_at": "2011-10-10T21:44:50Z",
+    "closed_at": "2011-10-10T21:44:50Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "http://forum.bitcoin.org/index.php?topic=33011.0\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/432",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/432/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/432/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/432/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/432",
+    "id": 1286675,
+    "number": 432,
+    "title": "Calls to filesystem::create_directory should be wrapped in try/catch blocks",
+    "user": {
+      "login": "JoelKatz",
+      "id": 877549,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/877549?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/JoelKatz",
+      "html_url": "https://github.com/JoelKatz",
+      "followers_url": "https://api.github.com/users/JoelKatz/followers",
+      "following_url": "https://api.github.com/users/JoelKatz/following{/other_user}",
+      "gists_url": "https://api.github.com/users/JoelKatz/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/JoelKatz/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/JoelKatz/subscriptions",
+      "organizations_url": "https://api.github.com/users/JoelKatz/orgs",
+      "repos_url": "https://api.github.com/users/JoelKatz/repos",
+      "events_url": "https://api.github.com/users/JoelKatz/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/JoelKatz/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-07-26T05:40:28Z",
+    "updated_at": "2014-03-31T07:53:30Z",
+    "closed_at": "2014-03-31T07:53:30Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "An error was reported using the bitcoin client with TrueCrypt:\n\nEXCEPTION: N5boost16exception_detail10clone_implINS0_19error_info_injectorINS_10filesystem\n22basic_filesystem_errorINS3_10basic_pathISsNS3_11path_traitsEEEEEEEEE\nboost::filesystem::create_directory: Permission Denied: \"H:\\\" \nC:\\Program Files (x86)\\Bitcoin\\bitcoin.exe in AppInit()\n\nAt least in some cases, it seems that a permission error can be returned when an attempt is made to create a directory that already exists if the caller wouldn't have permission to create the directory if it didn't exist. And in some cases, creating the data directory makes no logical sense, for example if the data directory is the root of a USB drive on a Windows system. In these cases, create_directory will throw an exception.\n\nThe client should put the create_directory calls in a try/catch block. If an exception is taken, the code should check if the directory exists and, if so, ignore the exception.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/429",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/429/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/429/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/429/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/429",
+    "id": 1284286,
+    "number": 429,
+    "title": "no way to get addresses which received via 'generated' transactions",
+    "user": {
+      "login": "rPman",
+      "id": 938140,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/938140?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/rPman",
+      "html_url": "https://github.com/rPman",
+      "followers_url": "https://api.github.com/users/rPman/followers",
+      "following_url": "https://api.github.com/users/rPman/following{/other_user}",
+      "gists_url": "https://api.github.com/users/rPman/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/rPman/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/rPman/subscriptions",
+      "organizations_url": "https://api.github.com/users/rPman/orgs",
+      "repos_url": "https://api.github.com/users/rPman/repos",
+      "events_url": "https://api.github.com/users/rPman/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/rPman/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-07-25T20:19:17Z",
+    "updated_at": "2014-04-29T13:42:53Z",
+    "closed_at": "2014-04-29T13:42:53Z",
+    "author_association": "NONE",
+    "body": "Some mining pools send rewards in first transactions in block, this transactions look's like generated, blockexplorer tools can detect list reward adresses, but bitcoin client can't. These transactions get into default \"\" account.\n\nlisttransactions and gettransaction - show only amount bitcoins and transactions id\n\nI think it would be nice if the at the request 'gettransatstion' in the array 'details' were added the field 'address' and is specified correctly 'account'\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/425",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/425/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/425/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/425/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/425",
+    "id": 1273923,
+    "number": 425,
+    "title": "assert \"Assert failure\" failed in Yield()",
+    "user": {
+      "login": "sgornick",
+      "id": 24884,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/24884?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sgornick",
+      "html_url": "https://github.com/sgornick",
+      "followers_url": "https://api.github.com/users/sgornick/followers",
+      "following_url": "https://api.github.com/users/sgornick/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sgornick/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sgornick/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sgornick/subscriptions",
+      "organizations_url": "https://api.github.com/users/sgornick/orgs",
+      "repos_url": "https://api.github.com/users/sgornick/repos",
+      "events_url": "https://api.github.com/users/sgornick/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sgornick/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2011-07-23T03:31:10Z",
+    "updated_at": "2011-12-04T09:54:49Z",
+    "closed_at": "2011-12-04T09:06:26Z",
+    "author_association": "NONE",
+    "body": "./src/common/evtloopcmn.cpp(75): assert \"Assert failure\" failed in Yield(): wxYield called recursively\n\nIn the Bitcoin client version 0.3.24 when clicking between the All Transactions tab and the Sent/Received tab, if I don't give it enough time and I then toggle back to the previous one, I get the Assertion error above.  If I wait a second or more between clicks, it works fine, but if I toggle too quickly between the two, then I can replicate this consistently.\n\nThis is using the Linux 64 binaries of v0.3.24.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/416",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/416/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/416/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/416/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/416",
+    "id": 1225138,
+    "number": 416,
+    "title": "Mac OS X GUI Issues",
+    "user": {
+      "login": "ghost",
+      "id": 10137,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10137?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ghost",
+      "html_url": "https://github.com/ghost",
+      "followers_url": "https://api.github.com/users/ghost/followers",
+      "following_url": "https://api.github.com/users/ghost/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ghost/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ghost/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ghost/subscriptions",
+      "organizations_url": "https://api.github.com/users/ghost/orgs",
+      "repos_url": "https://api.github.com/users/ghost/repos",
+      "events_url": "https://api.github.com/users/ghost/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ghost/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2011-07-14T18:57:18Z",
+    "updated_at": "2011-10-10T21:45:08Z",
+    "closed_at": "2011-10-10T21:45:08Z",
+    "author_association": "NONE",
+    "body": "Using 0.3.23 with Mac OS X 10.6.8\n\nMouse wheel scrolling does not work on transactions lists, address lists\n\nBalance is not selectable so you can copy and paste the value\n\nAccessing preferences window shortcut key should be Mac's universal shortcut for prefs \"command ,\"\n\nThank you for your time.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/407",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/407/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/407/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/407/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/407",
+    "id": 1216323,
+    "number": 407,
+    "title": "Little gui weirdness on Cancel Button",
+    "user": {
+      "login": "sgimenez",
+      "id": 858993,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/858993?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sgimenez",
+      "html_url": "https://github.com/sgimenez",
+      "followers_url": "https://api.github.com/users/sgimenez/followers",
+      "following_url": "https://api.github.com/users/sgimenez/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sgimenez/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sgimenez/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sgimenez/subscriptions",
+      "organizations_url": "https://api.github.com/users/sgimenez/orgs",
+      "repos_url": "https://api.github.com/users/sgimenez/repos",
+      "events_url": "https://api.github.com/users/sgimenez/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sgimenez/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-07-13T15:26:44Z",
+    "updated_at": "2011-10-10T21:43:03Z",
+    "closed_at": "2011-10-10T21:43:03Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "Pushing 'Cancel' button in the new 'Add Encryption' dialog triggers an unexpected message:\n     \"The supplied passphrase was too short.\"\n\nSame for 'Change passphrase' dialog:\n     \"The passphrase entered for the wallet decryption was incorrect.\"\n\nWith little effort the ui could look a little bit more \"professional\".\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/393",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/393/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/393/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/393/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/393",
+    "id": 1194498,
+    "number": 393,
+    "title": "about dialog truncates text",
+    "user": {
+      "login": "dooglus",
+      "id": 573356,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/573356?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dooglus",
+      "html_url": "https://github.com/dooglus",
+      "followers_url": "https://api.github.com/users/dooglus/followers",
+      "following_url": "https://api.github.com/users/dooglus/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dooglus/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dooglus/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dooglus/subscriptions",
+      "organizations_url": "https://api.github.com/users/dooglus/orgs",
+      "repos_url": "https://api.github.com/users/dooglus/repos",
+      "events_url": "https://api.github.com/users/dooglus/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dooglus/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 148216,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Docs",
+        "name": "Docs",
+        "color": "02d7e1",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": {
+      "login": "alexwaters",
+      "id": 1008330,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1008330?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/alexwaters",
+      "html_url": "https://github.com/alexwaters",
+      "followers_url": "https://api.github.com/users/alexwaters/followers",
+      "following_url": "https://api.github.com/users/alexwaters/following{/other_user}",
+      "gists_url": "https://api.github.com/users/alexwaters/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/alexwaters/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/alexwaters/subscriptions",
+      "organizations_url": "https://api.github.com/users/alexwaters/orgs",
+      "repos_url": "https://api.github.com/users/alexwaters/repos",
+      "events_url": "https://api.github.com/users/alexwaters/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/alexwaters/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "alexwaters",
+        "id": 1008330,
+        "avatar_url": "https://avatars1.githubusercontent.com/u/1008330?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/alexwaters",
+        "html_url": "https://github.com/alexwaters",
+        "followers_url": "https://api.github.com/users/alexwaters/followers",
+        "following_url": "https://api.github.com/users/alexwaters/following{/other_user}",
+        "gists_url": "https://api.github.com/users/alexwaters/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/alexwaters/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/alexwaters/subscriptions",
+        "organizations_url": "https://api.github.com/users/alexwaters/orgs",
+        "repos_url": "https://api.github.com/users/alexwaters/repos",
+        "events_url": "https://api.github.com/users/alexwaters/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/alexwaters/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 6,
+    "created_at": "2011-07-09T08:59:59Z",
+    "updated_at": "2012-04-05T01:32:28Z",
+    "closed_at": "2012-04-05T01:32:25Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "uibase.cpp has this:\n\n```\nm_staticTextMain = new wxStaticText( this, wxID_ANY, _(\"[...]\nThis product includes software developed by the OpenSSL Project for use in the \\n \nOpenSSL Toolkit (http://www.openssl.org/) and cryptographic software written by \\n\nEric Young (eay@cryptsoft.com) and UPnP software written by Thomas Bernard.\"),[...]\n```\n\nbut in the about dialog I only see 2 of the 3 lines of text.  The first line has the last word, \"the\", wrapped onto the 2nd line, which contains only that word.  The 3rd displayed line is the \"OpenSSL ... by\" line, and the \"Eric ... Bernard\" line isn't displayed at all.\n\nI'll see if I can attach a screenshot.\n\nThis is in Ubuntu 11.04 running the XFCE4 desktop environment and bitcoin 0.3.24-beta\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/385",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/385/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/385/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/385/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/385",
+    "id": 1171964,
+    "number": 385,
+    "title": "resource leak fix",
+    "user": {
+      "login": "somebadger",
+      "id": 863728,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/863728?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/somebadger",
+      "html_url": "https://github.com/somebadger",
+      "followers_url": "https://api.github.com/users/somebadger/followers",
+      "following_url": "https://api.github.com/users/somebadger/following{/other_user}",
+      "gists_url": "https://api.github.com/users/somebadger/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/somebadger/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/somebadger/subscriptions",
+      "organizations_url": "https://api.github.com/users/somebadger/orgs",
+      "repos_url": "https://api.github.com/users/somebadger/repos",
+      "events_url": "https://api.github.com/users/somebadger/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/somebadger/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-07-06T05:02:11Z",
+    "updated_at": "2014-06-15T12:23:48Z",
+    "closed_at": "2011-09-19T11:05:04Z",
+    "author_association": "NONE",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/385",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/385",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/385.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/385.patch"
+    },
+    "body": "Fixed 2 Resource Leaks\n\nhttp://forum.bitcoin.org/index.php?topic=22585.msg330333#msg330333\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/382",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/382/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/382/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/382/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/382",
+    "id": 1165934,
+    "number": 382,
+    "title": "[linux gui] Client generates lot of spaces in KDE system tray",
+    "user": {
+      "login": "pentarh",
+      "id": 522574,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/522574?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/pentarh",
+      "html_url": "https://github.com/pentarh",
+      "followers_url": "https://api.github.com/users/pentarh/followers",
+      "following_url": "https://api.github.com/users/pentarh/following{/other_user}",
+      "gists_url": "https://api.github.com/users/pentarh/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/pentarh/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/pentarh/subscriptions",
+      "organizations_url": "https://api.github.com/users/pentarh/orgs",
+      "repos_url": "https://api.github.com/users/pentarh/repos",
+      "events_url": "https://api.github.com/users/pentarh/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/pentarh/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-07-05T09:09:52Z",
+    "updated_at": "2011-10-10T21:43:43Z",
+    "closed_at": "2011-10-10T21:43:43Z",
+    "author_association": "NONE",
+    "body": "When I launch bitcoin gui client under KDE (Fedora 14) with option minimize to system tray, it generates lot of blank spaces there.\n\nEach time I maximize client, it disappears from tray, but leaves a blank space where it was. \n\nThen I minimize client, and bitcoin icon in tray appears in a new position.\n\nSo the result you can see here:\n\nhttp://img594.imageshack.us/i/btcbug.jpg/\n\nThis is not happen when bitcoin GUI not running.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/359",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/359/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/359/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/359/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/359",
+    "id": 1127443,
+    "number": 359,
+    "title": "wrong english wording \"start bitcoin on window system startup\"",
+    "user": {
+      "login": "nilsja",
+      "id": 880832,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/880832?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/nilsja",
+      "html_url": "https://github.com/nilsja",
+      "followers_url": "https://api.github.com/users/nilsja/followers",
+      "following_url": "https://api.github.com/users/nilsja/following{/other_user}",
+      "gists_url": "https://api.github.com/users/nilsja/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/nilsja/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/nilsja/subscriptions",
+      "organizations_url": "https://api.github.com/users/nilsja/orgs",
+      "repos_url": "https://api.github.com/users/nilsja/repos",
+      "events_url": "https://api.github.com/users/nilsja/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/nilsja/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 148216,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Docs",
+        "name": "Docs",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 6,
+    "created_at": "2011-06-28T08:17:44Z",
+    "updated_at": "2012-11-17T13:29:23Z",
+    "closed_at": "2012-11-17T13:29:23Z",
+    "author_association": "NONE",
+    "body": "in the linux clients options you find this wording: \"start bitcoin on window system startup\". Is it on window or on system startup? I think not both at once.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/358",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/358/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/358/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/358/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/358",
+    "id": 1125209,
+    "number": 358,
+    "title": "Address Book related Fixes",
+    "user": {
+      "login": "sgimenez",
+      "id": 858993,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/858993?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sgimenez",
+      "html_url": "https://github.com/sgimenez",
+      "followers_url": "https://api.github.com/users/sgimenez/followers",
+      "following_url": "https://api.github.com/users/sgimenez/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sgimenez/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sgimenez/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sgimenez/subscriptions",
+      "organizations_url": "https://api.github.com/users/sgimenez/orgs",
+      "repos_url": "https://api.github.com/users/sgimenez/repos",
+      "events_url": "https://api.github.com/users/sgimenez/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sgimenez/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 15,
+    "created_at": "2011-06-27T21:46:04Z",
+    "updated_at": "2014-07-13T05:23:55Z",
+    "closed_at": "2012-01-13T14:26:40Z",
+    "author_association": "CONTRIBUTOR",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/358",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/358",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/358.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/358.patch"
+    },
+    "body": "This is a rebased series of patches from pull request #335\n\n1) Fix the synchronization of sending addresses between a CWallet and its associated CWalletDB (this was reported independently in Issue #350).\n\n2) Add a check for validity of sending addresses (Issue #328).\n\n3) Avoid propagation of unnecessary updates to CWalletDB.\n\n4) Fix the behavior of setaccount on sending addresses that are already listed in the Address Book. (Issue #329).\n\n5) Add wallet methods GetDefaultAddress and SetDefaultAddress (contributed by laanwj in Issue #350).\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/351",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/351/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/351/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/351/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/351",
+    "id": 1118479,
+    "number": 351,
+    "title": "OS font size issues on GUI",
+    "user": {
+      "login": "teathsch",
+      "id": 877408,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/877408?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/teathsch",
+      "html_url": "https://github.com/teathsch",
+      "followers_url": "https://api.github.com/users/teathsch/followers",
+      "following_url": "https://api.github.com/users/teathsch/following{/other_user}",
+      "gists_url": "https://api.github.com/users/teathsch/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/teathsch/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/teathsch/subscriptions",
+      "organizations_url": "https://api.github.com/users/teathsch/orgs",
+      "repos_url": "https://api.github.com/users/teathsch/repos",
+      "events_url": "https://api.github.com/users/teathsch/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/teathsch/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-06-26T22:04:31Z",
+    "updated_at": "2011-10-10T21:40:55Z",
+    "closed_at": "2011-10-10T21:40:55Z",
+    "author_association": "NONE",
+    "body": "On a default Lucid install (and probably many other platforms), if you increase the application font size it creates a couple of usability issues.\n1. The Balance label gets covered up by the main notebook widget. Resizing the window doesn't help.\n2. Most of the Settings->Options dialog gets truncated.\n\nCan the balance label be made to push down the rest of the UI as needed like in gtk?\n\nThe Options window is easily fixable by making it resizable.\n\nThanks for looking!\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/350",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/350/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/350/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/350/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/350",
+    "id": 1117618,
+    "number": 350,
+    "title": "CWallet: fix mapAddress book update",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 5,
+    "created_at": "2011-06-26T17:30:01Z",
+    "updated_at": "2014-07-13T05:59:44Z",
+    "closed_at": "2011-10-05T15:43:46Z",
+    "author_association": "OWNER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/350",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/350",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/350.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/350.patch"
+    },
+    "body": "Fix update of internal data structure (mapAddressBook) after changes to the address book, and add convenience methods EraseAddressBookName, GetDefaultAddress, SetDefaultAddress to be used from UI.\n\nThe problem was introduced in the new CWallet class; mapAddress book used to be updated in db.cpp. It now makes more sense to do the update directly in CWallet.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/346",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/346/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/346/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/346/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/346",
+    "id": 1115912,
+    "number": 346,
+    "title": "Problem when 2 accounts receive BTC in the same transaction",
+    "user": {
+      "login": "tschaboo",
+      "id": 875902,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/875902?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/tschaboo",
+      "html_url": "https://github.com/tschaboo",
+      "followers_url": "https://api.github.com/users/tschaboo/followers",
+      "following_url": "https://api.github.com/users/tschaboo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/tschaboo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/tschaboo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/tschaboo/subscriptions",
+      "organizations_url": "https://api.github.com/users/tschaboo/orgs",
+      "repos_url": "https://api.github.com/users/tschaboo/repos",
+      "events_url": "https://api.github.com/users/tschaboo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/tschaboo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-06-25T22:39:37Z",
+    "updated_at": "2012-04-05T01:29:39Z",
+    "closed_at": "2012-04-05T01:29:39Z",
+    "author_association": "NONE",
+    "body": "Say you have 2 receiving addresses in your wallet.dat named A1 and A2. If there is a transaction that has outputs for both A1 and A2, bitcoin will only show one transaction in the GUI (and thus affecting only A1 or A2) with the amounts received by A1 and A2 added.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/344",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/344/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/344/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/344/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/344",
+    "id": 1112568,
+    "number": 344,
+    "title": "RPC - Massive amount of TIME_WAIT connections (Pool)",
+    "user": {
+      "login": "jine",
+      "id": 151606,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/151606?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jine",
+      "html_url": "https://github.com/jine",
+      "followers_url": "https://api.github.com/users/jine/followers",
+      "following_url": "https://api.github.com/users/jine/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jine/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jine/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jine/subscriptions",
+      "organizations_url": "https://api.github.com/users/jine/orgs",
+      "repos_url": "https://api.github.com/users/jine/repos",
+      "events_url": "https://api.github.com/users/jine/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jine/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2011-06-24T21:12:47Z",
+    "updated_at": "2012-07-05T21:43:46Z",
+    "closed_at": "2012-07-05T21:43:46Z",
+    "author_association": "NONE",
+    "body": "HI!\n\nI'm one of the founders of Bitcoins.lc - we're experiencing some problems with bitcoind as a backend.\nThe error consists of mainly that the amount of connections between bitcoind and pushpoold is insane.\n\nThis is due to the fact the bitcoind does not support keep-alive for RPC-connections. pushpoold is based upon libcurl and should be able to do so out of the box. Each new getwork request from clients opens up a new connection between bitcoind and pushpoold to transfeer data.\n\nCould anyone please take a look at this problem?\nI'd gladly pay 10 BTC for implementing a keep-alive patch for bitcoin.\n\n/ jim\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/330",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/330/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/330/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/330/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/330",
+    "id": 1079242,
+    "number": 330,
+    "title": "Non-English Decimal Interpreted Incorrectly in util.cpp:ParseMoney",
+    "user": {
+      "login": "pickerin",
+      "id": 859132,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/859132?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/pickerin",
+      "html_url": "https://github.com/pickerin",
+      "followers_url": "https://api.github.com/users/pickerin/followers",
+      "following_url": "https://api.github.com/users/pickerin/following{/other_user}",
+      "gists_url": "https://api.github.com/users/pickerin/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/pickerin/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/pickerin/subscriptions",
+      "organizations_url": "https://api.github.com/users/pickerin/orgs",
+      "repos_url": "https://api.github.com/users/pickerin/repos",
+      "events_url": "https://api.github.com/users/pickerin/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/pickerin/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2011-06-19T00:21:18Z",
+    "updated_at": "2014-03-17T07:40:59Z",
+    "closed_at": "2014-03-17T07:40:59Z",
+    "author_association": "NONE",
+    "body": "I did not find this bug, but I'm reporting it:\n\nSee:  http://forum.bitcoin.org/index.php?topic=19168.msg240196#msg240196\n\n\"If you enter 0,005 as amount to be sent, the client sends 5.00 \n\nFor the US-only localized guys I must add: 0,005 is, for example, in Germany the natural way to type what in the US would be typed as 0.005 - and this is consistent with all kinds of localizations in the operating system.\n\nSo a German user is likely to send a much higher amount than she intended to.  \n\nWe have the bug confirmed on the 0.3.23-beta client on Windows 7 by Dennis1234 and on the 0.3.23-beta client on Linux self compilation by mself. Since my client is running in testnet currently I did some testing:\n\n0,0005 is parsed as \"error in amount\"\n0,005 is reparsed as 5.00\n0,05 produces an \"error in amount\"\n0,5 produces an \"error in amount\"\n\nReparsed as 5.00 means the following:\n\nI enter 0,005 and upon \"Send\" the displayed amount changes into 5.00 and I get an error on insufficient funds (I do not have 5 BTC in my current testnet account). From the normal behaviour of the client I assume that, if I had more than 5.00 i would just lose these 5.00.\n\nDEVELOPER INFORMATION:\n\nThe bug is in src/util.cpp:ParseMoney. In particular, on line 375 the function explicitly checks for ',' and interprets it as the American/English (or other?) digit grouping symbol. It checks if there is a digit before the comma, and three digits after it (e.g. One Million Dollars can be written as $1,000,000).\n\nBecause of this 0,005 is considered valid, even though it makes no sense even from an a digit grouping perspective. I'd say several patches are in order:\n\n1) 0,005 should not be considered valid when interpreted as digit grouping\n2) ParseMoney should be locale sensitive\n3) OnButtonSend should display the valid it interpreted (after line 1925, nValue) and ask for confirmation.\n\n3 is necessary because bugs like this are likely to crop up for a long time, and it's just all around a good idea to give the user a second chance to verify their input.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/329",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/329/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/329/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/329/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/329",
+    "id": 1078999,
+    "number": 329,
+    "title": "Using setaccount on addresses that are already listed in the Address Book.",
+    "user": {
+      "login": "sgimenez",
+      "id": 858993,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/858993?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sgimenez",
+      "html_url": "https://github.com/sgimenez",
+      "followers_url": "https://api.github.com/users/sgimenez/followers",
+      "following_url": "https://api.github.com/users/sgimenez/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sgimenez/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sgimenez/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sgimenez/subscriptions",
+      "organizations_url": "https://api.github.com/users/sgimenez/orgs",
+      "repos_url": "https://api.github.com/users/sgimenez/repos",
+      "events_url": "https://api.github.com/users/sgimenez/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sgimenez/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-06-18T22:22:41Z",
+    "updated_at": "2012-03-24T17:53:29Z",
+    "closed_at": "2012-03-24T17:53:29Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "The following:\n\n```\nbitcoind setaccount <unknown_address> label \n```\n\nadds a new sending address in the Address Book of the GUI.\n\nUsing:\n\n```\nbitcoind setaccount <known_sending_address> label \n```\n\nwill rename the sending address listed in the Address Book.\nThis is fine, but, in the same time, it will also pop up a new receiving address labeled with the old name.\nThis behavior is quite confusing and I think it is not expected.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/328",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/328/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/328/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/328/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/328",
+    "id": 1078962,
+    "number": 328,
+    "title": "Validity of sending addresses in the Address Book.",
+    "user": {
+      "login": "sgimenez",
+      "id": 858993,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/858993?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sgimenez",
+      "html_url": "https://github.com/sgimenez",
+      "followers_url": "https://api.github.com/users/sgimenez/followers",
+      "following_url": "https://api.github.com/users/sgimenez/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sgimenez/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sgimenez/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sgimenez/subscriptions",
+      "organizations_url": "https://api.github.com/users/sgimenez/orgs",
+      "repos_url": "https://api.github.com/users/sgimenez/repos",
+      "events_url": "https://api.github.com/users/sgimenez/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sgimenez/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-06-18T22:10:22Z",
+    "updated_at": "2012-02-22T06:01:37Z",
+    "closed_at": "2012-02-22T06:01:37Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "Sending addresses in the Address Book are not checked for validity.\nUsing the GUI, I added a space to some sending address (not on purpose) and for a long time, I could not figure out why its label was not displayed in my list of transactions.\nI think those addresses should be checked for validity.\n\nUsing setaccount in bitcoind, validity of addresses are checked.\n(There is another issue with setaccount, but I think it deserves a separate report) \n"
+  }
+]

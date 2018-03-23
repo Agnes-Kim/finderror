@@ -1,0 +1,1656 @@
+[
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/323",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/323/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/323/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/323/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/323",
+    "id": 1069706,
+    "number": 323,
+    "title": "Listtransactions bad transaction numbering",
+    "user": {
+      "login": "DrHaribo",
+      "id": 854778,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/854778?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/DrHaribo",
+      "html_url": "https://github.com/DrHaribo",
+      "followers_url": "https://api.github.com/users/DrHaribo/followers",
+      "following_url": "https://api.github.com/users/DrHaribo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/DrHaribo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/DrHaribo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/DrHaribo/subscriptions",
+      "organizations_url": "https://api.github.com/users/DrHaribo/orgs",
+      "repos_url": "https://api.github.com/users/DrHaribo/repos",
+      "events_url": "https://api.github.com/users/DrHaribo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/DrHaribo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2011-06-16T20:35:16Z",
+    "updated_at": "2012-07-05T21:45:08Z",
+    "closed_at": "2012-07-05T21:45:08Z",
+    "author_association": "NONE",
+    "body": "For account \"*\" the transaction numbering becomes incorrect when crossing multiple accounts.\n\nDemonstration:\n\n> bitcoind listtransactions \"*\" 3 0\n\n[\n    {\n        \"account\" : \"\",\n        \"category\" : \"generate\",\n        \"amount\" : 50.00000000,\n        \"confirmations\" : 557,\n        \"txid\" : \"54b109e159488391717d1abebc51bbd52f6eae853a6e9bff2a43db0c1039d738\",\n        \"time\" : 1308006088\n    },\n    {\n        \"account\" : \"test\",\n        \"address\" : \"mm1nWPrMuSV2QCLyWo26AH2Pq8AoBGKBcZ\",\n        \"category\" : \"receive\",\n        \"amount\" : 1.00000000,\n        \"confirmations\" : 164,\n        \"txid\" : \"9eb0feec97f1c5df9e8af9aac1cddf9bc01a05ec168dadb8977e2a5d026fcb1c\",\n        \"time\" : 1308087257\n    },\n    {\n        \"account\" : \"\",\n        \"address\" : \"mm1nWPrMuSV2QCLyWo26AH2Pq8AoBGKBcZ\",\n        \"category\" : \"send\",\n        \"amount\" : -1.00000000,\n        \"fee\" : 0.00000000,\n        \"confirmations\" : 164,\n        \"txid\" : \"9eb0feec97f1c5df9e8af9aac1cddf9bc01a05ec168dadb8977e2a5d026fcb1c\",\n        \"time\" : 1308087257\n    }\n]\n\nIt would be natural to assume that if we list the second transaction (number one counting from zero), it would be the transaction in the \"test\" account. But instead we get the third transaction:\n\n> bitcoind listtransactions \"*\" 1 1\n\n[\n    {\n        \"account\" : \"\",\n        \"category\" : \"generate\",\n        \"amount\" : 50.00000000,\n        \"confirmations\" : 557,\n        \"txid\" : \"54b109e159488391717d1abebc51bbd52f6eae853a6e9bff2a43db0c1039d738\",\n        \"time\" : 1308006088\n    }\n]\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/322",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/322/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/322/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/322/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/322",
+    "id": 1069692,
+    "number": 322,
+    "title": "Listtransactions strange behavior with high \"from\" values",
+    "user": {
+      "login": "DrHaribo",
+      "id": 854778,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/854778?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/DrHaribo",
+      "html_url": "https://github.com/DrHaribo",
+      "followers_url": "https://api.github.com/users/DrHaribo/followers",
+      "following_url": "https://api.github.com/users/DrHaribo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/DrHaribo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/DrHaribo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/DrHaribo/subscriptions",
+      "organizations_url": "https://api.github.com/users/DrHaribo/orgs",
+      "repos_url": "https://api.github.com/users/DrHaribo/repos",
+      "events_url": "https://api.github.com/users/DrHaribo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/DrHaribo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2011-06-16T20:30:06Z",
+    "updated_at": "2012-07-05T21:45:25Z",
+    "closed_at": "2012-07-05T21:45:24Z",
+    "author_association": "NONE",
+    "body": "For account \"\" or \"*\" listtransactions reports transactions for \"from\" arguments way past the last actual transactions available.\n\nTest of high \"from\" numbers:\n\n> bitcoind listtransactions \"\" 1 9999999\n> [\n>     {\n>         \"account\" : \"\",\n>         \"category\" : \"generate\",\n>         \"amount\" : 50.00000000,\n>         \"confirmations\" : 897,\n>         \"txid\" : \"486dfdb3b9f61b4fa5b8b98c388e5b4b71f05a85371dd653aafe23d93aa56f08\",\n>         \"time\" : 1307918798\n>     }\n> ]\n\nThis is not actually transaction 9999999, but rather transaction 9:\n\n> bitcoind listtransactions \"\" 1 9\n> [\n>     {\n>         \"account\" : \"\",\n>         \"category\" : \"generate\",\n>         \"amount\" : 50.00000000,\n>         \"confirmations\" : 897,\n>         \"txid\" : \"486dfdb3b9f61b4fa5b8b98c388e5b4b71f05a85371dd653aafe23d93aa56f08\",\n>         \"time\" : 1307918798\n>     }\n> ]\n\nI realize the transactions are not actually numbered, but this behavior is unexpected. It does not seem to happen with other accounts than \"\" and \"*\".\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/321",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/321/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/321/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/321/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/321",
+    "id": 1069553,
+    "number": 321,
+    "title": "wallet rescan doesn't work properly",
+    "user": {
+      "login": "ghost",
+      "id": 10137,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10137?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ghost",
+      "html_url": "https://github.com/ghost",
+      "followers_url": "https://api.github.com/users/ghost/followers",
+      "following_url": "https://api.github.com/users/ghost/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ghost/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ghost/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ghost/subscriptions",
+      "organizations_url": "https://api.github.com/users/ghost/orgs",
+      "repos_url": "https://api.github.com/users/ghost/repos",
+      "events_url": "https://api.github.com/users/ghost/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ghost/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 149424,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Wallet",
+        "name": "Wallet",
+        "color": "08a781",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-06-16T19:58:40Z",
+    "updated_at": "2012-04-04T19:21:10Z",
+    "closed_at": "2012-04-04T19:21:10Z",
+    "author_association": "NONE",
+    "body": "When restoring the wallet from backup to which coins were sent while it was \"offline\", those transactions show up only when replacing the blockchain with one where the last block is older than the first transaction and then let new blocks be downloaded from the software. When replacing the wallet and leaving blockchain up-to-date only transactions from that moment onwards would show up. This problem still exists even with the newest version of the client.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/307",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/307/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/307/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/307/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/307",
+    "id": 1017314,
+    "number": 307,
+    "title": "listreceivedbyaddress and getaddressesbyaccount return incorrect data",
+    "user": {
+      "login": "piotrnar",
+      "id": 582950,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/582950?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/piotrnar",
+      "html_url": "https://github.com/piotrnar",
+      "followers_url": "https://api.github.com/users/piotrnar/followers",
+      "following_url": "https://api.github.com/users/piotrnar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/piotrnar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/piotrnar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/piotrnar/subscriptions",
+      "organizations_url": "https://api.github.com/users/piotrnar/orgs",
+      "repos_url": "https://api.github.com/users/piotrnar/repos",
+      "events_url": "https://api.github.com/users/piotrnar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/piotrnar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2011-06-07T16:40:48Z",
+    "updated_at": "2011-09-06T07:05:22Z",
+    "closed_at": "2011-09-06T07:05:22Z",
+    "author_association": "NONE",
+    "body": "\"listreceivedbyaddress\"  and \"getaddressesbyaccount\"  return not only Receiving, but also Sending addresses from the Address Book.\n\nhttp://forum.bitcoin.org/index.php?topic=13011.0\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/306",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/306/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/306/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/306/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/306",
+    "id": 1015767,
+    "number": 306,
+    "title": "St9bad_alloc in v0.3.21 & v0.3.22~",
+    "user": {
+      "login": "paulgao",
+      "id": 254187,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/254187?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/paulgao",
+      "html_url": "https://github.com/paulgao",
+      "followers_url": "https://api.github.com/users/paulgao/followers",
+      "following_url": "https://api.github.com/users/paulgao/following{/other_user}",
+      "gists_url": "https://api.github.com/users/paulgao/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/paulgao/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/paulgao/subscriptions",
+      "organizations_url": "https://api.github.com/users/paulgao/orgs",
+      "repos_url": "https://api.github.com/users/paulgao/repos",
+      "events_url": "https://api.github.com/users/paulgao/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/paulgao/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2011-06-07T14:08:25Z",
+    "updated_at": "2011-09-06T07:04:54Z",
+    "closed_at": "2011-09-06T07:04:53Z",
+    "author_association": "NONE",
+    "body": "---\n\nEXCEPTION: St9bad_alloc  \nstd::bad_alloc  \nC:\\Program Files (x86)\\Bitcoin\\bitcoin.exe in CMyApp::OnExceptionInMainLoop()       \n\nreceived: block (11111 bytes)\nreceived block 0000000000001ce4b87c\nSetBestChain: new best=0000000000001ce4b87c  height=127832  work=10751950291554304722\nMainFrameRepaint\nProcessBlock: ACCEPTED\nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nreceived: block (10778 bytes)\nreceived block 00000000000017d8a59f\nSetBestChain: new best=00000000000017d8a59f  height=127833  work=10753818102743163924\nMainFrameRepaint\nProcessBlock: ACCEPTED\nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nreceived: block (7017 bytes)\nreceived block 0000000000001962363d\nDelayedRepaint\nSetBestChain: new best=0000000000001962363d  height=127834  work=10755685913932023126\nMainFrameRepaint\nProcessBlock: ACCEPTED\nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \nsending: inv (37 bytes) \n\n---\n\nEXCEPTION: St9bad_alloc  \nstd::bad_alloc  \nC:\\Program Files (x86)\\Bitcoin\\bitcoin.exe in CMyApp::OnExceptionInMainLoop()       \n\nDelayedRepaint\nDBFlush(false)\naddr.dat refcount=0\nThreadMessageHandler exiting\nThreadSocketHandler exiting\naddr.dat flush\nblkindex.dat refcount=0\nblkindex.dat flush\nThreadIRCSeed exiting\nUPNP_DeletePortMapping() returned : 714\nThreadMapPort exiting\nStopNode()\nDBFlush(true)\nBitcoin exiting\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/304",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/304/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/304/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/304/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/304",
+    "id": 1012026,
+    "number": 304,
+    "title": "Fix CPU Usage bug when using -nolisten and have no connections.",
+    "user": {
+      "login": "TheBlueMatt",
+      "id": 649246,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/649246?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/TheBlueMatt",
+      "html_url": "https://github.com/TheBlueMatt",
+      "followers_url": "https://api.github.com/users/TheBlueMatt/followers",
+      "following_url": "https://api.github.com/users/TheBlueMatt/following{/other_user}",
+      "gists_url": "https://api.github.com/users/TheBlueMatt/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/TheBlueMatt/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/TheBlueMatt/subscriptions",
+      "organizations_url": "https://api.github.com/users/TheBlueMatt/orgs",
+      "repos_url": "https://api.github.com/users/TheBlueMatt/repos",
+      "events_url": "https://api.github.com/users/TheBlueMatt/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/TheBlueMatt/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2011-06-06T23:01:35Z",
+    "updated_at": "2014-07-15T07:29:00Z",
+    "closed_at": "2011-06-10T05:42:30Z",
+    "author_association": "CONTRIBUTOR",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/304",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/304",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/304.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/304.patch"
+    },
+    "body": "1/2 known Windows CPU Usage bugs fixed\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/300",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/300/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/300/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/300/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/300",
+    "id": 1006610,
+    "number": 300,
+    "title": "non-blocking connect (by phantomcircuit)",
+    "user": {
+      "login": "sipa",
+      "id": 548488,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/548488?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sipa",
+      "html_url": "https://github.com/sipa",
+      "followers_url": "https://api.github.com/users/sipa/followers",
+      "following_url": "https://api.github.com/users/sipa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sipa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sipa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sipa/subscriptions",
+      "organizations_url": "https://api.github.com/users/sipa/orgs",
+      "repos_url": "https://api.github.com/users/sipa/repos",
+      "events_url": "https://api.github.com/users/sipa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sipa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 11,
+    "created_at": "2011-06-05T22:17:59Z",
+    "updated_at": "2014-07-07T20:31:39Z",
+    "closed_at": "2011-06-11T23:17:14Z",
+    "author_association": "OWNER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/300",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/300",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/300.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/300.patch"
+    },
+    "body": "Use non-blocking connects, and a select() call to wait a predefined\ntime (5s by default, but configurable with -timeout) for either\nsuccess or failure. This allows much more connections to be tried\nper time unit.\n\nBased on a patch by phantomcircuit.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/299",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/299/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/299/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/299/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/299",
+    "id": 1006294,
+    "number": 299,
+    "title": "Crash while mining: v0.3.20.01/0.3.19 OSX",
+    "user": {
+      "login": "based2",
+      "id": 601854,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/601854?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/based2",
+      "html_url": "https://github.com/based2",
+      "followers_url": "https://api.github.com/users/based2/followers",
+      "following_url": "https://api.github.com/users/based2/following{/other_user}",
+      "gists_url": "https://api.github.com/users/based2/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/based2/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/based2/subscriptions",
+      "organizations_url": "https://api.github.com/users/based2/orgs",
+      "repos_url": "https://api.github.com/users/based2/repos",
+      "events_url": "https://api.github.com/users/based2/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/based2/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-06-05T20:26:19Z",
+    "updated_at": "2011-09-06T06:59:33Z",
+    "closed_at": "2011-09-06T06:59:33Z",
+    "author_association": "NONE",
+    "body": "Process:         bitcoin [792]\nPath:            /Users/heroku@/Applications/bitcoin-0.3.20.01/Bitcoin.app/Contents/MacOS/bitcoin\nIdentifier:      org.bitcoin.bitcoin\nVersion:         0.3.19 (320)\nCode Type:       X86 (Native)\nParent Process:  launchd [209]\n\nDate/Time:       2011-06-05 21:49:53.017 +0200\nOS Version:      Mac OS X 10.6.7 (10J869)\nReport Version:  6\n\nException Type:  EXC_BAD_ACCESS (SIGSEGV)\nException Codes: KERN_INVALID_ADDRESS at 0x0000000000f000d4\nCrashed Thread:  4\n\nThread 0:  Dispatch queue: com.apple.main-thread\n0   libSystem.B.dylib               0x96a435ee munmap$UNIX2003 + 10\n1   org.bitcoin.bitcoin             0x00529cdc DbTxn::set_parent(DbTxn_) + 1568338\n2   org.bitcoin.bitcoin             0x004ee7fa DbTxn::set_parent(DbTxn_) + 1325424\n3   org.bitcoin.bitcoin             0x004ee62e DbTxn::set_parent(DbTxn_) + 1324964\n4   org.bitcoin.bitcoin             0x00486aac DbTxn::set_parent(DbTxn_) + 900130\n5   org.bitcoin.bitcoin             0x004e93d3 DbTxn::set_parent(DbTxn_) + 1303881\n6   org.bitcoin.bitcoin             0x004e9170 DbTxn::set_parent(DbTxn_) + 1303270\n7   org.bitcoin.bitcoin             0x004e90d0 DbTxn::set_parent(DbTxn_) + 1303110\n8   org.bitcoin.bitcoin             0x003a9a21 **db_dbt::__db_dbt() + 21561\n9   org.bitcoin.bitcoin             0x005eeedd boost::exception_detail::error_info_injectorboost::gregorian::bad_year::~error_info_injector() + 662637\n10  libSystem.B.dylib               0x96a5d19f __cxa_finalize + 208\n11  libSystem.B.dylib               0x96a5d0b4 exit + 33\n12  com.apple.AppKit                0x92bfc48a -[NSApplication terminate:] + 1056\n13  com.apple.AppKit                0x92c3444c -[NSApplication _terminateSendShould:] + 71\n14  com.apple.CoreFoundation        0x93d84edd __invoking_** + 29\n15  com.apple.CoreFoundation        0x93d84e48 -[NSInvocation invoke] + 136\n16  com.apple.Foundation            0x934b38d4 __NSFireTimer + 141\n17  com.apple.CoreFoundation        0x93d49adb __CFRunLoopRun + 8059\n18  com.apple.CoreFoundation        0x93d47464 CFRunLoopRunSpecific + 452\n19  com.apple.CoreFoundation        0x93d47291 CFRunLoopRunInMode + 97\n20  com.apple.HIToolbox             0x917ece04 RunCurrentEventLoopInMode + 392\n21  com.apple.HIToolbox             0x917ecbb9 ReceiveNextEventCommon + 354\n22  com.apple.HIToolbox             0x917eca3e BlockUntilNextEventMatchingListInMode + 81\n23  com.apple.AppKit                0x929c378d _DPSNextEvent + 847\n24  com.apple.AppKit                0x929c2fce -[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:] + 156\n25  com.apple.AppKit                0x92985247 -[NSApplication run] + 821\n26  org.bitcoin.bitcoin             0x001f974a wxDisclosureTriangleCocoaImpl::~wxDisclosureTriangleCocoaImpl() + 3946\n27  org.bitcoin.bitcoin             0x00370626 wxMimeTypesManagerImpl::UtiMap::operator[](wxString const&) + 9414\n28  org.bitcoin.bitcoin             0x002c52a0 wxAnyValueTypeImplwxString::ConvertValue(wxAnyValueBuffer const&, wxAnyValueType_, wxAnyValueBuffer&) const + 2000\n29  org.bitcoin.bitcoin             0x001c9552 wxICONResourceHandler::~wxICONResourceHandler() + 1634\n30  org.bitcoin.bitcoin             0x00322960 wxHashTable::~wxHashTable() + 7744\n31  org.bitcoin.bitcoin             0x001027be ExitThread(unsigned int) + 30750\n32  org.bitcoin.bitcoin             0x000366a9 std::_Rb_tree<std::string, std::string, std::_Identity<std::string>, std::lessstd::string, std::allocatorstd::string >::_M_erase(std::_Rb_tree_nodestd::string*) + 29465\n\nThread 1:  Dispatch queue: com.apple.libdispatch-manager\n0   libSystem.B.dylib               0x96a64922 kevent + 10\n1   libSystem.B.dylib               0x96a6503c _dispatch_mgr_invoke + 215\n2   libSystem.B.dylib               0x96a644f9 _dispatch_queue_invoke + 163\n3   libSystem.B.dylib               0x96a6429e _dispatch_worker_thread2 + 240\n4   libSystem.B.dylib               0x96a63d21 _pthread_wqthread + 390\n5   libSystem.B.dylib               0x96a63b66 start_wqthread + 30\n\nThread 2:\n0   libSystem.B.dylib               0x96aa2e06 connect$UNIX2003 + 10\n1   org.bitcoin.bitcoin             0x0006c608 CTransaction::ReadFromDisk(CDiskTxPos, __sFILE**) + 19570\n2   org.bitcoin.bitcoin             0x0006cb39 CTransaction::ReadFromDisk(CDiskTxPos, __sFILE**) + 20899\n3   org.bitcoin.bitcoin             0x0006cf70 CTransaction::ReadFromDisk(CDiskTxPos, __sFILE**) + 21978\n4   org.bitcoin.bitcoin             0x0006e65e CTransaction::ReadFromDisk(CDiskTxPos, __sFILE**) + 27848\n5   org.bitcoin.bitcoin             0x00069070 CTransaction::ReadFromDisk(CDiskTxPos, __sFILE**) + 5850\n6   libSystem.B.dylib               0x96a6b7fd _pthread_start + 345\n7   libSystem.B.dylib               0x96a6b682 thread_start + 34\n\nThread 3:\n0   libSystem.B.dylib               0x96a639b2 __workq_kernreturn + 10\n1   libSystem.B.dylib               0x96a63f48 _pthread_wqthread + 941\n2   libSystem.B.dylib               0x96a63b66 start_wqthread + 30\n\nThread 4 Crashed:\n0   org.bitcoin.bitcoin             0x0053c411 DbTxn::set_parent(DbTxn_) + 1643911\n1   org.bitcoin.bitcoin             0x0053bdc8 DbTxn::set_parent(DbTxn_) + 1642302\n2   org.bitcoin.bitcoin             0x003a607f __db_dbt::__db_dbt() + 6807\n3   org.bitcoin.bitcoin             0x00050b6f operator-(CBigNum const&, CBigNum const&) + 28639\n4   org.bitcoin.bitcoin             0x000fa52d bool CWalletDB::WriteSetting<int>(std::string const&, int const&) + 27181\n5   libSystem.B.dylib               0x96a6b7fd _pthread_start + 345\n6   libSystem.B.dylib               0x96a6b682 thread_start + 34\n\nThread 4 crashed with X86 Thread State (32-bit):\n  eax: 0x00f000c4  ebx: 0x0053be20  ecx: 0x002ae3a0  edx: 0x003f0200\n  edi: 0x00a3a830  esi: 0x00050a8e  ebp: 0xb06b8e98  esp: 0xb06b8e10\n   ss: 0x0000001f  efl: 0x00010246  eip: 0x0053c411   cs: 0x00000017\n   ds: 0x0000001f   es: 0x0000001f   fs: 0x0000001f   gs: 0x00000037\n  cr2: 0x00f000d4\n\nBinary Images:\n    0x1000 -   0x784ffb +org.bitcoin.bitcoin 0.3.19 (320) <888258D5-1DF9-9D4C-6C2E-FAA98C7AD377> /Users/heroku@/Applications/bitcoin-0.3.20.01/Bitcoin.app/Contents/MacOS/bitcoin\n\nUSB Device: Bluetooth USB Host Controller, 0x05ac  (Apple Inc.), 0x8205, 0x7d100000\nUSB Device: IR Receiver, 0x05ac  (Apple Inc.), 0x8240, 0x5d200000\nUSB Device: Apple Internal Keyboard / Trackpad, 0x05ac  (Apple Inc.), 0x0218, 0x1d200000\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/264",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/264/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/264/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/264/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/264",
+    "id": 953908,
+    "number": 264,
+    "title": "Fix for small change outputs",
+    "user": {
+      "login": "sipa",
+      "id": 548488,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/548488?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/sipa",
+      "html_url": "https://github.com/sipa",
+      "followers_url": "https://api.github.com/users/sipa/followers",
+      "following_url": "https://api.github.com/users/sipa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/sipa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/sipa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/sipa/subscriptions",
+      "organizations_url": "https://api.github.com/users/sipa/orgs",
+      "repos_url": "https://api.github.com/users/sipa/repos",
+      "events_url": "https://api.github.com/users/sipa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/sipa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-05-25T16:42:50Z",
+    "updated_at": "2014-07-15T07:35:06Z",
+    "closed_at": "2011-06-05T14:32:58Z",
+    "author_association": "OWNER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/264",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/264",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/264.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/264.patch"
+    },
+    "body": "With the separation of CENT and MIN_TX_FEE, it is now reasonable\nto create change outputs between 0.01 and 0.0005, as these are\nspendable according to the policy, even though they require a fee\nto be paid.\n\nAlso, when enough fee was already present, everything can go into\na change output, without further increasing the fee.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/263",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/263/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/263/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/263/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/263",
+    "id": 952556,
+    "number": 263,
+    "title": "0.3.22rc2 Says 0.0005 in the warning dialog but takes 0.01 as a fee for small transactions.",
+    "user": {
+      "login": "C4colo",
+      "id": 72205,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/72205?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/C4colo",
+      "html_url": "https://github.com/C4colo",
+      "followers_url": "https://api.github.com/users/C4colo/followers",
+      "following_url": "https://api.github.com/users/C4colo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/C4colo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/C4colo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/C4colo/subscriptions",
+      "organizations_url": "https://api.github.com/users/C4colo/orgs",
+      "repos_url": "https://api.github.com/users/C4colo/repos",
+      "events_url": "https://api.github.com/users/C4colo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/C4colo/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-05-25T11:59:41Z",
+    "updated_at": "2011-06-05T14:33:11Z",
+    "closed_at": "2011-06-05T14:33:11Z",
+    "author_association": "NONE",
+    "body": "Using version 0.3.22rc2 on Windows:\n\nI got 0.02 from the faucet.  I had over 500 confirmations by the time I tried to send it on.  I sent 0.01 and the small transaction dialog popped up saying that I would need to pay the fee of 0.0005.  I accepted by pressing yes and when the transaction posted it took 0.02 from my balance leaving me with 0.00 instead of 0.0095, which is what I should have been left with if 0.0005 had actually been taken from me.  \n\nThis is the transaction: http://blockexplorer.com/tx/223fb42799f90eaafe621a188c3361a2385247893d85b7ddbf02f145b402d811 \n\nYou will notice the amount of the transaction is 0.02 instead of 0.0105 \n\nAlso, possibly related to this bug is the fact that all forms on the interface are hard coded to only accept 0.00  and no more decimal places beyond two.  This seems like it could cause problems sending amounts as small as even the alleged new transaction fee of 0.0005.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/258",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/258/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/258/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/258/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/258",
+    "id": 943098,
+    "number": 258,
+    "title": "AddAddress causes excessive IO",
+    "user": {
+      "login": "stuhood",
+      "id": 46740,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/46740?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/stuhood",
+      "html_url": "https://github.com/stuhood",
+      "followers_url": "https://api.github.com/users/stuhood/followers",
+      "following_url": "https://api.github.com/users/stuhood/following{/other_user}",
+      "gists_url": "https://api.github.com/users/stuhood/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/stuhood/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/stuhood/subscriptions",
+      "organizations_url": "https://api.github.com/users/stuhood/orgs",
+      "repos_url": "https://api.github.com/users/stuhood/repos",
+      "events_url": "https://api.github.com/users/stuhood/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/stuhood/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64584,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Brainstorming",
+        "name": "Brainstorming",
+        "color": "ebd775",
+        "default": false
+      },
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 12,
+    "created_at": "2011-05-23T19:23:31Z",
+    "updated_at": "2012-04-04T19:26:08Z",
+    "closed_at": "2012-04-04T19:26:05Z",
+    "author_association": "NONE",
+    "body": "On a system with mining disabled and doing nothing but AddAddress calls according to the debug log, there are 80-120 IOPs per second (likely very small ops, because the total throughput is only ~1MB/s), which can bog a system down considerably.\n\nSome avenues of improvement might be:\n- Bulk puts\n- More selective storage of addresses\n- Disabling fsync for the address db\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/253",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/253/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/253/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/253/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/pull/253",
+    "id": 937379,
+    "number": 253,
+    "title": "Remove send to IP address and IP transactions support",
+    "user": {
+      "login": "laanwj",
+      "id": 126646,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/126646?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/laanwj",
+      "html_url": "https://github.com/laanwj",
+      "followers_url": "https://api.github.com/users/laanwj/followers",
+      "following_url": "https://api.github.com/users/laanwj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/laanwj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/laanwj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/laanwj/subscriptions",
+      "organizations_url": "https://api.github.com/users/laanwj/orgs",
+      "repos_url": "https://api.github.com/users/laanwj/repos",
+      "events_url": "https://api.github.com/users/laanwj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/laanwj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135961,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Refactoring",
+        "name": "Refactoring",
+        "color": "E6F6D6",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 7,
+    "created_at": "2011-05-22T08:58:41Z",
+    "updated_at": "2014-06-12T10:23:09Z",
+    "closed_at": "2011-09-18T10:48:30Z",
+    "author_association": "OWNER",
+    "pull_request": {
+      "url": "https://api.github.com/repos/bitcoin/bitcoin/pulls/253",
+      "html_url": "https://github.com/bitcoin/bitcoin/pull/253",
+      "diff_url": "https://github.com/bitcoin/bitcoin/pull/253.diff",
+      "patch_url": "https://github.com/bitcoin/bitcoin/pull/253.patch"
+    },
+    "body": "Remove send to IP transaction support, as it is insecure and would confuse users when used. \n\nAn IP is a terrible identifier as it does not identify a person or organization. Furthermore, man-in-the-middle attacks are trivial as the internet has no \"proof that you have ip XXX\" API. In the future address shortening services based on \"user@domain\" would be useful, but these will likely be based on third party APIs and not on this code.\n- Removes logic to accept transfers by IP\n- Removes UI logic to send transfers by IP (CSendingDialog). Entering an IP in the send box will always result in an error.\n\nDiscussion on forum: https://forum.bitcoin.org/index.php?topic=9334.0\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/248",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/248/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/248/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/248/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/248",
+    "id": 934647,
+    "number": 248,
+    "title": "WildcardMatch broken",
+    "user": {
+      "login": "mikegogulski",
+      "id": 118625,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/118625?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mikegogulski",
+      "html_url": "https://github.com/mikegogulski",
+      "followers_url": "https://api.github.com/users/mikegogulski/followers",
+      "following_url": "https://api.github.com/users/mikegogulski/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mikegogulski/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mikegogulski/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mikegogulski/subscriptions",
+      "organizations_url": "https://api.github.com/users/mikegogulski/orgs",
+      "repos_url": "https://api.github.com/users/mikegogulski/repos",
+      "events_url": "https://api.github.com/users/mikegogulski/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mikegogulski/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2011-05-21T01:47:00Z",
+    "updated_at": "2011-11-18T18:41:58Z",
+    "closed_at": "2011-11-18T18:41:58Z",
+    "author_association": "NONE",
+    "body": "Failing sometimes:\n\n```\nbool WildcardMatch(const char* psz, const char* mask)\n{\n    loop\n    {\n        switch (*mask)\n        {\n        case '\\0':\n            return (*psz == '\\0');\n        case '*':\n            return WildcardMatch(psz, mask+1) || (*psz && WildcardMatch(psz+1, mask));\n        case '?':\n            if (*psz == '\\0')\n                return false;\n            break;\n        default:\n            if (*psz != *mask)\n                return false;\n            break;\n        }\n        psz++;\n        mask++;\n    }\n}\n```\n\nWorking always:\n\n```\nbool WildcardMatch(const char* psz, const char* mask) {\n        loop {\n                if (*mask == '\\0') return (*psz == '\\0');\n                else if (*mask == '*') return WildcardMatch(psz, mask+1) || (*psz && WildcardMatch(psz+1, mask));\n                else if (*mask == '?') if (*psz == '\\0') return 0;\n                else if (*psz != *mask) return 0;\n                psz++;\n                mask++;\n        }\n}\n```\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/244",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/244/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/244/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/244/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/244",
+    "id": 927320,
+    "number": 244,
+    "title": "new[] delete[] mismatch",
+    "user": {
+      "login": "Ummon",
+      "id": 89829,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/89829?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/Ummon",
+      "html_url": "https://github.com/Ummon",
+      "followers_url": "https://api.github.com/users/Ummon/followers",
+      "following_url": "https://api.github.com/users/Ummon/following{/other_user}",
+      "gists_url": "https://api.github.com/users/Ummon/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/Ummon/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/Ummon/subscriptions",
+      "organizations_url": "https://api.github.com/users/Ummon/orgs",
+      "repos_url": "https://api.github.com/users/Ummon/repos",
+      "events_url": "https://api.github.com/users/Ummon/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/Ummon/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-05-19T14:41:19Z",
+    "updated_at": "2011-05-26T20:38:38Z",
+    "closed_at": "2011-05-26T20:38:38Z",
+    "author_association": "NONE",
+    "body": "The 'delete[]' operator should be used instead of 'delete' here:\n\nhttps://github.com/bitcoin/bitcoin/blob/b201c1f60020763b102d259f6346305dd668c7eb/src/util.cpp#L274\nhttps://github.com/bitcoin/bitcoin/blob/b201c1f60020763b102d259f6346305dd668c7eb/src/util.cpp#L282\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/243",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/243/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/243/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/243/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/243",
+    "id": 925751,
+    "number": 243,
+    "title": "Text size causes display, usability issues",
+    "user": {
+      "login": "ghost",
+      "id": 10137,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10137?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ghost",
+      "html_url": "https://github.com/ghost",
+      "followers_url": "https://api.github.com/users/ghost/followers",
+      "following_url": "https://api.github.com/users/ghost/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ghost/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ghost/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ghost/subscriptions",
+      "organizations_url": "https://api.github.com/users/ghost/orgs",
+      "repos_url": "https://api.github.com/users/ghost/repos",
+      "events_url": "https://api.github.com/users/ghost/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ghost/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-05-19T07:02:18Z",
+    "updated_at": "2011-05-27T00:18:55Z",
+    "closed_at": "2011-05-27T00:18:55Z",
+    "author_association": "NONE",
+    "body": "In several areas, text appears to be too large to fit into designated areas. I suspect this could be because I have Windows set to use 120 DPI rather than the default 96. Issue applies to both 0.3.21 and 0.3.22-rc2. I can take screenshots if needed.\n\n_Examples_\n- In the 'Options' dialog, Nothing below the explanation of transaction fees can be seen, except for OK/Cancel/Apply. The transaction fee option itself, and any options below it, can not be seen. Window can not be resized.\n- In the \"Send Coins\" dialog, the 'Send' and 'Cancel' buttons are not initially visible. However, the window can be resized so that they can be seen.\n- In the 'About' dialog, the license declaration is mangled and cut off. It appears as follows:\n\n<pre>\nDistributed under the MIT/X11 software license, see the\naccompanying file\nlicense.txt or\n</pre>\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/240",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/240/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/240/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/240/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/240",
+    "id": 924382,
+    "number": 240,
+    "title": "Mismatching allocation and deallocation problem in util.cpp found by cppcheck static analysis tool",
+    "user": {
+      "login": "nikileshsa",
+      "id": 584036,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/584036?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/nikileshsa",
+      "html_url": "https://github.com/nikileshsa",
+      "followers_url": "https://api.github.com/users/nikileshsa/followers",
+      "following_url": "https://api.github.com/users/nikileshsa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/nikileshsa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/nikileshsa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/nikileshsa/subscriptions",
+      "organizations_url": "https://api.github.com/users/nikileshsa/orgs",
+      "repos_url": "https://api.github.com/users/nikileshsa/repos",
+      "events_url": "https://api.github.com/users/nikileshsa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/nikileshsa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-05-18T22:18:31Z",
+    "updated_at": "2011-05-26T20:25:59Z",
+    "closed_at": "2011-05-26T20:25:59Z",
+    "author_association": "NONE",
+    "body": "Checking /home/juba/.ssh/bitcoin/src/util.cpp...\n[/home/juba/.ssh/bitcoin/src/util.cpp:276]: (error) Mismatching allocation and deallocation: p\n[/home/juba/.ssh/bitcoin/src/util.cpp:282]: (error) Mismatching allocation and deallocation: p\nChecking /home/juba/.ssh/bitcoin/src/util.cpp: GUI...\nChecking /home/juba/.ssh/bitcoin/src/util.cpp: **WXMAC_OSX**...\nChecking /home/juba/.ssh/bitcoin/src/util.cpp: **WXMSW**...\n15/15 files checked 100% done\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/239",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/239/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/239/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/239/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/239",
+    "id": 924362,
+    "number": 239,
+    "title": "Memory leak problems in utibase.h found by cppcheck static analysis tool",
+    "user": {
+      "login": "nikileshsa",
+      "id": 584036,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/584036?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/nikileshsa",
+      "html_url": "https://github.com/nikileshsa",
+      "followers_url": "https://api.github.com/users/nikileshsa/followers",
+      "following_url": "https://api.github.com/users/nikileshsa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/nikileshsa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/nikileshsa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/nikileshsa/subscriptions",
+      "organizations_url": "https://api.github.com/users/nikileshsa/orgs",
+      "repos_url": "https://api.github.com/users/nikileshsa/repos",
+      "events_url": "https://api.github.com/users/nikileshsa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/nikileshsa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-05-18T22:15:34Z",
+    "updated_at": "2011-12-04T08:56:34Z",
+    "closed_at": "2011-12-04T08:56:34Z",
+    "author_association": "NONE",
+    "body": "A list of possible memory leak problems found by the static analysis tool.\n\n[/home/juba/.ssh/bitcoin/src/uibase.h:74]: (possible error) Memory leak: CMainFrameBase::m_menubar\n[/home/juba/.ssh/bitcoin/src/uibase.h:75]: (possible error) Memory leak: CMainFrameBase::m_menuFile\n[/home/juba/.ssh/bitcoin/src/uibase.h:76]: (possible error) Memory leak: CMainFrameBase::m_menuHelp\n[/home/juba/.ssh/bitcoin/src/uibase.h:79]: (possible error) Memory leak: CMainFrameBase::m_staticText32\n[/home/juba/.ssh/bitcoin/src/uibase.h:80]: (possible error) Memory leak: CMainFrameBase::m_buttonNew\n[/home/juba/.ssh/bitcoin/src/uibase.h:81]: (possible error) Memory leak: CMainFrameBase::m_buttonCopy\n[/home/juba/.ssh/bitcoin/src/uibase.h:83]: (possible error) Memory leak: CMainFrameBase::m_staticText41\n[/home/juba/.ssh/bitcoin/src/uibase.h:84]: (possible error) Memory leak: CMainFrameBase::m_staticTextBalance\n[/home/juba/.ssh/bitcoin/src/uibase.h:86]: (possible error) Memory leak: CMainFrameBase::m_choiceFilter\n[/home/juba/.ssh/bitcoin/src/uibase.h:87]: (possible error) Memory leak: CMainFrameBase::m_notebook\n[/home/juba/.ssh/bitcoin/src/uibase.h:88]: (possible error) Memory leak: CMainFrameBase::m_panel9\n[/home/juba/.ssh/bitcoin/src/uibase.h:89]: (possible error) Memory leak: CMainFrameBase::m_panel91\n[/home/juba/.ssh/bitcoin/src/uibase.h:90]: (possible error) Memory leak: CMainFrameBase::m_panel92\n[/home/juba/.ssh/bitcoin/src/uibase.h:91]: (possible error) Memory leak: CMainFrameBase::m_panel93\n[/home/juba/.ssh/bitcoin/src/uibase.h:117]: (possible error) Memory leak: CMainFrameBase::m_menuOptions\n[/home/juba/.ssh/bitcoin/src/uibase.h:119]: (possible error) Memory leak: CMainFrameBase::m_textCtrlAddress\n[/home/juba/.ssh/bitcoin/src/uibase.h:120]: (possible error) Memory leak: CMainFrameBase::m_listCtrlAll\n[/home/juba/.ssh/bitcoin/src/uibase.h:121]: (possible error) Memory leak: CMainFrameBase::m_listCtrlSentReceived\n[/home/juba/.ssh/bitcoin/src/uibase.h:122]: (possible error) Memory leak: CMainFrameBase::m_listCtrlSent\n[/home/juba/.ssh/bitcoin/src/uibase.h:123]: (possible error) Memory leak: CMainFrameBase::m_listCtrlReceived\n[/home/juba/.ssh/bitcoin/src/uibase.h:138]: (possible error) Memory leak: CTxDetailsDialogBase::m_htmlWin\n[/home/juba/.ssh/bitcoin/src/uibase.h:139]: (possible error) Memory leak: CTxDetailsDialogBase::m_buttonOK\n[/home/juba/.ssh/bitcoin/src/uibase.h:160]: (possible error) Memory leak: COptionsDialogBase::m_listBox\n[/home/juba/.ssh/bitcoin/src/uibase.h:161]: (possible error) Memory leak: COptionsDialogBase::m_scrolledWindow\n[/home/juba/.ssh/bitcoin/src/uibase.h:162]: (possible error) Memory leak: COptionsDialogBase::m_panelMain\n[/home/juba/.ssh/bitcoin/src/uibase.h:164]: (possible error) Memory leak: COptionsDialogBase::m_checkBoxStartOnSystemStartup\n[/home/juba/.ssh/bitcoin/src/uibase.h:165]: (possible error) Memory leak: COptionsDialogBase::m_checkBoxMinimizeToTray\n[/home/juba/.ssh/bitcoin/src/uibase.h:166]: (possible error) Memory leak: COptionsDialogBase::m_checkBoxUseUPnP\n[/home/juba/.ssh/bitcoin/src/uibase.h:167]: (possible error) Memory leak: COptionsDialogBase::m_checkBoxMinimizeOnClose\n[/home/juba/.ssh/bitcoin/src/uibase.h:168]: (possible error) Memory leak: COptionsDialogBase::m_checkBoxUseProxy\n[/home/juba/.ssh/bitcoin/src/uibase.h:170]: (possible error) Memory leak: COptionsDialogBase::m_staticTextProxyIP\n[/home/juba/.ssh/bitcoin/src/uibase.h:171]: (possible error) Memory leak: COptionsDialogBase::m_textCtrlProxyIP\n[/home/juba/.ssh/bitcoin/src/uibase.h:172]: (possible error) Memory leak: COptionsDialogBase::m_staticTextProxyPort\n[/home/juba/.ssh/bitcoin/src/uibase.h:173]: (possible error) Memory leak: COptionsDialogBase::m_textCtrlProxyPort\n[/home/juba/.ssh/bitcoin/src/uibase.h:175]: (possible error) Memory leak: COptionsDialogBase::m_staticText32\n[/home/juba/.ssh/bitcoin/src/uibase.h:176]: (possible error) Memory leak: COptionsDialogBase::m_staticText31\n[/home/juba/.ssh/bitcoin/src/uibase.h:177]: (possible error) Memory leak: COptionsDialogBase::m_textCtrlTransactionFee\n[/home/juba/.ssh/bitcoin/src/uibase.h:178]: (possible error) Memory leak: COptionsDialogBase::m_panelTest2\n[/home/juba/.ssh/bitcoin/src/uibase.h:180]: (possible error) Memory leak: COptionsDialogBase::m_staticText321\n[/home/juba/.ssh/bitcoin/src/uibase.h:181]: (possible error) Memory leak: COptionsDialogBase::m_staticText69\n[/home/juba/.ssh/bitcoin/src/uibase.h:182]: (possible error) Memory leak: COptionsDialogBase::m_buttonOK\n[/home/juba/.ssh/bitcoin/src/uibase.h:183]: (possible error) Memory leak: COptionsDialogBase::m_buttonCancel\n[/home/juba/.ssh/bitcoin/src/uibase.h:184]: (possible error) Memory leak: COptionsDialogBase::m_buttonApply\n[/home/juba/.ssh/bitcoin/src/uibase.h:212]: (possible error) Memory leak: CAboutDialogBase::m_bitmap\n[/home/juba/.ssh/bitcoin/src/uibase.h:214]: (possible error) Memory leak: CAboutDialogBase::m_staticText40\n[/home/juba/.ssh/bitcoin/src/uibase.h:216]: (possible error) Memory leak: CAboutDialogBase::m_staticTextMain\n[/home/juba/.ssh/bitcoin/src/uibase.h:219]: (possible error) Memory leak: CAboutDialogBase::m_buttonOK\n[/home/juba/.ssh/bitcoin/src/uibase.h:226]: (possible error) Memory leak: CAboutDialogBase::m_staticTextVersion\n[/home/juba/.ssh/bitcoin/src/uibase.h:243]: (possible error) Memory leak: CSendDialogBase::m_staticTextInstructions\n[/home/juba/.ssh/bitcoin/src/uibase.h:245]: (possible error) Memory leak: CSendDialogBase::m_bitmapCheckMark\n[/home/juba/.ssh/bitcoin/src/uibase.h:246]: (possible error) Memory leak: CSendDialogBase::m_staticText36\n[/home/juba/.ssh/bitcoin/src/uibase.h:247]: (possible error) Memory leak: CSendDialogBase::m_textCtrlAddress\n[/home/juba/.ssh/bitcoin/src/uibase.h:248]: (possible error) Memory leak: CSendDialogBase::m_buttonPaste\n[/home/juba/.ssh/bitcoin/src/uibase.h:249]: (possible error) Memory leak: CSendDialogBase::m_buttonAddress\n[/home/juba/.ssh/bitcoin/src/uibase.h:250]: (possible error) Memory leak: CSendDialogBase::m_staticText19\n[/home/juba/.ssh/bitcoin/src/uibase.h:251]: (possible error) Memory leak: CSendDialogBase::m_textCtrlAmount\n[/home/juba/.ssh/bitcoin/src/uibase.h:252]: (possible error) Memory leak: CSendDialogBase::m_staticText20\n[/home/juba/.ssh/bitcoin/src/uibase.h:253]: (possible error) Memory leak: CSendDialogBase::m_choiceTransferType\n[/home/juba/.ssh/bitcoin/src/uibase.h:257]: (possible error) Memory leak: CSendDialogBase::m_buttonSend\n[/home/juba/.ssh/bitcoin/src/uibase.h:258]: (possible error) Memory leak: CSendDialogBase::m_buttonCancel\n[/home/juba/.ssh/bitcoin/src/uibase.h:285]: (possible error) Memory leak: CSendingDialogBase::m_staticTextSending\n[/home/juba/.ssh/bitcoin/src/uibase.h:286]: (possible error) Memory leak: CSendingDialogBase::m_textCtrlStatus\n[/home/juba/.ssh/bitcoin/src/uibase.h:288]: (possible error) Memory leak: CSendingDialogBase::m_buttonOK\n[/home/juba/.ssh/bitcoin/src/uibase.h:289]: (possible error) Memory leak: CSendingDialogBase::m_buttonCancel\n[/home/juba/.ssh/bitcoin/src/uibase.h:314]: (possible error) Memory leak: CYourAddressDialogBase::m_staticText45\n[/home/juba/.ssh/bitcoin/src/uibase.h:315]: (possible error) Memory leak: CYourAddressDialogBase::m_listCtrl\n[/home/juba/.ssh/bitcoin/src/uibase.h:317]: (possible error) Memory leak: CYourAddressDialogBase::m_buttonRename\n[/home/juba/.ssh/bitcoin/src/uibase.h:318]: (possible error) Memory leak: CYourAddressDialogBase::m_buttonNew\n[/home/juba/.ssh/bitcoin/src/uibase.h:319]: (possible error) Memory leak: CYourAddressDialogBase::m_buttonCopy\n[/home/juba/.ssh/bitcoin/src/uibase.h:320]: (possible error) Memory leak: CYourAddressDialogBase::m_buttonOK\n[/home/juba/.ssh/bitcoin/src/uibase.h:321]: (possible error) Memory leak: CYourAddressDialogBase::m_buttonCancel\n[/home/juba/.ssh/bitcoin/src/uibase.h:350]: (possible error) Memory leak: CAddressBookDialogBase::m_notebook\n[/home/juba/.ssh/bitcoin/src/uibase.h:351]: (possible error) Memory leak: CAddressBookDialogBase::m_panelSending\n[/home/juba/.ssh/bitcoin/src/uibase.h:353]: (possible error) Memory leak: CAddressBookDialogBase::m_staticText55\n[/home/juba/.ssh/bitcoin/src/uibase.h:354]: (possible error) Memory leak: CAddressBookDialogBase::m_listCtrlSending\n[/home/juba/.ssh/bitcoin/src/uibase.h:355]: (possible error) Memory leak: CAddressBookDialogBase::m_panelReceiving\n[/home/juba/.ssh/bitcoin/src/uibase.h:357]: (possible error) Memory leak: CAddressBookDialogBase::m_staticText45\n[/home/juba/.ssh/bitcoin/src/uibase.h:359]: (possible error) Memory leak: CAddressBookDialogBase::m_listCtrlReceiving\n[/home/juba/.ssh/bitcoin/src/uibase.h:361]: (possible error) Memory leak: CAddressBookDialogBase::m_buttonDelete\n[/home/juba/.ssh/bitcoin/src/uibase.h:362]: (possible error) Memory leak: CAddressBookDialogBase::m_buttonCopy\n[/home/juba/.ssh/bitcoin/src/uibase.h:363]: (possible error) Memory leak: CAddressBookDialogBase::m_buttonEdit\n[/home/juba/.ssh/bitcoin/src/uibase.h:364]: (possible error) Memory leak: CAddressBookDialogBase::m_buttonNew\n[/home/juba/.ssh/bitcoin/src/uibase.h:365]: (possible error) Memory leak: CAddressBookDialogBase::m_buttonOK\n[/home/juba/.ssh/bitcoin/src/uibase.h:382]: (possible error) Memory leak: CAddressBookDialogBase::m_buttonCancel\n[/home/juba/.ssh/bitcoin/src/uibase.h:398]: (possible error) Memory leak: CGetTextFromUserDialogBase::m_staticTextMessage1\n[/home/juba/.ssh/bitcoin/src/uibase.h:399]: (possible error) Memory leak: CGetTextFromUserDialogBase::m_textCtrl1\n[/home/juba/.ssh/bitcoin/src/uibase.h:400]: (possible error) Memory leak: CGetTextFromUserDialogBase::m_staticTextMessage2\n[/home/juba/.ssh/bitcoin/src/uibase.h:401]: (possible error) Memory leak: CGetTextFromUserDialogBase::m_textCtrl2\n[/home/juba/.ssh/bitcoin/src/uibase.h:404]: (possible error) Memory leak: CGetTextFromUserDialogBase::m_buttonOK\n[/home/juba/.ssh/bitcoin/src/uibase.h:405]: (possible error) Memory leak: CGetTextFromUserDialogBase::m_buttonCancel\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/238",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/238/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/238/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/238/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/238",
+    "id": 924349,
+    "number": 238,
+    "title": "Memory leak problem in ui.cpp found by cppcheck static analysis tool",
+    "user": {
+      "login": "nikileshsa",
+      "id": 584036,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/584036?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/nikileshsa",
+      "html_url": "https://github.com/nikileshsa",
+      "followers_url": "https://api.github.com/users/nikileshsa/followers",
+      "following_url": "https://api.github.com/users/nikileshsa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/nikileshsa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/nikileshsa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/nikileshsa/subscriptions",
+      "organizations_url": "https://api.github.com/users/nikileshsa/orgs",
+      "repos_url": "https://api.github.com/users/nikileshsa/repos",
+      "events_url": "https://api.github.com/users/nikileshsa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/nikileshsa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-05-18T22:13:01Z",
+    "updated_at": "2012-02-19T19:19:28Z",
+    "closed_at": "2012-02-19T19:19:28Z",
+    "author_association": "NONE",
+    "body": "Possible memory leak error in ui.cpp:\n\nbitcoin/src/ui.cpp:1954]: (possible error) Memory leak: pdialog\n\na first level of analysis is recommended.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/237",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/237/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/237/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/237/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/237",
+    "id": 924334,
+    "number": 237,
+    "title": "Memory leak problem in db.h found by cppcheck static analysis tool",
+    "user": {
+      "login": "nikileshsa",
+      "id": 584036,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/584036?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/nikileshsa",
+      "html_url": "https://github.com/nikileshsa",
+      "followers_url": "https://api.github.com/users/nikileshsa/followers",
+      "following_url": "https://api.github.com/users/nikileshsa/following{/other_user}",
+      "gists_url": "https://api.github.com/users/nikileshsa/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/nikileshsa/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/nikileshsa/subscriptions",
+      "organizations_url": "https://api.github.com/users/nikileshsa/orgs",
+      "repos_url": "https://api.github.com/users/nikileshsa/repos",
+      "events_url": "https://api.github.com/users/nikileshsa/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/nikileshsa/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-05-18T22:09:58Z",
+    "updated_at": "2012-04-04T19:25:27Z",
+    "closed_at": "2012-04-04T19:25:27Z",
+    "author_association": "NONE",
+    "body": "Just pasting the error shown by the tool in the db.h file alone.\n\nbitcoin/src/db.h:49]: (possible error) Memory leak: CDB::pdb\n\nAn first level of analysis is recommended.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/236",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/236/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/236/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/236/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/236",
+    "id": 922899,
+    "number": 236,
+    "title": "Truncation bug in GetDifficulty, rpc.cpp",
+    "user": {
+      "login": "OverQuantum",
+      "id": 796297,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/796297?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/OverQuantum",
+      "html_url": "https://github.com/OverQuantum",
+      "followers_url": "https://api.github.com/users/OverQuantum/followers",
+      "following_url": "https://api.github.com/users/OverQuantum/following{/other_user}",
+      "gists_url": "https://api.github.com/users/OverQuantum/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/OverQuantum/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/OverQuantum/subscriptions",
+      "organizations_url": "https://api.github.com/users/OverQuantum/orgs",
+      "repos_url": "https://api.github.com/users/OverQuantum/repos",
+      "events_url": "https://api.github.com/users/OverQuantum/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/OverQuantum/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-05-18T17:26:36Z",
+    "updated_at": "2011-06-07T18:33:59Z",
+    "closed_at": "2011-06-07T18:33:59Z",
+    "author_association": "NONE",
+    "body": "It seems to me, that GetDifficulty() function have truncation problem which is already observer now and could lead to further problems, up to division by zero.\n\n1) http://blockexplorer.com/b/124677 -> Difficulty?: 157 416.401843 (\"Bits\"?: 1a6a93b3)\n2) bitcoin.exe getdifficulty -> 157426.20628986 (at the moment)\nWhy so?\n\nhextarget = 0000 0000 0000 6A93 B300 00000000000000000000000000000000000000000000\nmaxtarget = 0000 0000 FFFF 0000 0000 00000000000000000000000000000000000000000000\nIf we divide them, result will be 157416.4018436490, value in block's info.\n\nProblem is in getdifficulty function:\n    int nShift = 256 - 32 - 31; // to fit in a uint\n    double dMinimum = (CBigNum().SetCompact(bnProofOfWorkLimit.GetCompact()) >> nShift).getuint();\n    double dCurrently = (CBigNum().SetCompact(pindexBest->nBits) >> nShift).getuint();\n    return dMinimum / dCurrently;\n\nSo, bnProofOfWorkLimit >> nShift = 0x7FFF8000\nwhile nBits >> nShift = 0x3549\nreturn will be 157426.20628986100 that we observe in bitcoin client, on blockexplorer's getdifficulty and so on.\n\nFrom 24 \"mantissa\" bits of hextarget only 15 are used, and problem will increase with difficulty. At 2 billions will will get divison by zero.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/231",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/231/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/231/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/231/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/231",
+    "id": 919001,
+    "number": 231,
+    "title": "Assert Failure on Fedora 14",
+    "user": {
+      "login": "johnktaylor",
+      "id": 683864,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/683864?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/johnktaylor",
+      "html_url": "https://github.com/johnktaylor",
+      "followers_url": "https://api.github.com/users/johnktaylor/followers",
+      "following_url": "https://api.github.com/users/johnktaylor/following{/other_user}",
+      "gists_url": "https://api.github.com/users/johnktaylor/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/johnktaylor/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/johnktaylor/subscriptions",
+      "organizations_url": "https://api.github.com/users/johnktaylor/orgs",
+      "repos_url": "https://api.github.com/users/johnktaylor/repos",
+      "events_url": "https://api.github.com/users/johnktaylor/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/johnktaylor/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2011-05-17T22:53:11Z",
+    "updated_at": "2011-12-05T16:30:00Z",
+    "closed_at": "2011-12-05T16:30:00Z",
+    "author_association": "NONE",
+    "body": "Hi\n\nI get the following error message on 0.3.21 beta when trying to send a transaction of 0.02 BTC to another user...\n\n../src/gtk/dialog.cpp(156): assert \"Assert failure\" failed in EndModal(): either wxDialog:EndModal called twice or ShowModal wasn't called\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/216",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/216/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/216/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/216/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/216",
+    "id": 875166,
+    "number": 216,
+    "title": "Subcent balance sends if remaining wallet is less than 0.01",
+    "user": {
+      "login": "stigeebus",
+      "id": 620515,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/620515?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/stigeebus",
+      "html_url": "https://github.com/stigeebus",
+      "followers_url": "https://api.github.com/users/stigeebus/followers",
+      "following_url": "https://api.github.com/users/stigeebus/following{/other_user}",
+      "gists_url": "https://api.github.com/users/stigeebus/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/stigeebus/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/stigeebus/subscriptions",
+      "organizations_url": "https://api.github.com/users/stigeebus/orgs",
+      "repos_url": "https://api.github.com/users/stigeebus/repos",
+      "events_url": "https://api.github.com/users/stigeebus/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/stigeebus/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 8,
+    "created_at": "2011-05-10T06:49:28Z",
+    "updated_at": "2012-02-22T06:17:02Z",
+    "closed_at": "2012-02-22T06:17:02Z",
+    "author_association": "NONE",
+    "body": "If the remaining balance after sending a transaction would be less than 0.01, the subcent remainder is also being sent with the transaction.\n\nExample:\n\nIf I have 10.00946786 BTC in my wallet and I send 10 BTC as a transaction, it will actually send all 10.00946786 BTC and not leave the subcent amount. \n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/207",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/207/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/207/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/207/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/207",
+    "id": 867408,
+    "number": 207,
+    "title": "Problem with fonts on ubuntu Maverick",
+    "user": {
+      "login": "misaelnieto",
+      "id": 146899,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/146899?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/misaelnieto",
+      "html_url": "https://github.com/misaelnieto",
+      "followers_url": "https://api.github.com/users/misaelnieto/followers",
+      "following_url": "https://api.github.com/users/misaelnieto/following{/other_user}",
+      "gists_url": "https://api.github.com/users/misaelnieto/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/misaelnieto/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/misaelnieto/subscriptions",
+      "organizations_url": "https://api.github.com/users/misaelnieto/orgs",
+      "repos_url": "https://api.github.com/users/misaelnieto/repos",
+      "events_url": "https://api.github.com/users/misaelnieto/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/misaelnieto/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 11,
+    "created_at": "2011-05-09T03:23:44Z",
+    "updated_at": "2011-10-10T21:39:53Z",
+    "closed_at": "2011-10-10T21:39:53Z",
+    "author_association": "NONE",
+    "body": "Hi.\n\nI'm getting this whenever I want to run bitcoin 32 bits on my machine:\n\n22:21:21: Debug: ../src/gtk/settings.cpp(276): assert \"font.IsOk() && wxFontEnumerator::IsValidFacename(font.GetFaceName())\" failed in GetFont().\n\nAnyone else is having this?\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/191",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/191/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/191/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/191/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/191",
+    "id": 840576,
+    "number": 191,
+    "title": "non-PIC code in main.cpp",
+    "user": {
+      "login": "XVilka",
+      "id": 203261,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/203261?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/XVilka",
+      "html_url": "https://github.com/XVilka",
+      "followers_url": "https://api.github.com/users/XVilka/followers",
+      "following_url": "https://api.github.com/users/XVilka/following{/other_user}",
+      "gists_url": "https://api.github.com/users/XVilka/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/XVilka/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/XVilka/subscriptions",
+      "organizations_url": "https://api.github.com/users/XVilka/orgs",
+      "repos_url": "https://api.github.com/users/XVilka/repos",
+      "events_url": "https://api.github.com/users/XVilka/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/XVilka/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135961,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Refactoring",
+        "name": "Refactoring",
+        "color": "E6F6D6",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2011-05-02T20:44:12Z",
+    "updated_at": "2011-12-03T18:34:57Z",
+    "closed_at": "2011-12-03T18:34:57Z",
+    "author_association": "NONE",
+    "body": "I'm using hardened gentoo. and when i'm trying to compile bitcoin with its toolchain, i can see this error:\n\ng++ -c -I/usr/include/db4.8 -DFOURWAYSSE2 -DUSE_SSL -DUSE_UPNP=1 -DNOPCH -Wno-invalid-offsetof -Wformat -O2 -march=core2 -mfpmath=sse -mmmx -msse -msse2 -mssse3 -pipe -I/usr/lib/wx/include/gtk2-unicode-2.9 -I/usr/include/wx-2.9 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -pthread -DGUI -o obj/rpc.o rpc.cpp\nmain.cpp: In function 'void CallCPUID(int, int&, int&)':\nmain.cpp:3160:6: error: PIC register clobbered by '%ebx' in 'asm'\nmain.cpp: In function 'bool Detect128BitSSE2()':\nmain.cpp:3160:6: error: PIC register clobbered by '%ebx' in 'asm'\nmain.cpp:3160:6: error: PIC register clobbered by '%ebx' in 'asm'\nmake: **\\* [obj/main.o] Error 1\n\nIf i'm adding -fno-pic option, it compiles successfully, but show segmenation fault when starting.\n\nHere is additional info: http://paste.pocoo.org/show/381464 and http://paste.pocoo.org/show/381465\n\nFor information, how-to fix this issue see http://hardened.gentoo.org/pic-fix-guide.xml\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/172",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/172/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/172/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/172/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/172",
+    "id": 794253,
+    "number": 172,
+    "title": "getbalance/getbalance '*' discrepancy",
+    "user": {
+      "login": "gavinandresen",
+      "id": 331997,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/331997?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/gavinandresen",
+      "html_url": "https://github.com/gavinandresen",
+      "followers_url": "https://api.github.com/users/gavinandresen/followers",
+      "following_url": "https://api.github.com/users/gavinandresen/following{/other_user}",
+      "gists_url": "https://api.github.com/users/gavinandresen/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/gavinandresen/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/gavinandresen/subscriptions",
+      "organizations_url": "https://api.github.com/users/gavinandresen/orgs",
+      "repos_url": "https://api.github.com/users/gavinandresen/repos",
+      "events_url": "https://api.github.com/users/gavinandresen/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/gavinandresen/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-04-20T14:58:51Z",
+    "updated_at": "2013-11-12T15:34:23Z",
+    "closed_at": "2013-11-12T15:34:23Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "getbalance and getbalance '*' can return different amounts for 0-confirmation transactions, because of the way change transactions are counted.  The discrepancy resolves as soon as the transaction is accepted into a block.\n\nDetails:  CWalletTx::IsConfirmed() returns false for at least some 0-confirmation transactions loaded from a wallet, because they are missing vtxPrev (supporting transactions).  That causes the issue, because getbalance (and the send methods) only count outputs of confirmed transactions as available, but GetAmounts (used by getbalance '*') assumes that change TxOuts are always available to be spent.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/144",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/144/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/144/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/144/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/144",
+    "id": 735659,
+    "number": 144,
+    "title": "Menu bar is messed up on OSX",
+    "user": {
+      "login": "reverie",
+      "id": 73446,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/73446?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/reverie",
+      "html_url": "https://github.com/reverie",
+      "followers_url": "https://api.github.com/users/reverie/followers",
+      "following_url": "https://api.github.com/users/reverie/following{/other_user}",
+      "gists_url": "https://api.github.com/users/reverie/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/reverie/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/reverie/subscriptions",
+      "organizations_url": "https://api.github.com/users/reverie/orgs",
+      "repos_url": "https://api.github.com/users/reverie/repos",
+      "events_url": "https://api.github.com/users/reverie/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/reverie/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-04-05T21:44:31Z",
+    "updated_at": "2011-10-10T21:38:04Z",
+    "closed_at": "2011-10-10T21:38:04Z",
+    "author_association": "NONE",
+    "body": "It has two apple icons, and two Settings menus. The second Apple icon is linked with the bolded Bitcoin menu. The two settings labels are also linked (clicking the second one opens the first one.)\n\nClient 0.3.20.1 BETA\nOS 10.5.8\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/140",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/140/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/140/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/140/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/140",
+    "id": 727165,
+    "number": 140,
+    "title": "-conf does not fully initialize bitcoin",
+    "user": {
+      "login": "jgarzik",
+      "id": 494411,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/494411?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jgarzik",
+      "html_url": "https://github.com/jgarzik",
+      "followers_url": "https://api.github.com/users/jgarzik/followers",
+      "following_url": "https://api.github.com/users/jgarzik/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jgarzik/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jgarzik/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jgarzik/subscriptions",
+      "organizations_url": "https://api.github.com/users/jgarzik/orgs",
+      "repos_url": "https://api.github.com/users/jgarzik/repos",
+      "events_url": "https://api.github.com/users/jgarzik/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jgarzik/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 64583,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Feature",
+        "name": "Feature",
+        "color": "7cf575",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2011-04-02T18:44:59Z",
+    "updated_at": "2013-11-04T14:24:21Z",
+    "closed_at": "2013-11-04T14:24:21Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "The \"-conf\" argument should be all one needs, in order to tell bitcoin where to find its data directory and fully initialize.  bitcoin reads the specified configuration file path, learns data directory location and other details, and initializes from that.\n\nHowever, in testing, -conf-only configurations, where -datadir is specified inside bitcoin.conf, fails to used the desired data directory, instead falling back to the default ~/.bitcoin.\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/130",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/130/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/130/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/130/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/130",
+    "id": 692910,
+    "number": 130,
+    "title": "Assertion failure on Windows",
+    "user": {
+      "login": "MatrixFrog",
+      "id": 244381,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/244381?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MatrixFrog",
+      "html_url": "https://github.com/MatrixFrog",
+      "followers_url": "https://api.github.com/users/MatrixFrog/followers",
+      "following_url": "https://api.github.com/users/MatrixFrog/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MatrixFrog/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MatrixFrog/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MatrixFrog/subscriptions",
+      "organizations_url": "https://api.github.com/users/MatrixFrog/orgs",
+      "repos_url": "https://api.github.com/users/MatrixFrog/repos",
+      "events_url": "https://api.github.com/users/MatrixFrog/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MatrixFrog/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 9,
+    "created_at": "2011-03-22T03:45:05Z",
+    "updated_at": "2011-09-03T05:12:35Z",
+    "closed_at": "2011-09-03T05:12:35Z",
+    "author_association": "NONE",
+    "body": "I just downloaded bitcoin on Windows 7 and when I click on Address Book, I get this error:\n\n> ../../src/msw/toplevel.cpp(1079): assert \"Assert failure\" failed in SetIcons(): icon bundle doesn't contain any suitable icon\n> \n> Do you want to stop the program?\n> \n> You can also choose [Cancel] to suppress further warnings.\n\nHelp > About shows: \"Bitcoin version 0.3.20.2 BETA\"\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/128",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/128/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/128/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/128/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/128",
+    "id": 691867,
+    "number": 128,
+    "title": "Bitcoin's wxwidget GUI does not work with Fluxbox window manager",
+    "user": {
+      "login": "wolfnoliir",
+      "id": 682332,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/682332?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/wolfnoliir",
+      "html_url": "https://github.com/wolfnoliir",
+      "followers_url": "https://api.github.com/users/wolfnoliir/followers",
+      "following_url": "https://api.github.com/users/wolfnoliir/following{/other_user}",
+      "gists_url": "https://api.github.com/users/wolfnoliir/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/wolfnoliir/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/wolfnoliir/subscriptions",
+      "organizations_url": "https://api.github.com/users/wolfnoliir/orgs",
+      "repos_url": "https://api.github.com/users/wolfnoliir/repos",
+      "events_url": "https://api.github.com/users/wolfnoliir/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/wolfnoliir/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      },
+      {
+        "id": 135946,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/GUI",
+        "name": "GUI",
+        "color": "02d7e1",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-03-21T19:21:20Z",
+    "updated_at": "2016-07-15T08:42:43Z",
+    "closed_at": "2011-10-10T21:37:55Z",
+    "author_association": "NONE",
+    "body": "Copy/pasting from the original bug report I posted on fluxbox's bug tracker (http://sourceforge.net/tracker/?func=detail&aid=3208974&group_id=35398&atid=413960):\n\nThe GUI for the virtual currency program Bitcoin (http://bitcoin.org) does not show up at all. There is just a very small blinking phenomenon during less than one second at program launch in the task bar (using gnome-panel). This program works fine under gnome and there is also another report of the same thing happening with Fluxbox on the Bitcoin forum.\nBitcoin still shows up in 'top' and seems to be running normally even though nothing shows up.\nThis could be an incompatibility with wxwidgets.\n\nVersions tested: Fluxbox 1.3.1 and Fluxbox 1.1.1 (Ubuntu Maverick), Bitcoin 0.3.19 and 0.3.20\n\n---\n\nI got this answer:\n\nDate: 2011-03-15 09:55:42 UTC\nSender: akir\n\ni would point to bitcoins code and that they should fix their application:\nhttps://github.com/bitcoin/bitcoin/blob/master/ui.cpp#L2768\n"
+  },
+  {
+    "url": "https://api.github.com/repos/bitcoin/bitcoin/issues/94",
+    "repository_url": "https://api.github.com/repos/bitcoin/bitcoin",
+    "labels_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/94/labels{/name}",
+    "comments_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/94/comments",
+    "events_url": "https://api.github.com/repos/bitcoin/bitcoin/issues/94/events",
+    "html_url": "https://github.com/bitcoin/bitcoin/issues/94",
+    "id": 644801,
+    "number": 94,
+    "title": "-daemon is no longer functional on git head as of 3415b15a56e2ffec16c831d5994b969daa65dc2b",
+    "user": {
+      "login": "midnightmagic",
+      "id": 607777,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/607777?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/midnightmagic",
+      "html_url": "https://github.com/midnightmagic",
+      "followers_url": "https://api.github.com/users/midnightmagic/followers",
+      "following_url": "https://api.github.com/users/midnightmagic/following{/other_user}",
+      "gists_url": "https://api.github.com/users/midnightmagic/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/midnightmagic/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/midnightmagic/subscriptions",
+      "organizations_url": "https://api.github.com/users/midnightmagic/orgs",
+      "repos_url": "https://api.github.com/users/midnightmagic/repos",
+      "events_url": "https://api.github.com/users/midnightmagic/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/midnightmagic/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 64585,
+        "url": "https://api.github.com/repos/bitcoin/bitcoin/labels/Bug",
+        "name": "Bug",
+        "color": "FBBAAB",
+        "default": false
+      }
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2011-03-03T20:14:04Z",
+    "updated_at": "2011-03-22T23:46:46Z",
+    "closed_at": "2011-03-22T23:46:46Z",
+    "author_association": "CONTRIBUTOR",
+    "body": "The following commit appears to have broken -daemon mode for a bitcoind compile:\n\n8314b7f5e68007db1ffe12a0fe5d3204d4e79d2d is the first bad commit\ncommit 8314b7f5e68007db1ffe12a0fe5d3204d4e79d2d\nAuthor: Matt Giuca matt.giuca@gmail.com\nDate:   Sat Feb 26 08:58:15 2011 +1100\n\n```\nmakefile.unix: Removed redundant use of wx-config in DEFS (it was being included twice).\n    Also changed wx-config --cppflags to --cxxflags. I am not sure what the\n    difference is supposed to be, but --cppflags does not include -pthread.\n```\n\n:100644 100644 b36aa2c6a8cb4b6a22f053eccf70c88217d2f445 383de9aded37750f1f7cff5290c4dfab40545f09 M      makefile.unix\n"
+  }
+]
