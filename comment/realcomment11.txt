@@ -1,0 +1,273 @@
+551. bug report number : ['48']
+comment number: 769328 
+body: Considering how prevalent dynamic IPs are, I would consider this bug to be of a high priority.
+ 
+
+comment number: 853062 
+body: The client should never end up with 0 connections, as it always tries to keep MAX_OUTBOUT_CONNECTIONS open (8).  In my testing, a dynamic ip change will keep connections open.  However, connections take 90 minutes to timeout, so there is a time where your client thinks its connected, but is actually not.  That should be fixed, but I have never seen a complete silent disconnect.  I might be wrong but please add a test case which always causes this if you do see this often.
+ 
+
+comment number: 865447 
+body: Is 90 _minutes_ really a reasonable period to wait before timing out a connection?  That's an hour and a half... I suppose there is no kind of heartbeat packet to help speed the timeout?
+ 
+
+comment number: 876616 
+body: TheBlueMatt: what you're saying does not hold true for me... I started a 0.3.20.1 beta node on testnet about 3 days ago. It got stuck at 10870 blocks (that block was mined 2 days ago). It says "0 connections" and does not reconnect.
+While this is not "silent" (assuming after 90 minutes it shows 0 connections), it's a complete disconnect (persisting for probably 2 days now) and should not happen, as most will agree.
+ 
+
+comment number: 876713 
+body: jeffWelling: according to ArtForz, there is a heartbeat packet sent every 30 minutes (provided no other txes/blocks/etc have been send in the last 30 minutes).  I guess the timeout could reasonably be decreased as content sent by TCP should be reliable.  
+
+molecular: Odd, I guess this needs more long-term testing (I only tested by artificially setting the timeout to a low value).  Ill try to do this when I get the chance. Can you grep some debug.log stuff out when this happens?
+ 
+
+comment number: 877092 
+body: testing the whole thing once more:
+1.) start 0.3.20.1 beta -testnet (wait to sync blockchain to block 10882)
+2.) mine a block (block now 10883)
+3.) switch IP
+4.) observe a new block arriving (block 10884): so in fact at least one connection survived the IP switch! I did not expect this.
+5.) mine 3 more blocks
+6.) notice something very strange: it says "2/offline? - generated - warning: this block was not received by any other nodes and will probably not be accepted!" on newly (after IP switch) mined blocks, "2 connections". I still received other blocks after IP switch, though.
+
+here's a screenshot to illustrate the situation: http://i.imgur.com/xlzY1.jpg
+ 
+
+comment number: 877654 
+body: to complete above test report:
+
+7.) went to eat, came back, found this: "0 connections, 10893 blocks", the block generation(s) shown as "2/offline?" in 6.), now show as "7 confirmations". I don't seem to receive new blocks any more, stuck at 10893, blockexplorer: 10898
+8.) concluding that the node is disconnected for real, the IP switch was more than 3 hours ago.
+
+here's a slightly grepped version of the debug.log (I marked the point where the IP changed, line 123): http://pastebin.com/rmSEcAXA
+
+note: it seems from the debug.log I didn't wait for the blockchain to sync before I switched the IP address. This, I think, explains the "2/offline?"-stuff.
+
+Summary: this is now an example of a "non-silent complete disconnect".
+ 
+
+comment number: 1670961 
+body: Since this seems to affect both incoming and outgoing connections and occurs on an event that at least some users will encounter with some frequency (and can't easily avoid), I would say this should be considered a fairly high priority issue. It's obvious why this affects inbound connections (if you didn't think about this issue and design around it, that would happen by itself). It's quite mysterious that it affects outbound connections.
+
+A lot of programs have issues on dynamic IP changes.
+ 
+
+comment number: 4044570 
+body: Is there any way at all to detect network connect/disconnects, even in a platform-depending manner? Re-executing the "detect local ip" logic is no problem at all, but we can't do it continuously.
+ 
+
+comment number: 28998964 
+body: @sipa Why not peridoically re-check (local) IPs or query via UPnP?
+ 
+
+comment number: 29000312 
+body: There was discussion on IRC about this today, IIRC #3088 is a step toward improvement here
+ 
+
+comment number: 208086630 
+body: @molecular Is this still an issue?
+ 
+
+comment number: 210120745 
+body: I can't easily retest at this point. I'm just going to close the issue. If that's not appropriate, please reopen.
+ 
+
+552. bug report number : ['39']
+comment number: 1072814 
+body: Any french translation needed ?
+ 
+
+comment number: 1073142 
+body: Coordinate with folks here: http://www.bitcoin.org/smf/index.php?topic=3773.0
+ 
+
+553. bug report number : ['29']
+comment number: 693764 
+body: Fixed: https://github.com/bitcoin/bitcoin/commit/1aefe491fb1b1311973c9561493d201c7504a120
+ 
+
+554. bug report number : ['28']
+comment number: 673555 
+body: possibly in other RPC methods, too. It died with getaccountaddress in debug.log, but didn't get glibc message as the terminal was closed.
+
+Version: 009d5fb41f3aa39baeeb3f72454cdc14459fc67e (Merge branch 'listaddresses' into integration) with CORS patch (shouldn't cause it, though)
+
+bitcoind: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.15, not stripped
+ 
+
+comment number: 676280 
+body: I just noticed the following (line numbers might not match, I discovered this while re-ordering some code):
+
+In getaccountaddress()
+rpc.cpp:361: warning: control reaches end of non-void function
+
+edit: ArtForz and lfm on IRC said, that code should never return inside a CRITICAL_BLOCK()
+ 
+
+comment number: 680612 
+body: Returning from a CRITICAL_BLOCK is OK.  CRITICAL_BLOCK uses local C++ objects to do the locking, which are guaranteed to be properly destructed no matter how the block is exited.
+ 
+
+comment number: 788353 
+body: More data: there have been a couple more reports of bitcoind crashing under heavy RPC load, although nobody has been able to reproduce.
+ 
+
+comment number: 837941 
+body: how do we know this isn't a hardware problem?  does bitcoin check the consistency of its files and repair them automatically?
+ 
+
+comment number: 845313 
+body: gavinandresen, were those reports from different people, or from one person? If they were from different people I'd push hardware problems further down the list of suspects. I wouldn't rule out hardware problems, of course.
+ 
+
+comment number: 854099 
+body: jhyslop: bitcoind crashing/hanging reports were from other people (slush was one, I believe).
+
+I still haven't seen it, running 3 or 4 instances of bitcoind on 2 or 3 different machines (Mac and Debian Linux).
+ 
+
+comment number: 1764872 
+body: No further reports of this, I'm going to close.
+ 
+
+555. bug report number : ['27']
+556. bug report number : ['26']
+comment number: 676234 
+body: This may be caused by the same bug as the "sum(accounts) != getbalance" bug.
+ 
+
+comment number: 694043 
+body: This is related the the other bug.
+They are both symptoms of having a wallet with private keys in it that the bitcoin client thinks haven't been used yet, but that actually _were_ used.
+
+I just committed a new command-line flag:  -rescan  ... that scans all previous transactions, looking for any that match private keys in the wallet.  Running the test wallet with -rescan Does the Right Thing:
+
+```
+listtransactions '*'
+[
+{
+    "account" : "",
+    "address" : "1CuUymfzaqgLm3c9YoN9fUK7Uyk6ZiGipG",
+    "category" : "receive",
+    "amount" : 0.03000000,
+    "confirmations" : 1795,
+    "txid" : "04299797da34d01ea8f000be656535cea16ca0aa1f385f416b1c3f11811d1f6f",
+    "time" : 1294647952
+},
+{
+    "account" : "",
+    "address" : "1CuUymfzaqgLm3c9YoN9fUK7Uyk6ZiGipG",
+    "category" : "receive",
+    "amount" : 0.02000000,
+    "confirmations" : 1795,
+    "txid" : "585cb6493aa6b67364d6816062248d51b33738a28675ac70f4eb2daaad1433d0",
+    "time" : 1294647952
+},
+{
+    "account" : "",
+    "address" : "16W7FAZ8tcX1gDLgDupfAKfpGLYd7XcPRe",
+    "category" : "send",
+    "amount" : -0.05000000,
+    "fee" : 0.00000000,
+    "confirmations" : 1792,
+    "txid" : "3d1c7534d993629bb43c9676abb9250f01bd006bf272f39337a1cb29b1eb9d37",
+    "time" : 1294649139
+}
+]
+```
+ 
+
+557. bug report number : ['25']
+comment number: 665433 
+body: Eek!
+ 
+
+comment number: 665439 
+body: Before I lose them:
+  http://pastebin.com/evGiRVw2
+and
+  http://pastebin.com/wxCnw5SF
+... are listaccounts and gettransactions '*' output.  getbalance returns 850.05, sum(accounts) is 853.05...  I'll be debugging this more tomorrow.
+ 
+
+comment number: 665453 
+body: txid 22c1af3bc7f21a1ee74fbe63fcc58d0433ce2c574cf042a8f9129f989ebac68d has two entries associated with it, one of which is for BTC 3, and this is the only BTC 3 transaction in what you pastebinned. Maybe a place to look.
+ 
+
+comment number: 666759 
+body: Thanks, mike, it looks like that is the source of the bug.  There is 3BTC in "change" that is being miscounted, because the 'change' address was assigned to an account (using setaccount <change address> "", I assume).
+
+The good news is that unless you dig out change addresses from block explorer this bug won't affect you.  It still needs fixing, though...
+ 
+
+comment number: 666836 
+body: I never used setaccount so something else must have caused it.
+ 
+
+comment number: 674754 
+body: After looking more at this, I'm puzzled.  The 3BTC transaction is definitely weird, but I don't think that is the cause-- the accounts code thinks it is a multi-send-to-self, and it doesn't affect the account's total balance (it is +400 in, -400 out).
+ 
+
+comment number: 674782 
+body: Wishing I had the stones for c++ anymore... still, some thoughts:
+- maybe that tx isn't to blame.
+- does the bitcoin wallet implement a proper semblance of a double-entry ledger? If not, that's an enhancement request. (the pastebin records sure look like one, but i'm no accountant)
+- is there cause here to create an in-the-field assert which would trigger a client alert and prompt to submit tx data for fault analysis, in the event of such a disagreement?
+ 
+
+comment number: 676231 
+body: I asked Satoshi, and he has a very good theory and what happened:
+
+Wallet clone "A" spends some coins.
+
+Wallet clone "B" (this is the one I'm debugging) comes online, runs ReacceptWalletTransactions, sees the spend, and marks the previous transaction (where it got the coins) as spent.  HOWEVER, it does NOT add the spend transaction to the wallet.  That is the bug, it should.
+ 
+
+comment number: 693781 
+body: Fixed.
+https://github.com/bitcoin/bitcoin/commit/1d23c7436164faa0b1822acf5ce9507bf6ff257a
+https://github.com/bitcoin/bitcoin/commit/d9574c2f14028297ad5121695a0c10e517bf638e
+ 
+
+558. bug report number : ['22']
+comment number: 744304 
+body: updated with a list of 320 fresh seed nodes, and made a pull request.
+guess this should be closed any day now. :)
+ 
+
+comment number: 745863 
+body: Merged.
+ 
+
+559. bug report number : ['21']
+560. bug report number : ['18']
+comment number: 647117 
+body: Wow, I just sent 50 BTC, and now the client is reporting zero balance...
+ 
+
+comment number: 650074 
+body: What happened:
+
+Send 50.006... was rounded to 50.01 (amounts get rounded to two decimals).  Causing insufficient funds message.
+
+Send 50  ran into special-case code for micropayments; if making change would result in less than 0.01 coins (which would trigger the you-must-pay-a-0.01-fee transaction spam prevention code), then the sub-cent amount is sent along as a transaction fee.
+
+At the very least, the RPC code should put the amount being sent in the insufficient funds message.
+
+Doing something more with sub-cent transactions needs more careful thought...
+ 
+
+561. bug report number : ['16']
+comment number: 936829 
+body: There is also a slight issue that hide window does not hide the window when first pressed on the keyboard or clicked on the dock, instead the window's elevation is altered.  If the hide button has previously been pressed, then pressing it again successfully hides the window.
+ 
+
+comment number: 1105603 
+body: I don't see a "Hide Window"/"Hide Others"/"Show All" menu option at all under the app main menu (in OSX 10.6.7). Could also use an Edit (for cut/copy/paste) and a Help menu.
+ 
+
+comment number: 2820904 
+body: GUI is completely different for 0.5 release; going to close this, because I'm sure it has its own completely different set of Mac UI issues.
+ 
+

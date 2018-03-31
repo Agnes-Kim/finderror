@@ -1,0 +1,1317 @@
+444. bug report number : ['701']
+comment number: 3765076 
+body: Fixed
+ 
+
+445. bug report number : ['689']
+comment number: 3089646 
+body: I haven't had much time to look at the code, but it might be the case that CWallet::AddToWallet() is assuming that a given transaction will only ever have one payment / payment address in it (for this wallet).  But when sendmany is used, any given transaction can have more than one payment to separate addresses in this wallet.
+ 
+
+comment number: 3097953 
+body: This is because `TransactionRecord::decomposeTransaction`, where the bitcoin transactions are decomposed to UI transactions, handles the case where multiple outputs are "mine" by choosing one of the addresses.  
+
+```
+            // Received by Bitcoin Address
+            sub.type = TransactionRecord::RecvWithAddress;
+            BOOST_FOREACH(const CTxOut& txout, wtx.vout)
+            {
+                if(wallet->IsMine(txout))
+                {
+                    CBitcoinAddress address;
+                    if (ExtractAddress(txout.scriptPubKey, wallet, address))
+                    {
+                        sub.address = address.ToString();
+                    }
+                    break;
+                }
+            }
+```
+
+(I agree it would be better to generate multiple UI transactions in this case, one for each owned target address)
+ 
+
+comment number: 3816943 
+body: Can you test pull request #800?
+ 
+
+446. bug report number : ['659']
+comment number: 2854588 
+body: This sounds like a regression; if tor is used it should disable listening, and should not even know its own external IP address, let alone broadcast to others.
+
+Can you check whether the proxy is used at all?
+ 
+
+comment number: 2855876 
+body: I can see by netstat that the proxy is used. There are connections opened by bitcoin, from localhost:X to localhost:9050.
+ 
+
+comment number: 2858070 
+body: It should not be assumed all SOCKS proxies are TOR, thus disable listening.
+For example, I might want to setup a SSH tunnel between bitcoind and remote external server using both SOCKS proxy and port forwarding from server.
+ 
+
+comment number: 2858723 
+body: Well it makes no sense to listen on the local IP address if a proxy is used, tor or not -- you have delegated network access to that remote host. Someone using an anonymous non-TOR SOCKS proxy will still not want to leak his iP address, it is a serious leak.
+
+In ancient times I've done something with SOCKS proxies, and I know SOCKS5 supports a "bind" call to be able to listen on a the proxy host. This is what ideally should be used in these kind of cases, but I also know 0% of the programs actually implementing a socks proxy support it.
+
+So the second-best thing is to disable listening (by default -- one may enable it in specific cases) when a proxy is used. BTW if you set your TOR port to the default of 9050 it will automatically regard it as TOR. Did you change the port? that might explain the regression:
+
+```
+bool fTOR = (fUseProxy && addrProxy.port == htons(9050));
+```
+
+IMO this should be an explicit option in the UI, and not some heuristic based on the port.
+
+Anyway, for now you can try if `--nolisten` command line option solves the problem.
+ 
+
+comment number: 2859459 
+body: I can't try the -nolisten switch right now, will do it as soon as I can.
+
+My Tor is on 9050, as by default.
+
+Am I the only one having this problem?
+ 
+
+comment number: 2860471 
+body: I also use TOR, but never notice the listening port, because my node is behind firewall, and never connected from outside ;)
+I just check the source, notice that in init.cpp, fUseProxy and addrProxy is checked before it is initialized, I guess this is the bug.
+ 
+
+comment number: 2868180 
+body: (oops, github was a bit trigger happy)
+
+Yes this could be the problem, the value of fUseProxy is only "final" after LoadWallet and the command line option `-proxy` have been parsed (in that order).
+
+`fTOR` however is given a value _before_ either the fUseProxy or the proxy port has been assigned. I am not sure how this can ever have worked. 
+
+See this pull request: https://github.com/bitcoin/bitcoin/pull/663
+Or here: https://github.com/laanwj/bitcoin/tree/torcheckfix
+
+Can you test this?
+ 
+
+comment number: 2871057 
+body: You do notice fNoListen is used before assigned, right? ;)
+I would suggest move the "-proxy" parsing before fTOR and fNoListen initializtion.
+ 
+
+comment number: 2871153 
+body: Huh good catch :)
+
+But that wouldn't work either -- fUseProxy is also set by LoadWallet, so it can only be parsed after that, as the command-line option should take precedence over what is set in the UI.
+
+Anything using fUseProxy must happen after LoadWallet.
+
+This is more annoying than I thought... we need to be really sure to fix this without introducing a new regression
+ 
+
+comment number: 2871210 
+body: BTW, despite this bug, I do not see why EhVedadoOAnonimato have connections on the listening port,
+since proxy should still be used, and IRC server only see IP of the proxy.
+Maybe your Bitcoin node is also a TOR exit, EhVedadoOAnonimato? Or do you have UPnP enabled and in use?
+
+And I think fHaveUPnP should also not be set when fNoListen is false.
+ 
+
+comment number: 2872328 
+body: Wow... storing settings in the wallet... I always wonder why my proxy setting is not in bitcoin.conf.
+ 
+
+comment number: 2872584 
+body: Yeah it's and it's one of the things complicating multi-wallet support
+
+All the UI-configured settings are written into the wallet. The .conf is never written, only read.
+ 
+
+comment number: 2888216 
+body: Ok, let's see what really happens in init.cpp, proxy-wallet related. Current order of events:
+1. `fTOR` set based on `fUseProxy` and `addrProxy.port` (precondition: fUseProxy and addrProxy have their final value !!not met!!, postcondition: fTor has its final value)
+2. `fNoListen` is set based on `GetBoolArg("-nolisten")` and `fTOR` (precondition: fTor has its final value, postcondition: fNoListen has its final value)
+3. if `fNoListen` is not set, `BindListenPort` is called (precondition: fNoListen has its final value)
+4. `LoadWallet` loads wallet (postcondition: `fUseProxy` and `addrProxy` have an initial value)
+5. `fUseProxy` and `addrProxy` are parsed from `mapArgs["-proxy"]` (postcondition: `fUseProxy` and `addrProxy` have their final value)
+6. Network thread is started (`StartNode`) (precondition: all network settings have their final value)
+
+So we have to try to reorder this in a sensible order. Constraint: Binding to a port happens early because "Bind to the port early so we can tell if another instance is already running.".
+ 
+
+comment number: 2890578 
+body: Well from what I can see we have to drop the binding port early to see if another instance is running.  I dont think it is a big deal as we now have nice locks in .bitcoin, whereas (IIRC) those weren't there when the order of BindListenPort was written by satoshi, but maybe gavin can confirm that.
+ 
+
+comment number: 2903617 
+body: I agree,  we already stopped using port binding as a locking mechanism when
+-nolisten was introduced.
+ 
+
+comment number: 3024570 
+body: I'm sorry for not having reported back.
+
+I confirm that the -nolisten switch seems to fix the issue. At least when I add it, there are no incoming connections and bitcoin is not listening on 8333.
+
+@Iongshun, concerning the incoming connections, when I first installed bitcoin (there's a while), I manually configured my router to redirect connections on 8333 to my machine, so that explains how people could reach me. That doesn't explain how they knew there was a bitcoin running on my IP though. Or do bitcoin nodes store IPs of nodes they see once and keep trying to connect to it for a long time? Because than perhaps my Android phone is to blame: I have the BitcoinJ based app on it, and I run it behind the same router (so, the same IP), without Tor...
+ 
+
+comment number: 3024753 
+body: Yes all nodes keep a list of known-good ips to try and exchange those with each other.
+
+EhVedadoOAnonimato reply@reply.github.com wrote:
+
+> I'm sorry for not having reported back.
+> 
+> I confirm that the -nolisten switch seems to fix the issue. At least
+> when I add it, there are no incoming connections and bitcoin is not
+> listening on 8333.
+> 
+> @Iongshun, concerning the incoming connections, when I first installed
+> bitcoin (there's a while), I manually configured my router to redirect
+> connections on 8333 to my machine, so that explains how people could
+> reach me. That doesn't explain how they knew there was a bitcoin
+> running on my IP though. Or do bitcoin nodes store IPs of nodes they
+> see once and keep trying to connect to it for a long time? Because than
+> perhaps my Android phone is to blame: I have the BitcoinJ based app on
+> it, and I run it behind the same router (so, the same IP), without
+> Tor...
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/659#issuecomment-3024570
+ 
+
+447. bug report number : ['656']
+comment number: 2865651 
+body: I have the same problem. "Start Bitcoin on windows system startup" is unchecked after reopening the dialog.
+ 
+
+comment number: 2868328 
+body: This appears to be a regression. Even though the configuration bit exists, "Start Bitcoin on windows system startup" implementation was part of the Wx UI, not of the core. This should be re-added for Bitcoin-Qt
+ 
+
+comment number: 3213511 
+body: Pull request #717 re-adds this functionality
+ 
+
+comment number: 3956036 
+body: #717 was merged, this should be working now.
+ 
+
+448. bug report number : ['650']
+comment number: 2813749 
+body: Yeah, C++ exceptions and manual memory allocation/dallocation is asking for
+trouble. We should make more use of the RAII idiom.
+ 
+
+449. bug report number : ['642']
+comment number: 4043688 
+body: My mistake; this issue still exists, though it is fixed in addrman (#787).
+ 
+
+comment number: 4984038 
+body: Fixed now, now that addrman is pulled?
+ 
+
+comment number: 4984147 
+body: Yes, see https://github.com/bitcoin/bitcoin/blob/399ff1fe05aba8bdde092144eb524198a810f3ac/src/addrman.cpp#L312
+ 
+
+450. bug report number : ['640']
+comment number: 2785883 
+body: Could be related to this issue :
+https://github.com/bitcoin/bitcoin/issues/639
+ 
+
+comment number: 2785890 
+body: It very well could be, although #639 specifically notes the Bitcoin 
+daemon. I was unable to reproduce the crash on the daemon.
+
+On 11/17/2011 9:09 PM, Wladimir J. van der Laan wrote:
+
+> Could be related to this issue :
+> https://github.com/bitcoin/bitcoin/issues/639
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/640#issuecomment-2785883
+ 
+
+comment number: 2799541 
+body: Do we have anybody able to debug on Windows 7 ?
+jmack, would you be able to help debug? (are you a Windows developer?)
+ 
+
+comment number: 2800238 
+body: I haven't developed for Windows in a few years, so my environment is not set up. I'm traveling for the next week and a half, so it will be a while before I can work on that.
+
+If someone can recommend some simple debug tools that can generate some useful information, I can try to get that information remotely.
+ 
+
+comment number: 3995082 
+body: I'm able to replicate this on 0.5.2 as well.
+ 
+
+comment number: 4091391 
+body: Also replicated on the 0.6.0 head version using a debug Windows binary provided by @TheBlueMatt. 
+
+Gdb backtrace most often indicates line 1662 in bitcoinrpc.cpp:
+
+throw JSONRPCError(-15, "Error: running with an unencrypted wallet, but walletlock was called.");
+ 
+
+comment number: 4492679 
+body: Replicated with bitcoin-qt.exe v0.6.0rc3 on Windows 7 x86.
+ 
+
+comment number: 4512661 
+body: This appears to be easily reproduceable (for those who can reproduce it to begin with) on anything >= 0.5.0, suggesting it was added with the move from wx to qt.
+ 
+
+comment number: 4550756 
+body: This should be fixed in 0.6.0rc4 and 0.5.3.1
+ 
+
+comment number: 4576722 
+body: Confirmed as fixed in 0.6.0rc4.
+ 
+
+comment number: 4583109 
+body: Confirmed as fixed in 0.5.3.1.
+ 
+
+comment number: 4583368 
+body: @jmack thanks for testing & confirmation
+ 
+
+451. bug report number : ['639']
+comment number: 4006879 
+body: Can someone who was able to duplicate this issue test got HEAD and see if the problem persists?
+ 
+
+comment number: 4043699 
+body: I verified the problem is fixed, though a confirmation from the original submitter would be nice.
+ 
+
+452. bug report number : ['633']
+453. bug report number : ['630']
+comment number: 6792000 
+body: Outdated (and probably fixed)
+ 
+
+454. bug report number : ['628']
+comment number: 2683910 
+body: Can you try with the current master branch? (This should have been solved; see issue #615 and #618)
+ 
+
+comment number: 2683971 
+body: Sorry, didn't know it was already reported. I'm newbie, will wait next release.
+Thanks.
+
+Question: Why the address field is blank? I assume that when I right click on it to add a label, the address field should automatically show this address and user only should add the label.
+ 
+
+comment number: 2684234 
+body: That's also working now :-)
+ 
+
+comment number: 2686493 
+body: For reference if you ever need to test the latest version, you can grab a binary at http://jenkins.bluematt.me/job/Bitcoin/ws/ and selecting bitcoin[d|-qt][.exe]
+ 
+
+comment number: 2686757 
+body: I wish there was a facebook like button or google +1 for the OP's bug testing, laanwj's work, and Matt's Jenkins binaries. I'm super busy recently (trying to pay for rent in NY) - but really hope to work on testing a handful of bugs this week now that the binaries are build-able :-)
+
+thanks guys.
+ 
+
+comment number: 2721235 
+body: issue is solved in next release, closing
+ 
+
+455. bug report number : ['620']
+comment number: 2677970 
+body: What OS/window manager?
+ 
+
+comment number: 2678786 
+body: This is on ubuntu 11.10 gnome-shell
+ 
+
+456. bug report number : ['616']
+comment number: 2668241 
+body: I agree. The behaviour seems wrong.
+
+Would fixing this break anything (i.e. it is used somewhere)? If not, you could make a pull request to fix it. 
+ 
+
+comment number: 2668398 
+body: Yes, conceptually you are right. Anding with a 64 bit number will make it a
+64-bit number and discard the rest.
+
+However, are you very sure nothing relies on the current behavior?
+
+(If not, I wonder why it is this way. Is it called in a fast/critical loop,
+making the overhead of zeroing significant?)
+ 
+
+comment number: 2668654 
+body: Looks like a bug to me.  Perfect candidate for a unit test.
+Looks to me like this method (and all the rest of the bignum &= methods) is not used anywhere in the source.
+ 
+
+comment number: 2683926 
+body: If it is not used, wouldn't it be a good idea to remove it? (it's in git should we need it later...)
+ 
+
+comment number: 4043823 
+body: It's not used indeed; #870 deletes it.
+ 
+
+457. bug report number : ['613']
+comment number: 2659418 
+body: Confirmed -- I've also seen this, it happens on Linux in some cases but not
+other OSes (afaik).
+
+The black box is a tooltip that somehow doesn't render succesfully.
+
+Might be Qt related or some problem in the rendering in overviewpage.cpp
+ 
+
+comment number: 2802897 
+body: I usually get the black rectangle when i hover over that area, but today I noticed that if I hover over the 'unconfirmed' number to the left and then quickly move to the right, I get a pattern of random-looking coloured dots, rather than solid black.  I can almost make out what the tooltip says through the dots.  So this isn't just a CSS issue setting foreground and background to the same colour; it's seems to be a memory corruption issue, which is significantly worse.
+
+I would include screenshots, but someone would find a way of decoding the 'random' dots to read my private keys.  :)
+ 
+
+comment number: 2816390 
+body: Confirmed on Gentoo.
+ 
+
+comment number: 2818497 
+body: #653 fixes this issue
+ 
+
+458. bug report number : ['610']
+comment number: 2668671 
+body: Suggested fix: maxconnections should be set to less-than-64 on Windows.
+
+Long-term fix: use boost::asio for the networking stuff.
+ 
+
+comment number: 16893651 
+body: Closing as duplicate of #2408 (this one is much older, but the newer one has a better suggestion for a fix).
+ 
+
+459. bug report number : ['605']
+comment number: 2633877 
+body: Yes we should eventually add a more robust failure mode in case of corrupted block chain files (ie, re-download instead of crash)
+ 
+
+comment number: 4043841 
+body: Or even better: discard blkindex.dat, and reconstruct from whatever valid blocks can be reconstructed from blk0001.dat.
+ 
+
+comment number: 5413462 
+body: I suggest we downgrade bitcoin's version to alpha until this is fixed.
+ 
+
+comment number: 5414186 
+body: As Bitcoin is experimental software I don't agree with you here. Is this bug reproduceable (with 0.6.1 RC1)?
+ 
+
+comment number: 6792056 
+body: Bitcoin should now be able to detect and work around this issue
+ 
+
+460. bug report number : ['601']
+comment number: 2588546 
+body: MSVC is wrong here, taking the address of an empty vector should be legal. That stack overflow page also gives the workaround: add  `#define _SECURE_SCL 0`, or even better, define it in your build script.
+ 
+
+comment number: 31105698 
+body: Although we accept MSVC compatibility patches, we won't actively ourselves make changes to make MSVC happy. Closing.
+ 
+
+461. bug report number : ['596']
+comment number: 2566168 
+body: It isn't a random string, the scriptSig is a CScript.  Standard txIns have only data-pushing opcodes, which count as zero SigOps, but theoretically you could have a scriptSig that included an OP_CHECKSIG.
+ 
+
+comment number: 2566188 
+body: AFAIK it is a random string... see IncrementExtraNonce in main.cpp.  We are talking about the Coin Base transaction, and the Coin Base's CTxIn.
+ 
+
+comment number: 2566232 
+body: Got it, sorry for being dense. You're right, the coinbase scriptSig shouldn't be checked for SigOps.
+ 
+
+comment number: 2566249 
+body: Cheers. :)
+ 
+
+comment number: 2818279 
+body: Won't changing this make it easy to fork the block chain?
+ 
+
+comment number: 2833976 
+body: luke-jr: Doing an OpCount on random bytes doesn't make any sense.
+ 
+
+comment number: 2834669 
+body: dmgores: vtx[0].vin[0].scriptSig is not random bytes-- it can be random bytes encoded as a CScript, but it must deserialize as a CScript for the transaction/block to be valid:
+  pblock->vtx[0].vin[0].scriptSig = CScript() << pblock->nTime << CBigNum(nExtraNonce);
+
+... is the normal way to create it, and CScript::operator<<() Does The Right Thing (create a script that, if it was ever executed, would do two PUSHDATA operations to put the nTime and nExtraNonce on the stack).
+
+luke-jr is correct, if we stop counting OP_CHECKSIG/OP_CHECKMULTISIG operations in vtx[0].vin[0] then somebody could try to split the block chain by sending a transaction that is valid under the new code but invalid under the old.
+ 
+
+comment number: 2836439 
+body: I don't think the coinbase is ever deserialized.
+
+EDIT: nevermind - the issue is obvious that it is, when checking the opcodes.
+ 
+
+comment number: 2842407 
+body: I'd argue that forever counting operations on data that is only meant to be random bytes is a waste of CPU time... but if you do not want to at some time break old clients from the chain due to this somewhat minor optimization, I guess I'm ok with that.
+ 
+
+comment number: 2842466 
+body: At some time. When that happens, I agree this should be fixed. Along with a million other minor bugs.
+ 
+
+comment number: 4043958 
+body: How do we deal with this, in light of the proposed adding of nHeight to the coinbase?
+ 
+
+comment number: 4044171 
+body: I don't see how that's relevant to this...
+ 
+
+comment number: 4044263 
+body: Since sigops in the coinbase are counted, adding non-script-serialized data in front of coinbase may cause an invalid deserialization of what follows, causing sigops to be counted where there aren't any. (yes, I know there aren't ever any real sigops in a coinbase, but as most coinbases are currently constructed through script serialization, the invalid interpretation won't occur).
+ 
+
+comment number: 4045757 
+body: The proposed height addition is script-serialized.
+ 
+
+comment number: 4046381 
+body: My mistake, i believed it was different.
+ 
+
+comment number: 42924629 
+body: This is a three-year old issue now. Does this still need to be solved?
+ 
+
+comment number: 43130743 
+body: It requires a hard fork to solve it. And there's no reason why it is a
+problem (rather than inconvenient), as it's easy enough as a miner to never
+create a sigop in a coinbase.
+ 
+
+comment number: 56800696 
+body: Closing as it is not actually a problem.
+ 
+
+462. bug report number : ['595']
+comment number: 2563806 
+body: This probably means that getOptionsModel is called on a 0 pointer. But we also need to know from where it is called.
+
+I use Ubuntu 11.10 as well and cannot reproduce this. Can you build with debug symbols on so that we can make sense of the traceback?
+ 
+
+comment number: 2567178 
+body: I got this after doing a stock i686 install in VirtualBox and building bitcoin via debuild on my debian-build branch, so it should be easy to reproduce.  
+You might also try https://launchpad.net/~bitcoin/+archive/bitcoin/+build/2885724 or https://launchpad.net/~bitcoin/+archive/bitcoin/+build/2885725 (depending on your architecture), though I haven't tested those, and you might have to add the bdb from ppa:bitcoin/libdb instead of ppa:bitcoin/bitcoin
+ 
+
+comment number: 2571336 
+body: The binary deb appears to work fine, so I'd say this isn't a big deal, but it should be investigated further.
+ 
+
+comment number: 2721250 
+body: https://github.com/laanwj/bitcoin-qt/issues/29 shows full detail.
+
+This is solved in the next release, closing issue.
+ 
+
+463. bug report number : ['594']
+comment number: 2539772 
+body: The weird thing is that the entire application doesn't use manual
+registration/deregistration of timers anywhere. I've also seen this with
+other Qt apps. Could be this Qt issue:
+
+https://bugreports.qt.nokia.com/browse/QTBUG-16175
+ 
+
+comment number: 5147808 
+body: I haven't seen this warning for ages. Also, most of the QTimers have been removed in the recent ui<->core interface reorganization pull request. Closing this issue.
+ 
+
+comment number: 5165733 
+body: ~~I still see this issue on 0.6, not sure if its fixed on master...~~
+Nevermind, dont see it on master.
+ 
+
+comment number: 5168489 
+body: ok, thanks for testing
+ 
+
+464. bug report number : ['589']
+comment number: 2511936 
+body: "The daemon crashes" -- does it crash with a segfault or does it stop responding to JSON-RPC requests?
+
+What is it busy doing-- responding to getwork requests?  Handling users' wallets?  Is it under heavy JSON-RPC load?
+
+Can you compile -g -ggdb and run under the gdb debugger?
+
+Can you compile -DDEBUG_LOCKORDER and then run? Previous hangs were due to deadlocks between threads...
+
+Oh, and what variation of Linux?
+ 
+
+comment number: 2517834 
+body: > does it crash with a segfault or does it stop responding to JSON-RPC requests?
+
+As far as I can tell, there's no segfault.  The process simply exits. That made me think the OOM killer had killed the daemon, but kernel logs show no OOM killer activity in the last 2 years.
+
+> What is it busy doing-- responding to getwork requests?  Handling users' wallets?  Is it under heavy JSON-RPC load?
+
+Other than activity required for staying connected as a peer, the daemon is completely idle.  I manually execute an API request once every few days, but otherwise it receives no API activity.
+
+> Can you compile -g -ggdb and run under the gdb debugger?
+> 
+> Can you compile -DDEBUG_LOCKORDER and then run? Previous hangs were due to deadlocks between threads...
+
+So far I've been unable to compile Bitcoin from source.  I'll try again now that QT is merged.  I'll post back with further details.
+
+> Oh, and what variation of Linux?
+
+Debian 6.0.3
+ 
+
+comment number: 4885655 
+body: Any updates on this? Anyone been able to reproduce this?
+ 
+
+comment number: 4885737 
+body: I haven't had this problem since 1c4aab926e0b25e0c896d4703d858eda1eb14ea5
+ 
+
+comment number: 4885884 
+body: Ok, great to hear that!
+
+I'll close this issue then, you can post here or open a new one if you happen to have the problem again.
+ 
+
+465. bug report number : ['588']
+comment number: 35871857 
+body: Just tested (as -zapwallettxes does exactly this) and this issue no longer exists on master.
+ 
+
+466. bug report number : ['586']
+comment number: 2423944 
+body: This looks completely reasonable to me.  On non-broken systems it will be a no-op, so the workaround can remain indefinitely with no cost... and only get dropped when someone gets around to reviewing the hardening settings at some point in the future.
+
+I don't have a broken ubuntu system to try this on, but I can confirm that its harmless on F14's GCC 4.5.1.
+ 
+
+comment number: 2424183 
+body: ACK
+ 
+
+comment number: 2433543 
+body: ACK, makefiles can never have enough hacks and workarounds :-)
+ 
+
+comment number: 2465125 
+body: ACK
+ 
+
+467. bug report number : ['581']
+comment number: 2367501 
+body: Why are you building x64?
+
+There's no reason to, 32-bit runs fine on 64-bit machines and nothing is gained using 64-bit, except less compatibility, a larger executable, and, most likely, slightly lower performance.
+ 
+
+comment number: 2367664 
+body: Sorry, I should rephrase that. I am not trying to build a 64-bit client. I am just using windows 7 x64 (which I thought is the reason I am getting the above error.)
+ 
+
+comment number: 2369590 
+body: When building a 64-bit executable, you should also make sure that all the dependencies are 64 bit. The deps from https://download.visucore.com/bitcoin/qtgui_deps_1.zip are 32-bit so that will fail.
+
+It might be the case that Qt SDK tries to build a 64-bit executable by default on a 64-bit OS? If so maybe there is a flag to force it to build a 32-bit one (-m32 for gcc?) I'm not sure, I can only try on 32 bit right now.
+ 
+
+comment number: 9291215 
+body: Have you tried building the latest version (0.7.0 or 0.7.1rc1) lately? Is this bug still here?
+ 
+
+comment number: 39688916 
+body: Building on Windows 7 x64 works with 0.9.0. This seems to be resolved.
+ 
+
+468. bug report number : ['580']
+comment number: 4433912 
+body: This seems to work now.
+ 
+
+469. bug report number : ['573']
+comment number: 2317300 
+body: Mostly-ACK. I agree that this is "purer," though it makes packing and unpacking more complex. Most people will just convert it back to an integer so they can do the bitshift-trick to decompress it.
+ 
+
+470. bug report number : ['571']
+comment number: 2342299 
+body: I would argue this is more of a priority medium-high as it represents a serious security risk for Win32 users who depend on the wallet re-locking when they believe it does.
+ 
+
+comment number: 2347044 
+body: This is definitely a high-priority issue!! Being a user myself, although I don't have many bitcoins in my wallet, I don't feel like those are secured anyway.
+ 
+
+comment number: 2349387 
+body: Seems to work perfectly on OSX.
+
+Here's how I tested:
+
+Ran the Bitcoin-Qt GUI with -server -testnet on a datadir with a locked wallet.
+
+Unlocked using both walletpassphrase RPC command AND by sending coins from the GUI.
+Observed:  wallet re-locked itself either immediately (if send from GUI) or after timeout (using walletpassphrase).
+ 
+
+comment number: 4043970 
+body: This is potentially fixed by #828. Can someone running windows verify this?
+ 
+
+comment number: 4583921 
+body: Tested and verified as fixed in 0.5.3.1 and 0.6.0rc4.
+ 
+
+471. bug report number : ['544']
+comment number: 2258525 
+body: Before you try anything, make sure to have a backup of your wallet.dat.
+ 
+
+comment number: 2258683 
+body: Is there wallet.dat for OSX? - I can't seem to find it.
+ 
+
+comment number: 2274743 
+body: http://bitcoin.stackexchange.com/questions/1350/is-there-wallet-dat-for-osx
+
+I suggest you do a backup of your wallet.dat, and reinstall bitcoin to see if your blockchain was corrupted somehow.
+ 
+
+472. bug report number : ['540']
+comment number: 2232913 
+body: As a first measure you could delete `addr.dat` from your bitcoin folder. This is completely safe and should improve startup time a lot.
+
+What kind of hardware are you running it on? Either your CPU or disk is a little slow.
+ 
+
+comment number: 2233173 
+body: I deleted addr.dat, this is the output now:
+
+```
+Bitcoin version 0.4.0-beta
+OS version Linux 2.6.38-11-generic x86_64
+System default language is 66 en_DK.UTF-8
+Language file locale/en_DK/LC_MESSAGES/bitcoin.mo (English (Denmark))
+Default data directory /home/rune/.bitcoin
+Bound to port 8333
+Loading addresses...
+dbenv.open strLogDir=/home/rune/.bitcoin/database strErrorFile=/home/rune/.bitcoin/db.log
+Loaded 0 addresses
+ addresses               190ms
+Loading block index...
+LoadBlockIndex(): hashBestChain=000000000000085dbedd  height=147225
+ block index          443179ms
+Loading wallet...
+nFileVersion = 40000
+fGenerateBitcoins = 0
+nTransactionFee = 1000000
+fMinimizeToTray = 0
+fMinimizeOnClose = 0
+fUseProxy = 0
+addrProxy = 127.0.0.1:9050
+fUseUPnP = 1
+ wallet                  118ms
+Done loading
+mapBlockIndex.size() = 147228
+nBestHeight = 147225
+setKeyPool.size() = 100
+mapWallet.size() = 2
+mapAddressBook.size() = 4
+```
+
+I have an Intel Q9550 CPU (four cores, downclocked to 2 GHz) and my home folder is on an Intel X-25M SSD. This was never a problem with versions before 0.4, the main window appeared instantly back then. blkindex.dat is 254.7 MB in size.
+ 
+
+comment number: 2352581 
+body: I believe this has been fixed with the QT implementation - load times are now much shorter.
+ 
+
+comment number: 2353278 
+body: I dont think load times have changed with QT as the load methods in AppInit2 haven't changed.
+This issue appears to be specifically about slow load times loading the block index, which should effect both bitcoind and bitcoin-qt.  
+Since no developer (AFAIK) can reproduce this error, is there any way the original reporter can profile bitcoin while it is loading?
+ 
+
+comment number: 2360156 
+body: This bug is now gone for me. I believe the cause was an SSD drive that had slowed down. The read speeds had dropped to ~700KB/s which corresponds to about 15 minutes to read the 600MB block chain file.
+After the read speed have returned to normal this issue is no longer present; loading takes 15 seconds now.
+
+I do still think 15 seconds to load the GUI is a long time, though. Perhaps it would be a good idea display the GUI as soon as the bitcoin process is started, and not wait until the block chain has been read from the hard drive? The GUI could say "Loading block chain from disk: 3%..." while reading the data, so as to let the user know that everything is working, it's just  a slow storage medium that is causing the wait.
+ 
+
+comment number: 2361950 
+body: Actually the new qt gui does just that. 
+
+runeksvendsen reply@reply.github.com wrote:
+
+This bug is now gone for me. I believe the cause was an SSD drive that had slowed down. The read speeds had dropped to ~700KB/s which corresponds to about 15 minutes to read the 600MB block chain file.
+After the read speed have returned to normal this issue is no longer present; loading takes 15 seconds now.
+
+I do still think 15 seconds to load the GUI is a long time, though. Perhaps it would be a good idea display the GUI as soon as the bitcoin process is started, and not wait until the block chain has been read from the hard drive? The GUI could say "Loading block chain from disk: 3%..." while reading the data, so as to let the user know that everything is working, it's just a slow storage medium that is causing the wait.
+
+## 
+
+Reply to this email directly or view it on GitHub:
+https://github.com/bitcoin/bitcoin/issues/540#issuecomment-2360156
+ 
+
+comment number: 2369596 
+body: Excellent. I just built bitcoin-qt, looks very nice!
+ 
+
+comment number: 42494973 
+body: In my case, it's very slow too. And each time I start bitcoin-qt, it take more time to load the entire application than the previous one.
+ 
+
+473. bug report number : ['515']
+comment number: 2093356 
+body: I'll test in 11.04 to see if I can recreate the issue
+ 
+
+comment number: 2093515 
+body: Can you run the same experiment with the previous release?
+
+database log files are cleaned up on either startup or next shutdown (can't remember which), so if you're downloading the blockchain with a new install lots of logs are expected.
+ 
+
+comment number: 2093744 
+body: It looks like the previous release behave the same way. All the log files except the last are cleaned up after shutdown as you said. So this is normal behaviour.
+ 
+
+comment number: 2102379 
+body: Older releases do indeed have the same problem, but that doesn't mean it's an issue that can be ignored. Start up bitcoin with an empty datadir, and it creates over 1.5GiB of log files when it finishes downloading the chain...
+ 
+
+comment number: 2102402 
+body: Ok, I assumed that the log files it creates were valuable. Maybe a commit could make log-file creation opt-in.
+ 
+
+comment number: 4967247 
+body: Should be fixed since #1010.
+ 
+
+474. bug report number : ['514']
+comment number: 2121945 
+body: Using google apps sounds like a good idea. It's pretty easy to setup, too (only a few dns records). Maybe you could set it up, grant admin rights to a few developers (maybe Gavin and Jeff) and tell Sirius which records to add?
+ 
+
+comment number: 2206963 
+body: This has been closed, we have gone with QA@BitcoinTesting.org - so as to maintain a completely separate testing site.
+ 
+
+475. bug report number : ['494']
+comment number: 2017578 
+body: Can you compare with the instructions detailed at https://bitcointalk.org/index.php?topic=5851.0;all
+ 
+
+comment number: 2017642 
+body: Definitely, I just ironed out my Linux 11.04 build. I will get on this as soon as I test some pulls with Ubuntu (and take a nap =P)
+ 
+
+comment number: 3002298 
+body: I think this build issue is stale (concerns WX and bitcoin 0.4.0rc1) so I'm closing it; if you experience this issue with newer versions please re-open the issue or make a new one.
+ 
+
+476. bug report number : ['493']
+comment number: 2006841 
+body: I believe this is by design; after you encrypt, encryptwallet again would be a no-op.
+ 
+
+comment number: 2007055 
+body: Closed pending any additional feedback
+ 
+
+477. bug report number : ['491']
+478. bug report number : ['489']
+comment number: 2007271 
+body: What version of wxwidgets do you have installed?
+ 
+
+comment number: 2007364 
+body: Fixed with Luke-Jr's ui.cpp: http://luke.dashjr.org/programs/bitcoin/w/bitcoind/luke-jr.git/commitdiff/a687d4f574cb22ec969354dce3237558982e29d3
+
+That is with wx 2.9.2
+ 
+
+comment number: 2008678 
+body: Resolved when https://github.com/bitcoin/bitcoin/pull/496 is merged
+ 
+
+479. bug report number : ['485']
+comment number: 1985571 
+body: That download button is (AFAIK) always a copy of current git master branch.
+ 
+
+comment number: 1985575 
+body: When I did a build using the download button's source I received the above errors. When building it moments later from git clone; I did not. I'll try to run a diff and see what's going on.
+ 
+
+comment number: 2009660 
+body: I ran diff and couldn't find any issues, but I noticed one file that was a different size in the download vs the git clone. The downloaded source uses Dos\Windows newline formatting whereas the git clone uses UNIX. A subtle difference, but apparently enough to cause a build error.
+
+I have a feeling that unzipping the download with 7zip in windows 7 may have caused this.
+ 
+
+comment number: 2009665 
+body: That is indeed the problem. 7zip adds Dos\Windows line endings instead of UNIX when unzipping a .zip file. Interestingly; the built-in Microsoft archive manager does not.
+ 
+
+480. bug report number : ['483']
+comment number: 41677733 
+body: Likely an undocumented feature :)
+
+The account system has many strange nooks and crannies, of which even the devs aren't sure what is the supposed behavior. It is the worst and least-maintained code that is part of bitcoind.
+
+That's one of the many reasons we're getting rid of it in a future release. See #3816.
+ 
+
+481. bug report number : ['482']
+comment number: 1969860 
+body: Can somebody double-check to see if I'm reading the code correctly?
+
+Looks like both BitcoinMiner and getwork() call IncrementExtraNonce() to create unique coinbase transactions, so I don't think this is an issue.
+ 
+
+comment number: 2013255 
+body: They both call IncrementExtraNonce... which resets the extra nonce every second after overflowing. This guarantees unique block candidates, but not unique coinbase transactions. When an infinite supply of pubkeys are available, this isn't a problem, because after creating a block, the previous default pubkey will be in use, and a new one will be used.
+
+My suggestion: add the current timestamp to the coinbase when no fresh pubkeys are available.
+ 
+
+comment number: 2021617 
+body: Also, the extra nonce used in IncrementExtraNonce isn't stored across restarts. This isn't normally an issue due to the timestamps in block headers - it's very unlikely a bitcoin restart will take less than a second - but it means that not resetting the extranonce isn't a solution.
+ 
+
+482. bug report number : ['478']
+comment number: 4044074 
+body: This was fixed in 2ffba736 (v0.4.0).
+ 
+
+483. bug report number : ['473']
+comment number: 2038944 
+body: I have the same problem with Bitcoin 0.3.24 32 bit, driver nouveau.
+
+<pre>
+$ lspci |grep -i nv
+01:00.0 VGA compatible controller: nVidia Corporation NV5M64 [RIVA TNT2 Model 64/Model 64 Pro] (rev 15)
+
+$ uname -a
+Linux AMD 2.6.39-2-686-pae #1 SMP Tue Jul 5 03:48:49 UTC 2011 i686 GNU/Linux
+</pre>
+
+Regards,
+Carlo
+ 
+
+comment number: 3238642 
+body: Please re-open if you have the same problem with version 0.5.1 or later (switching the GUI from wxWidgets to Qt should have fixed the issue).
+ 
+
+484. bug report number : ['471']
+comment number: 7058374 
+body: Can you please try the current 0.6.3 version. As for shutdown-problems the 0.7 release will be a good one. But please report back.
+ 
+
+comment number: 8763033 
+body: @Plasma Hey there, could you please download the latest 0.7 relase and test if this still happens and otherwise just close the issue?
+ 
+
+comment number: 17589776 
+body: @laanwj I guess this one can also be closed now.
+ 
+
+comment number: 27688691 
+body: I remember there was some thread recently on bitcointalk, which covered this... AFAIK there is no Ctrl + C handler for bitcoind.exe, which means the crash could still be there. I don't use bitcoind, so can't verify.
+ 
+
+485. bug report number : ['469']
+comment number: 1803885 
+body: We need far more details than this.  OS?  OS version?  X server version?  video hardware?  other hardware?
+ 
+
+comment number: 1805269 
+body: X.Org X Server 1.10.3.901 (1.10.4 RC 1)
+Release Date: 2011-07-29
+X Protocol Version 11, Revision 0
+Build Operating System: Linux 3.0.0-ARCH i686 
+Current Operating System: Linux linuxhost 3.0-pf #1 SMP PREEMPT Sun Aug 14 23:03:58 CEST 2011 i686
+Kernel command line: BOOT_IMAGE=arch ro root=801
+Build Date: 08 August 2011  08:28:07AM
+
+The issue comes with vanilla kernel from Arch repo. And with the pf-patched kernel (BFS and BFQ enabled) too. But, subjectiv, with the BFQ and BFS the problem is much "smoother".
+
+iostat -x -m 3:
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+          41,05   22,53    2,47   33,64    0,00    0,31
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
+sda               1,54    22,84   62,65   14,81     0,52     0,18    18,49     0,92   11,96   11,13   15,46   6,63  51,36
+sdb               0,00     0,00    0,00    0,00     0,00     0,00     0,00     0,00    0,00    0,00    0,00   0,00   0,00
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           9,57   12,17    0,87   69,28    0,00    8,12
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
+sda               0,00     6,67   33,04  133,04     0,29     0,88    14,41    59,86  360,42   12,21  446,91   4,46  74,03
+sdb               0,00     0,00    0,00    0,00     0,00     0,00     0,00     0,00    0,00    0,00    0,00   0,00   0,00
+
+iotop:
+    3055 be/4 dikiy     205.71 K/s  518.09 K/s  0.00 % 99.99 % bitcoin
+ 
+
+comment number: 1805273 
+body: video: GeForce 4Ti4200, driver nouveau.
+
+lspci:
+
+00:00.0 Host bridge: VIA Technologies, Inc. VT8377 [KT400/KT600 AGP] Host Bridge (rev 80)
+00:01.0 PCI bridge: VIA Technologies, Inc. VT8237/VX700 PCI Bridge
+00:09.0 Ethernet controller: 3Com Corporation 3c940 10/100/1000Base-T [Marvell](rev 12)
+00:0a.0 RAID bus controller: VIA Technologies, Inc. VT6421 IDE RAID Controller (rev 50)
+00:0b.0 Multimedia audio controller: Creative Labs SB Live! EMU10k1 (rev 07)
+00:0b.1 Input device controller: Creative Labs SB Live! Game Port (rev 07)
+00:0e.0 Ethernet controller: Atheros Communications Inc. Atheros AR5001X+ Wireless Network Adapter (rev 01)
+00:0f.0 RAID bus controller: VIA Technologies, Inc. VIA VT6420 SATA RAID Controller (rev 80)
+00:0f.1 IDE interface: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06)
+00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 81)
+00:10.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 81)
+00:10.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 81)
+00:10.3 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 81)
+00:10.4 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 86)
+00:11.0 ISA bridge: VIA Technologies, Inc. VT8237 ISA bridge [KT600/K8T800/K8T890 South]
+00:11.5 Multimedia audio controller: VIA Technologies, Inc. VT8233/A/8235/8237 AC97 Audio Controller (rev 60)
+00:11.6 Communication controller: VIA Technologies, Inc. AC'97 Modem Controller (rev 80)
+01:00.0 VGA compatible controller: nVidia Corporation NV25 [GeForce4 Ti 4200](rev a3)
+ 
+
+comment number: 1806248 
+body: another thing: Xorg seems to eat CPU time only if the new chain blocks are downloading.
+ 
+
+comment number: 1806272 
+body: Naturally,with bitcoind in daemon mode is all ok.
+ 
+
+comment number: 1806917 
+body: hmmm.  I wonder if we are simply updating the display each time a block is downloaded...
+ 
+
+comment number: 1807607 
+body: Another thing: I tested the actual version of bitcoin on the Ubuntu on the Laptop and all seems to be OK.
+
+The Laptop has a most better CPU (Dual Core) + 2GB RAM, and the computer, where bitcoin is "bugging" has only an Athlon 1.8GHz + 512MB RAM.
+ 
+
+comment number: 1807622 
+body: But with a look on the output of top, the Xorg server eats only 2-3% (but on the computer with the bug triggered X org eats 30-60%).
+ 
+
+comment number: 2369625 
+body: Can you retry this with the Qt UI?
+ 
+
+comment number: 3002212 
+body: Closing this issue due to inactivity, please re-open if this is still the case with bitcoin-qt (releases from 0.5.0)
+ 
+
+486. bug report number : ['465']
+487. bug report number : ['455']
+comment number: 6791475 
+body: It looks in the testnet (now testnet3) directory by default, when -testnet is specified
+ 
+
+488. bug report number : ['453']
+comment number: 1737042 
+body: Ah ok this is clearly a better place to post issues.
+Thank you.
+ 
+
+comment number: 1749626 
+body: I think the entire locking system may need to be revised in general, it is very hard currently to find this kind of bugs. Your analysis looks correct to be though, but wouldn't locking cs_main before cs_vMasterKey in CAddressBookDialog be sufficient?
+ 
+
+comment number: 1754558 
+body: If you lock it in CAddressBookDialog, as long as the password dialog box is open, the entire cs_main is locked, which is quite a problem (as nothing else important will work during that time)...so I'd say not really.
+ 
+
+comment number: 1775538 
+body: I think the locking system is fine as long as each lock is logically tied to a relatively small subsystem with few dependencies.  This is already true for the most part.  I think the problem here is cs_main, because it is not at all obvious what it is trying to lock.
+ 
+
+comment number: 1778763 
+body: One thing that would help an awful lot is some documentation explaining the intended locking hierarchy. Presumably, there is some intended order in which locks are acquired. If we know what that hierarchy is supposed to be, we can easily add test code to confirm that the hierarchy is not violated. Also, when it is, it will be obvious which section of code is at fault and (usually) how to fix it. (By acquiring the last lock sooner in the code path, usually.)
+ 
+
+comment number: 1789972 
+body: I think the current locks can be divided into three components: 1) main/blockdb/mempool, 2) wallet/keystore, 3) network
+
+Within each component the order of locks can be fixed, and easily checked. However, between the components there are also dependencies. As both wallet and network request and submit information from main, I'd say 2>1 and 3>1. Wallet code also depends on the network, so 2>3. That gives us a total ordering on the locks: first wallet, then network, then main. This implies that you can call net and main functions while having a lock on wallet, and that you can call main while having a lock on network.
+
+However, this also means it is not allowed to call (possibly locking) code in wallet while having a lock on main. That's exactly what I caused by introducing the wallet-dispatch functions in main (IsFromMe, GetTransaction, EraseFromWallets, SyncWithWallets, ...). The best solution, i suppose, would be to modify these callbacks to only happen outside of main-locked code, and only pass identifiers (by value) to them, as passing references to blocks may mean exposing data that needs locking, and can change while being inspected.
+ 
+
+comment number: 1822336 
+body: I'll be commiting lock order inconsistency detection code tomorrow (I need to rebase some code and make it #ifdef DEBUG_LOCKORDER).  RE: Joel's suggestion on documentation:  Good Idea. It might be a good idea to give each CCriticalSection an integer 'depth', and make it a run-time error to lock out of 'in-depth' order.
+ 
+
+489. bug report number : ['447']
+comment number: 3002277 
+body: I cannot reproduce this with the current version of bitcoin:
+
+```
+$ ./bitcoind sendfrom '' a1 1
+error: {"code":-5,"message":"Invalid bitcoin address"}
+```
+
+So I'm closing this issue. If you can still produce this with release 0.5.0 or later, please re-open the issue.
+ 
+
+comment number: 3019089 
+body: FWIW, confirmed this issue does not affect bitcoind git 0.4.x branch at commit ba56a88.
+ 
+
+490. bug report number : ['445']
+comment number: 35487689 
+body: Looks like there's also other implementations with same bug as that address [1HT7xU2Ngenf7D4yocz2SAcnNLW7rK8d4E](https://blockchain.info/address/1HT7xU2Ngenf7D4yocz2SAcnNLW7rK8d4E) is still receiving coins sent to it every now and then.
+ 
+
+comment number: 35488801 
+body: Address '1HT7xU2Ngenf7D4yocz2SAcnNLW7rK8d4E' is 'b472a266d0bd89c13706a4132ccfb16f7c3b9fcb', or ripemd160(sha256("")). I suppose it's pretty easy to get there with a buggy implementation.
+
+Looks like all the recent transactions to the address use `1ponziUjuCVdB167ZmTWH48AURW1vE64q`, that may help narrowing down who has a broken client.
+
+(appears to be some gambling site https://bitcointalk.org/index.php?topic=447831.0)
+ 
+
+comment number: 68310374 
+body: so i see the address has a ton of coin 
+ 
+
+comment number: 152090325 
+body: According to [this thread](https://bitcointalk.org/index.php?topic=1225430), [1HT7xU...](https://blockchain.info/address/1HT7xU2Ngenf7D4yocz2SAcnNLW7rK8d4E) is still finding its way into wallets created long after this issue was closed.
+ 
+
+comment number: 152093233 
+body: based on the comment I believe its from a wallet that was screwed up in the past. But I need to know if it's encrypted or not to diagnose further.
+ 
+
+491. bug report number : ['441']
+comment number: 1734586 
+body: Resolved in 01a509fa
+ 
+
+comment number: 1745578 
+body: This makes sense as a default; but what if you want to run a bitcoin node as a hidden service? this works using port redirection, so you need a listening port _on localhost_ at least.
+
+I propose: Providing explicit `-port` argument overrides `-nolisten`.
+
+Another option would be to listen on localhost only when on tor.
+ 
+
+492. bug report number : ['440']
+comment number: 2352722 
+body: WX is now deprecated. Please update this thread if the problem persists in the QT build.
+ 
+
+493. bug report number : ['432']
+comment number: 39061672 
+body: Fixed in master (2b7709dc84ed37128c125ca7a97b2e4b2c4437e7)
+ 
+
+494. bug report number : ['429']
+comment number: 1651293 
+body: seems like a bug in the 'accounts' feature, that it fails to properly credit generated transactions, if the address used for generation belongs to an existing account.
+ 
+
+comment number: 41676931 
+body: I've just verified that it does show an address for mined transactions now. No idea when this was fixed.
+
+```
+{
+    "account" : "",
+    "address" : "mz99Z9TxtyzCp3Aqv6Q8DznWR7WGmCPk4o",
+    "category" : "immature",
+    "amount" : 25.00000000,
+    "confirmations" : 1,
+    "generated" : true,
+    "blockhash" : "0000326781d60cd24ff7ef4b0ae12e204306b10e16c07c48c4a0ee0655cd93fa",
+    "blockindex" : 0,
+    "blocktime" : 1392899291,
+    "txid" : "7526a3475bca68c4851dcd7c425b5ff24885a16f86de63ac0ec2820b3f6d8646",
+    "walletconflicts" : [
+    ],
+    "time" : 1392899291,
+    "timereceived" : 1394117591
+}
+```
+
+Closing this issue.
+ 
+
+495. bug report number : ['425']
+comment number: 1992978 
+body: I just had the same running the release candidate built from git tag 'v0.4.00rc1'.  The top transaction was in black, too dark to read, as new transactions always are.  I've found that switching tabs (from 'all' to 'sent' and back) fixes it, so that's what I was doing when I saw this assert failure.  The touchpad button is bad, so I may have double-clicked one of the tabs.
+
+ASSERT INFO:
+../src/common/evtloopcmn.cpp(75): assert "Assert failure" failed in Yield(): wxYield called recursively
+
+BACKTRACE:
+[1] wxOnAssert(char const_, int, char const_, char const_, wchar_t const_) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:1141
+[2] wxEventLoopBase::Yield(bool) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/evtloopcmn.cpp:78
+[3] wxAppConsoleBase::Yield(bool) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:349
+[4] wxYield() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/utilscmn.cpp:1661
+[5] CMainFrame::OnIdle(wxIdleEvent&) /home/chris/chris/bitcoin/src/ui.cpp:902
+[6] wxAppConsoleBase::HandleEvent(wxEvtHandler_, void (wxEvtHandler::_)(wxEvent&), wxEvent&) cons) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:592
+[7] wxAppConsoleBase::CallEventHandler(wxEvtHandler_, wxEventFunctor&, wxEvent&) cons) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:603
+[8] wxEvtHandler::ProcessEventIfMatchesId(wxEventTableEntryBase const&, wxEvtHandler_, wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1296
+[9] wxEvtHandler::SearchDynamicEventTable(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1637
+[10] wxEvtHandler::TryHereOnly(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1482
+[11] wxEvtHandler::TryBeforeAndHere(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../include/wx/event.h:3293
+[12] wxEvtHandler::ProcessEventLocally(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1419
+[13] wxEvtHandler::ProcessEvent(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1392
+[14] wxEvtHandler::SafelyProcessEvent(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1499
+[15] wxWindowBase::HandleWindowEvent(wxEvent&) cons) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/wincmn.cpp:1457
+[16] wxWindowBase::SendIdleEvents(wxIdleEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/wincmn.cpp:2638
+[17] wxFrame::SendIdleEvents(wxIdleEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/gtk/frame.cpp:240
+[18] wxAppBase::ProcessIdle() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appcmn.cpp:352
+[19] wxEventLoopBase::ProcessIdle() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/evtloopcmn.cpp:66
+[20] wxGUIEventLoop::YieldFor(long) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/gtk/evtloop.cpp:354
+[21] wxEventLoopBase::Yield(bool) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/evtloopcmn.cpp:82
+[22] wxAppConsoleBase::Yield(bool) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:349
+[23] wxYield() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/utilscmn.cpp:1661
+[24] CMainFrame::OnIdle(wxIdleEvent&) /home/chris/chris/bitcoin/src/ui.cpp:902
+[25] wxAppConsoleBase::HandleEvent(wxEvtHandler_, void (wxEvtHandler::_)(wxEvent&), wxEvent&) cons) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:592
+[26] wxAppConsoleBase::CallEventHandler(wxEvtHandler_, wxEventFunctor&, wxEvent&) cons) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:603
+[27] wxEvtHandler::ProcessEventIfMatchesId(wxEventTableEntryBase const&, wxEvtHandler_, wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1296
+[28] wxEvtHandler::SearchDynamicEventTable(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1637
+[29] wxEvtHandler::TryHereOnly(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1482
+[30] wxEvtHandler::TryBeforeAndHere(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../include/wx/event.h:3293
+[31] wxEvtHandler::ProcessEventLocally(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1419
+[32] wxEvtHandler::ProcessEvent(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1392
+[33] wxEvtHandler::SafelyProcessEvent(wxEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/event.cpp:1499
+[34] wxWindowBase::HandleWindowEvent(wxEvent&) cons) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/wincmn.cpp:1457
+[35] wxWindowBase::SendIdleEvents(wxIdleEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/wincmn.cpp:2638
+[36] wxFrame::SendIdleEvents(wxIdleEvent&) /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/gtk/frame.cpp:240
+[37] wxAppBase::ProcessIdle() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appcmn.cpp:352
+[38] wxApp::DoIdle() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/gtk/app.cpp:139
+[39] wxapp_idle_callback() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/gtk/app.cpp:108
+[40] g_main_context_dispatch()
+[41] g_main_loop_run()
+[42] gtk_main()
+[43] wxGUIEventLoop::Run() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/gtk/evtloop.cpp:62
+[44] wxAppConsoleBase::MainLoop() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:314
+[45] wxAppConsoleBase::OnRun() /home/chris/chris/wxWidgets-2.9.2/buildgtk/../src/common/appbase.cpp:256
+ 
+
+comment number: 1992996 
+body: It turns out that I can reproduce this by clicking any of the 4 tabs that aren't currently selected, then clicking another one very quickly.  If I'm on "all transactions" and click 'sent' and 'received' in quick succession, I'll see this assert failure.
+ 
+
+comment number: 3005569 
+body: This deals with the old wx gui, please re-open the issue if this still reproducable with QtUI.
+ 
+
+comment number: 3005576 
+body: Isn't the old client still being supported?  It seems silly to close all the bugs which are still an issue for it.
+ 
+
+comment number: 3005692 
+body: The Wx UI is no longer being supported. 
+
+The 0.4.x daemon is still supported. @luke-jr provides backports of bug fixes.
+
+Apart from that, I think it IS necessary to close issues that are no longer relevant with the current version. After all, they have been fixed in -master. Most open source projects work this way. We can't keep them in the list until 2020.
+ 
+
+496. bug report number : ['416']
+comment number: 1577475 
+body: Also, Command + H does not hide the window.
+ 
+
+comment number: 1623657 
+body: I am a mac user as well and these do annoy me from time to time.  That said, the entire GUI is being rewritten in Qt instead of wxWidgets.  Personally, I'd rather see that effort keep moving along and not have time invested fixing these issues in the wxWidgets GUI that will be deprecated.
+
+Of course the new Qt GUI should aim to not have these issues from the start.
+ 
+
+comment number: 1624235 
+body: Sounds good to me
+ 
+
+comment number: 1645867 
+body: +1
+ 
+
+comment number: 2352726 
+body: WX is now deprecated. Please update this thread if the problem persists in the QT build.
+ 
+
+497. bug report number : ['407']
+comment number: 1572489 
+body: I confirm. One should use **wxTextEntryDialog(parent, message, caption, defaultValue, wxOK | wxCANCEL | wxTE_PASSWORD)** rather than **wxGetPasswordFromUser()**. The latter is just poorly designed and does not return button code anywhere.
+ 
+
+comment number: 2352701 
+body: WX is now deprecated. Please update this thread if the problem persists in the QT build.
+ 
+
+498. bug report number : ['393']
+comment number: 1537955 
+body: ![screenshot](http://i56.tinypic.com/2u4k22e.png)
+ 
+
+comment number: 1987829 
+body: same bug in windows 7.
+ 
+
+comment number: 1989614 
+body: It's still an issue in the git version tagged with 'v0.4.00rc1'.
+ 
+
+comment number: 1990642 
+body: fine on windows 7 here
+ 
+
+comment number: 1993313 
+body: Should be a bug with default font size causing the set text to overflow the set window size.  Try changing your default font size.
+Bitcoin should adapt here, but...
+ 
+
+comment number: 4966928 
+body: I bet this is all better in bitcoin-qt.  Closing.
+ 
+

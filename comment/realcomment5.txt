@@ -1,0 +1,2665 @@
+224. bug report number : ['3905']
+comment number: 38097709 
+body: Yeah, this is no longer possible with the GUI in 0.9.0.
+
+Try command line option `-choosedatadir` to set the default data directory without having to change the shortcut. It will be stored in the registry.
+ 
+
+comment number: 38100760 
+body: Windows Bitcoin-QT ignores bitcoin.conf entirely, which is strange. Is this intentional?
+ 
+
+comment number: 38103223 
+body: That's not intentional. Also doesn't match the behavior that I've seen.
+
+Which setting are you providing in bitcoin.conf that seems to be ignored?
+
+Have you changed the data directory? Are you providing any command line arguments? If so, which?
+ 
+
+comment number: 38107051 
+body: My mistake, I had bitcoin.conf in the old %appdata%\bitcoin location instead of the new datadir.
+ 
+
+comment number: 38499845 
+body: Yeah, I was just about to add that comment.  It ignores my .conf file completely.  I don't run my bitcoin client here very often (flash drive, re: datadir, etc) but I also noticed it didn't even use the par setting, maxconnections, addnodes, etc.  
+
+ed:  hmm, nm.  no clue why it doesn't work.  it fails on reindex in .conf file too.  
+ 
+
+comment number: 38535065 
+body: It expects the .conf file in your data directory. That never changed. If you change your data directory it expects the .conf file there, too.
+ 
+
+comment number: 38543854 
+body: See #3935 (please help testing)
+ 
+
+comment number: 38592109 
+body: I tested #3935 and it does restore the ability to change the bitcoin-qt datadir in the .conf file, and allows the .conf file to be in a directory separate from the datadir.
+ 
+
+225. bug report number : ['3903']
+comment number: 38093011 
+body: inputs already spent has nothing to do with the wallet.
+
+How many transactions are in this wallet roughly? 
+ 
+
+comment number: 38114347 
+body: 6700 unique txs. but i have several thousand addresses and many of the txs involve multiple addresses. if i count the total non-unique txs from the output of listreceivedbyaddress, the number is 400K.
+
+and for comparison, listreceivedbyaddress only took 110 seconds to complete.
+ 
+
+comment number: 38868678 
+body: I tried to workaround this problem by scripting a solution summing the amounts from listreceivedbyaddress, but the amounts are completely wrong- it's only 10% of the expected amount (which was verified with blockchain.info). listaccounts and listreceivedbyaccount are also reporting the same wrong amounts as well.
+
+So if the address amounts are wrong, the number of transactions I listed above are probably off as well.
+ 
+
+comment number: 38893371 
+body: I had a similar problem when updating from 0.8.6 to 0.9.0. In my case, getinfo showed the same behaviour as getbalance (100% cpu usage, never completes). Running with `-salvagewallet` solved that but left me with a fraction of my funds (10% is about right). I worked around it by creating a new wallet, opening the old wallet in 0.6.8 and moving all funds over.
+ 
+
+comment number: 38897195 
+body: The problem (also noted by @gavinandresen when he made the anti-malleability wallet changes for 0.9.0) is that we don't have any really busy wallets to test with.
+
+We would need such a wallet in the dev team to be able to profile / debug / optimize this.
+ 
+
+comment number: 38943566 
+body: If someone experiencing an extreme case of this problem (e.g. taking a minute or more) is able to build Bitcoin core for themselves and test the simple patch in pull https://github.com/bitcoin/bitcoin/pull/3973 it would be helpful. I'm not sure if it is the same problem here or not, but I think it may be.
+ 
+
+comment number: 38986446 
+body: Tested the patch and it works for me.
+ 
+
+comment number: 38986993 
+body: BugAndNewsReporter: Can I understand that to mean that it made it much faster?
+ 
+
+comment number: 38989927 
+body: Yes, getbalance now returns with the same speed as 0.8.6. So I'd consider this issue solved.
+ 
+
+226. bug report number : ['3869']
+comment number: 37620392 
+body: The only way to do this at the moment is by setting it to 0.
+ 
+
+comment number: 51518327 
+body: This should be fixed by #4556
+ 
+
+227. bug report number : ['3858']
+comment number: 37518648 
+body: Yes this can happen now, as we start with an empty mempool.
+
+I think that we should store ancestor transactions in the wallet in this case. This is what vtxPrev (which was removed) was for but it never worked.
+
+Another option (not exclusive) would be to save/restore the mempool. This is also necessary for floating fees (implemented in #3335).
+ 
+
+comment number: 37533667 
+body: I'd mark this as low priority; lets say you have a chain of unconfirmed transactions A->B->C.
+
+The sender and receiver of A will rebroadcast it until it gets mined.
+
+And the senders of B and C will rebroadcast them until they get mined. The receivers may not, if they restart and lose their memory pool. But imagine A does get mined-- now all of the dependencies of transaction B are in the block chain, and sender and receiver will both rebroadcast until it is mined.
+
+Also: part of the smart transaction fee work is to save and restore the memory pool, so there is no need to save parent transactions in the wallet.
+ 
+
+comment number: 37536855 
+body: The mempool save/restore would solve the immediate issue, but I do think it would be safer to keep a copy of parent transactions in the wallet, and rebroadcast them if needed. 
+
+It will usually be the case that the owner(s) of those transactions will rebroadcast them themselves, but what if they do not? What if the transactions expire out of the mempool (or other nodes' mempools)? The child transaction would never confirm and data of parent transactions is just lost (also reorganizations could mess with this)
+
+In the end the receiver wants to make sure that the transaction gets confirmed, and within that responsibility could be keeping a record of parent transactions 'just in case'. This was the idea behind vtxPrev.
+
+But maybe I'm overly paranoid.
+ 
+
+comment number: 37537719 
+body: Mmm....  You open yourself up to a fill-up-memory DoS attack if you just blindly save parent transactions. There are probably also privacy-destroying attacks if you blindly rebroadcast unconfirmed parents.
+
+I'd vote for keeping the current simple behavior, and re-examining this if there is actually a problem in practice.
+ 
+
+comment number: 37538374 
+body: This is a financial system. You can't be paranoid enough. :P
+
+Having to rely on other peers to keep broadcasting transactions needed 
+to confirm a payment sound like poor security to me, and may open the 
+door to some kinds of social engineering attacks...
+ 
+
+comment number: 37541490 
+body: If you are paranoid, then DO NOT ACCEPT ZERO CONFIRMATION TRANSACTIONS. THEY ARE NOT SAFE.
+
+Rebroadcasting them will not make them safer, and may lead to a false sense of security.
+ 
+
+comment number: 56800333 
+body: This doesn't seem to be an issue that people encounter in practice.
+ 
+
+228. bug report number : ['3778']
+comment number: 36455786 
+body: Additional crash report if it helps:
+http://pastebin.com/download.php?i=3Us9uLN4
+ 
+
+comment number: 36456026 
+body: 15:24:05 < fanquake> sipa it's a font rendering issue. mavericks only https://bugreports.qt-project.org/browse/QTBUG-31803
+15:25:27 < fanquake> Fix seems to be using qt 5.1.1 or above
+ 
+
+comment number: 37016423 
+body: @gavinandresen @theuni seems that we have to do the rc3 build with either Qt4.x or a more recent Qt5.
+ 
+
+comment number: 37361570 
+body: I recently went to check out rc2 and hit this crash as well.
+ 
+
+comment number: 37410817 
+body: @laanwj @theuni  :  I'm testing an OSX 10.6.8 + XCode 4.2 + homebrew + Qt4 build  (Qt5 homebrew failed to build in 10.6) -- I think that is the way to go for the 0.9 release.
+
+Some quick google searches on what versions of OSX are still being used seem to show that about 20% of OSX users are still running 10.6.  If that was 10% or less then I'd be comfortable requiring 10.7+ ...
+ 
+
+comment number: 37475932 
+body: @gavinandresen to clarify, do you propose using homebrew for all dependencies, or just qt? And, why switch to homebrew after using macports for previous releases? These are scary changes for the rcX stage.
+ 
+
+comment number: 37476362 
+body: @theuni : I propose using homebrew for all dependencies. Why switch to homebrew: because I cannot get macports to install in the OSX 10.6.8 virtual machine I want to use for building -- homebrew works nicely.
+
+It looks to me like macports is dying; macports.org was down most of yesterday (and appears to be down again today, and date on their latest "download this to get started" was November 2013.
+ 
+
+comment number: 37477065 
+body: @gavinandresen How flexible are you on that? I'll defer to you on the 'macports is dying' part, I've not looked into that lately. But changing one dependency for rc2 proved to be a big deal on 10.8, so I cringe when thinking about switching them all before release.
+
+If I were to throw something together (vm image, builder scripts, whatever would suffice), could I sway you to delay the homebrew move until after .9?
+ 
+
+comment number: 37605392 
+body: Closing, should be fixed by rc3 (if it is not, please open a new issue).
+ 
+
+comment number: 37612765 
+body: Fixed for me.
+ 
+
+229. bug report number : ['3702']
+comment number: 35398934 
+body: Definitely wants to be an int64_t or similar.
+ 
+
+comment number: 35400558 
+body: See #3703
+ 
+
+comment number: 35410438 
+body: As I said, I'm sorry... but I didn't introduce the shifts anyway.
+ 
+
+230. bug report number : ['3673']
+comment number: 38298814 
+body: I took a quick look at this and figured that'd it be easier to add `LOCK(cs_nWalletUnlockTime);` before all of the `EnsureWalletIsUnlocked();` calls. I tried putting this statement inside `EnsureWalletIsUnlocked();`, but that would complicate the API considerably since the caller would have to receive the lock object and then make sure to unlock it appropriately afterwards.
+
+I also refactored `walletlock` to simply call `LockWallet()` since this looked like duplicate code to me (well, two lines are swapped in order, but that shouldn't matter).
+
+The changes are here, but I have not been able to get `make check` to work, so I'm still looking into that.
+
+ https://github.com/MattFaus/bitcoin/commits/wallet_lock2
+ 
+
+comment number: 250497997 
+body: I'm not convinced that this is a problem. Besides causing RPC to spit out different error messages, it doesn't seem to ever cause real problems such as crashes. Trying to solve it is probably more risky than leaving it as-is.
+ 
+
+231. bug report number : ['3670']
+comment number: 35240744 
+body: I can reproduce this. I've exported a wallet using dumpwallet and try to import it with a fresh wallet.dat, and I get a long error message from glibc.
+ 
+
+comment number: 35245698 
+body: See #3691 for fix
+ 
+
+232. bug report number : ['3665']
+comment number: 34972468 
+body: Indeed, there should be a check for expiration on transaction submission as well.
+ 
+
+comment number: 35204350 
+body: I'm looking into this...
+ 
+
+comment number: 194981221 
+body: Fixed in https://github.com/bitcoin/bitcoin/pull/5620 - should be closed.
+ 
+
+comment number: 195276545 
+body: Thanks @musalbas 
+ 
+
+233. bug report number : ['3639']
+comment number: 34442620 
+body: I was already working on this, see #3640
+ 
+
+comment number: 64945997 
+body: This issue was fixed by #5351 and can be closed now.
+ 
+
+234. bug report number : ['3631']
+comment number: 35147236 
+body: Litecoin with coincontrol shows lots of useful details for unspents. One missing feature that would help in this case would be if coincontrol were to show what unspents would be selected in automatic mode. (coincontrol isn't in a release version of bitcoin yet, only litecoin and special bitcoin builds)
+ 
+
+comment number: 184724618 
+body: Duplicate of "coin selection code does very badly in some cases #1643"
+ 
+
+235. bug report number : ['3628']
+comment number: 34185230 
+body: You mean it still shows the payment request in green if the signature is invalid or missing?
+ 
+
+comment number: 34187238 
+body: Zero negative indication back to the user, if the sig is missing or invalid.
+ 
+
+comment number: 34195932 
+body: Sounds like a bug...
+ 
+
+comment number: 35205881 
+body: @gavinandresen Can you re-work your https://bitcoincore.org/~gavin/createpaymentrequest.php to allow selecting an invalid cert. I'm currently looking into a fix for this. Should IMHO be tagged as medium.
+ 
+
+comment number: 103020761 
+body: The payment protocol has been used successfully for a while, including signed payment requests (for which the merchant name is shown). Should be fixed.
+ 
+
+236. bug report number : ['3612']
+comment number: 33880276 
+body: For debugging other gitian mismatches, here are my dependency checksums:
+
+Linux:
+
+```
+- in_manifest: |-
+    a9d7258eb26c4cd8897ca9906fb654905fa63101ed972218bd14af11d7f2624e  bitcoin-desc.yml
+    a6003db7a32717058016905ef4323a54326fc59ff9f461c81fb1ee18cb2bae50  bitcoin-deps-linux32-gitian-r2.zip
+    5444f1fe020435766c2dc62f9a703b820599243eb320192af751e365c9d54cf3  bitcoin-deps-linux64-gitian-r2.zip
+    51fc0d85ccfe0e9268919e67644cbd44823b25b9636fc0e1e125f94b1587f2a0  boost-linux32-1.55.0-gitian-r1.zip
+    d950310c806b3daea4e274a9fc75929f2cd05fe458c3f935b8e682d1c390a11e  boost-linux64-1.55.0-gitian-r1.zip
+    git:15ec451554b5889a92651b9fe71bf01047ba9fc3 bitcoin
+```
+
+Windows:
+
+```
+- in_manifest: |-
+    a3552e2fc61228c8d068d54101665a200abfc77633eb5f1c3429f227572dc77e  bitcoin-desc.yml
+    690fc422b7a925e16565cad40139384f0dba15030331a30e9269d659a1135ea6  qt-win32-5.2.0-gitian-r1.zip
+    be308ce02e547f9da468057184828c5ed065d9ad114f6f2ee5b46293e5f73752  qt-win64-5.2.0-gitian-r1.zip
+    c569a722aedbbfd28dce8ee8dd0a0abd6469a87c1d593ef1bc27b14adf03818f  boost-win32-1.55.0-gitian-r6.zip
+    dfb8fd6475b0692596f3c1c56aa1fac68b7fff458506b34c2326ac8d1b9786dd  boost-win64-1.55.0-gitian-r6.zip
+    7d3d22c433ee7b97ad6cab40aa148e602aa4e847e8d07ff2ae6b9573bbbe50d4  bitcoin-deps-win32-gitian-r10.zip
+    ede88f7152dfb0a28fe71577b0f1f0b254c6a820f5e54ddae9c71a5079e012e0  bitcoin-deps-win64-gitian-r10.zip
+    546b45ec363ad48007de79df2bfd08a60c97414d14fd2796ed82f7a445056885  protobuf-win32-2.5.0-gitian-r4.zip
+    18d210fdf44a156bbdaabd6aaec98ce0dadc61d206132881df83fcb16a685362  protobuf-win64-2.5.0-gitian-r4.zip
+    git:15ec451554b5889a92651b9fe71bf01047ba9fc3 bitcoin
+```
+ 
+
+comment number: 33887420 
+body: I'm also seeing the bitcoin-qt.exes (and the setups, of course) not matching between builds, but I also noticed that Gavin and I don't have matching outputs. I don't know if the fact that my builds and Gavin's don't match is related, though... I am using LXC to build, while Gavin uses (I believe) VirtualBox, but I have successfully built matching binaries for 0.8.6 in LXC on that machine, so I don't know what changed.
+
+Here are my outputs:
+
+Linux:
+
+```
+- out_manifest: |
+    20b208827262ad4a4afb2419e60bf27c16e96406e3df518f77d56771e22ab13f  bin/32/bitcoin-cli
+    2368f359274c4ad6c3078c1f7fd7a306faab841c7103dc5adb7a2beb160c7e92  bin/32/bitcoin-qt
+    df3f7f54b412c4ace7345475783bed2ac3ee03f7aa0ecc92f54ac6f7df93c2f7  bin/32/bitcoind
+    557671b4ae41fb4561d83360e9da917a5b29a1c315fcf470d16230e4a5e64548  bin/32/test_bitcoin
+    21db605ee7ee03d8e8de24e9ac492db8ea66b94c310b22fb975948b0cf51320d  bin/32/test_bitcoin-qt
+    20a93099050df6176afa3a5745b15e54be88831bd7deb91398038d6b57013917  bin/64/bitcoin-cli
+    c60f6f4620d959a7cfefe22ab2484f09b91ea5de18397901bd5851c63b87b7b5  bin/64/bitcoin-qt
+    0af8095ac2a6fe3d69cdd49c7f1b40574e8cae60e7a737663697f04fd2e09d7f  bin/64/bitcoind
+    b62e830e6560fba96075964d406f9948b53fafd6c9009cd98caa1b87c4e87171  bin/64/test_bitcoin
+    d28e56cdc74630dffb649d8a9cd2149b089cb5c1287d171fecfaccd774c59d96  bin/64/test_bitcoin-qt
+    afca51f5299d27787a5c8edf350767718c13fa532037b37a65008d97d0be5c3c  src/bitcoin-0.9.0.tar.gz
+```
+
+Windows:
+
+```
+- out_manifest: |
+    ba7449ad3132df7ca7100a77c25a5129675010fc66e84f3d381c1076ff7d9c5a  32/bitcoin-0.9.0-win32-setup.exe
+    798b82c18b29fb25dc77ec30121942619533c43d43cacaa857b7a336dfcf781f  32/bitcoin-cli.exe
+    c2c21fcb9eacb49f0a6a2d0318199251531d989bd3e8425bc72ca28ed618633b  32/bitcoin-qt.exe
+    4c5f7737530016e971ab8e51df424c931ceebdb2d76f37df59c742d4c4f88871  32/bitcoind.exe
+    7bb0db3663c3ab3bea71ffad17fb4ad495f645bbe21a6d9e0e8af349d7aa8555  32/test_bitcoin-qt.exe
+    6cc535dd7b85db172b1de99f3d9966927d38b7cbb96e912f2dc5b13c13de859a  32/test_bitcoin.exe
+    5cf7928ad018c47d247ec9e8df1b1aecd5397e2ba6c8e0c7ca4e1f4dcfdb35b9  64/bitcoin-0.9.0-win64-setup.exe
+    c3bd6dffc332587e6ecb065828711a40d61de6630e5c23e2ca185858e3d6e0dc  64/bitcoin-cli.exe
+    9a332158ede24e4aa5c536c935e208bfdde20f972e56625de8aae66f4c1f77bd  64/bitcoin-qt.exe
+    9d985b1f14802a75be92b6b7ec4d4ed37ad980c291e3368816597b145d8cbb36  64/bitcoind.exe
+    a387c4c5dcea77b0b1344c92cb234ce772b0388658037e08e86f3ba5ed40c214  64/test_bitcoin-qt.exe
+    ef8c53cf2d53162406580f2052374a93a13d678c254571e19d1804f526751df6  64/test_bitcoin.exe
+    a294f1c1ac3988795c46b7b54d0f5f905265b7ad9937067198fd29de4abd62c9  src/bitcoin-0.9.0.tar.gz
+```
+ 
+
+comment number: 33932470 
+body: Looking into the determinism problems for Windows first.
+I see the same result as @gavinandresen for win32/win64 bitcoin-cli.exe bitcoind.exe and test_bitcoin.exe and even test_bitcoin-qt.exe.
+However the bitcoin-qt.exe and the setup.exe are different, and also different every run.
+ 
+
+comment number: 33932611 
+body: @laanwj What's your build system? LXC? KVM? VBox?
+
+On Monday, February 3, 2014, Wladimir J. van der Laan <
+notifications@github.com> wrote:
+
+> Looking into the determinism problems for Windows first.
+> I see the same result as @gavinandresen https://github.com/gavinandresenfor win32/win64 bitcoin-cli.exe bitcoind.exe and test_bitcoin.exe.
+> However the bitcoin-qt.exe and test_bitcoin-qt.exe are different, and also
+> different every run.
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/bitcoin/bitcoin/issues/3612#issuecomment-33932470
+> .
+ 
+
+comment number: 33932733 
+body: KVM
+ 
+
+comment number: 33932972 
+body: Interesting. When I get a chance, I'll try building in LXC on another
+system and see if LXC is non-deterministic or if it's just deterministic
+differently. (If that made sense... I'm a little tired.)
+
+On Monday, February 3, 2014, Wladimir J. van der Laan <
+notifications@github.com> wrote:
+
+> KVM
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/bitcoin/bitcoin/issues/3612#issuecomment-33932733
+> .
+ 
+
+comment number: 33933839 
+body: Comparing two bitcoin-qt.exes the first difference is at offset 0xD8. This is likely some timestamp part of the PE header:
+
+```
++0000 00D0: 00 E0 7F 01 00 04 00 00  0E 22 7F 01 02 00 40 01  ........ ."....@.                                                                                 
+-0000 00D0: 00 E0 7F 01 00 04 00 00  99 43 7F 01 02 00 40 01  ........ .C....@.                                                                                 
+```
+
+There is also a large non-matching tract 01270E70....014A1000. This contains image data and text and appear to be the compiled Qt resources. Possibly an ordering issue.
+
+Edit: the field at 0xD8 (PE_header+0x58) is a 16-bit checksum. It makes sense for this to not match. So the problem is fully in the compiled Qt resources.
+
+Edit.2: Yep, the `qrc_bitcoin.cpp` as generated by Qt's `rcc` is different every time. It appears to pick a random ordering of files easily reproduced with `~/staging32/host/bin/rcc --list bitcoin.qrc`. 
+
+Edit.3: The Qt4 resource compiler does not do this randomization, as we still use Qt4 on Linux this explains why this only happens on Windows. Looking into a way around this Qt5 'feature'.
+
+Edit.4: Oh joy, all of this is due to a QHash security fix. Every run of an executable, the ordering is different. https://qt.gitorious.org/qt/qtbase/commit/c01eaa438200edc9a3bbcd8ae1e8ded058bea268 . They shouldn't be using a QHash here but some ordered dictionary...
+
+Edit.5: I think I found a way to override the behavior without patching Qt rcc source (for now) by setting `QT_RCC_TEST=1`.
+
+Edit 6: That worked. I'll submit a pull for this and #3610 later.
+ 
+
+comment number: 35798194 
+body: Should be solved by #3625
+ 
+
+237. bug report number : ['3610']
+comment number: 33806904 
+body: Hmm, weird that I never got an error about this. But yes it makes sense to add it.
+ 
+
+comment number: 33821609 
+body: Is there a recent "how to setup and Gitian build" doc? I'm considering to participate in this finally :).
+ 
+
+comment number: 33843105 
+body: More changes necessary in linux-deps, for libqrencode:
+- `-with-pic` should be `--with-pic`
+- add `--disable-maintainer-mode` and `--disable-dependency-tracking` to configure parameters to prevent it from trying to rebuild configure and subsequently crashing on missing m4 directory
+ 
+
+comment number: 33845965 
+body: @Diapolo : I'm keeping track of exactly what I'm doing in an unpublished blog post for gavintech.blogspot.com -- when I actually get a build working, I'll publish it.
+ 
+
+comment number: 33865708 
+body: I've again built the deps without any errors, without adding any of the above things. I simply used `bin/make-base-vm --arch i386 --suite precise` and `bin/make-base-vm --arch amd64 --suite precise` to make the VMs, but it's already a while ago. This is really weird.
+
+One possible reason is that the VM building in gitian master changed since I did it (and it no longer includes g++ by default?). We had a similar problem with the disk size that was increased to 10GB. Some people still had old images and couldn't build the Qt dep due to lack of space. So maybe we need to add a recommendation to re-generate your `precise` images even if you already have them...
+
+Edit: going to re-generate images and see. 
+Edit2: WIth pristine images dependency building still goes fine. I don't get it. Somehow, the setup must make a difference.
+ 
+
+comment number: 33866952 
+body: @gavinandresen do you perhaps use LXC? @wtogami and me did the testing with qemu, maybe there is a sneaky difference there.
+ 
+
+comment number: 33872378 
+body: I use VirtualBox; I forgot I wrote a make-virtualbox-vm, but it still requires manual installation/setup because there is no VirtualBox equivalent of 'vmbuilder' (which is what make-base-vm calls to do a non-interactive VM creation).
+
+gitian make-base-vm has:
+  addpkg=openssh-server,pciutils,build-essential,git-core,subversion
+
+... so I'm guessing one of those packages pulls in g++.  Still, wouldn't hurt to be more explicit about dependencies in the .yml files.
+
+I've run into (and worked around) another problem with building in VirtualBox; I'll open another issue about it.
+ 
+
+comment number: 33879753 
+body: It would be great to have a Vagrantfile (https://www.vagrantup.com/) for setting up a gitian environment. I'm happy to do it myself once you publish the steps.
+ 
+
+comment number: 33880900 
+body: Would be awesome to have a Vagrantfile!
+
+I'm still tracking down one mystery (that might have involved me screwing up and snapshotting the VM image at the wrong spot), but writeup is at: http://gavintech.blogspot.com/2014/02/gitian-building-bitcoin-releases.html
+ 
+
+comment number: 33888908 
+body: I added a few comments to the bottom of that blogspot Gavin.  Your write-up it really useful. I am still trying to get a windows build out and have been failing for a few days. Its getting closer though.
+ 
+
+238. bug report number : ['3581']
+comment number: 33352083 
+body: According to the help https://github.com/bitcoin/bitcoin/blob/master/src/rpcnet.cpp#L202  it's supposed to return a record per node with at least an IP address so
+
+```
+[
+{"addednode" : "1.2.3.4"},
+{"addednode" : "5.6.7.8"}
+]
+```
+
+But it somehow creates one object with multiple keys. This is indeed a bug.
+ 
+
+comment number: 33352462 
+body: See #3586
+ 
+
+comment number: 33411868 
+body: I'm glad to see this addressed so quickly, but I would like to point out I don't think the change is quite right.
+
+Perhaps I read the help differently, but I see "If false, only a list of added nodes will be provided," meaning it should be an array of IP address strings.  Also, returning an array of single entry objects is inconsistent with the rest of the RPC methods. For example, look at the `addresses` field of `decoderawtransaction` and `decodescript`.  In all other cases where there is only a single entry, the JSON is just an array of the entries versus an array of objects containing a single entry.
+
+Finally, per the quoted conversation above with Gavin quoted he indicated it should "return an aray of IP strings".
+
+Edit:
+
+To make it clear what I think the final JSON should look like: `["1.2.3.4", "5.6.7.8"]`
+ 
+
+comment number: 33418879 
+body: This is how I interpreted it. Keeps the output format in both cases
+consistent and makes it possible to add fields later.
+
+Anyway, you know how to change it now feel free to do it differently.
+ 
+
+239. bug report number : ['3563']
+comment number: 32825659 
+body: Cannot reproduce this on Linux with Qt 5.0.2.
+ 
+
+comment number: 33005708 
+body: @fanquake Is Qt5.2 available for Mac? That should also give some nice graphics AFAIK.
+ 
+
+comment number: 33280770 
+body: @Diapolo Looks like it is. I'll install it this arvo and take a look.
+ 
+
+comment number: 37915746 
+body: @fanquake any luck?
+ 
+
+240. bug report number : ['3529']
+comment number: 32185732 
+body: Reproduced here, also.
+ 
+
+comment number: 32208604 
+body: Okay, just got through my first ever `git bisect`...
+
+35ecf854c084c248ad640c6af030a9d1ed726c47 is the first bad commit
+commit 35ecf854c084c248ad640c6af030a9d1ed726c47
+Author: Wladimir J. van der Laan laanwj@gmail.com
+Date:   Wed Jan 8 08:59:24 2014 +0100
+
+```
+qt: Remove global references in bitcoin.cpp
+
+Remove the need for global references `guiref` and
+`splashref` by making the BitcoinGUI and SplashScreen
+classes register for the UI interface signals themselves.
+```
+
+:040000 040000 b409b02f0e01d640169733ed046a326cf79d48c2 a2a221172cc733ff63ce08f800164538e912fdb0 M      src
+
+EDIT: Okay, either I messed up the bisection, or there's something non-deterministic in play, because I first noticed the problem on an earlier commit.
+ 
+
+comment number: 32208635 
+body: @laanwj?
+ 
+
+comment number: 32228532 
+body: @sipa 
+This is the index incompatibility that I ran into yesterday.  See above for cause.
+ 
+
+comment number: 32228814 
+body: I don't see a cause.
+ 
+
+comment number: 32267587 
+body: Could this be caused by the difference in leveldb version? (1.15+patches versus 1.13+patches)
+ 
+
+comment number: 32309496 
+body: @laanwj 
+Confirmed, backing down master to leveldb-1.13 as shipped in v0.8.6 allows the index to be compatible.
+ 
+
+comment number: 32314301 
+body: Ok, so leveldb 1.14 is not backward compatible with older versions because... they changed their file naming scheme.
+
+Leveldb 1.13 and below, write to (and read from) NNNNNN.sst files for compacted table.
+Labeldb 1.14 and up, write to NNNNNN.ldb (but also try reading from NNNNNN.sst).
+
+There are 3 options, I think:
+- Downgrade to 1.13 (with OSX fixes) again, and stay there until... who knows.
+- Patch the 1.15 source code to write to .sst again (it's a 1 line change, @wtogami tested it already).
+- Just accept that running 0.9 will make your databases incompatible with 0.8.x and before (though trivially repairable, just rename the files).
+
+It's silly that we need to worry about compatibility for such a bikeshed issue, but it will cause problems...
+ 
+
+comment number: 32314674 
+body: I vote patch 1.15 for sst, and make the breaking change when we implement pruning (since that will also break/confuse 0.8)
+ 
+
+comment number: 32314844 
+body: Is it possible to detect and do the trivially repair on install?
+ 
+
+comment number: 32315127 
+body: @cabbiepete Sure, but that would be a lot more work than 1-line patch!
+@luke-jr ACK
+ 
+
+comment number: 32315505 
+body: @sipa Of course but at some point we need the process to be transparent, seamless, no brainer for users otherwise we make less wise people feel uncomfortable and less and less likely to run bitcoin-qt for a client and all that goes with it. If you guys feel its not time for that np just wanted to put it out there :-) Also if we would prefer that but don't have resource maybe I can help installer scripts can't be that hard to work out maybe even I can do it.
+ 
+
+comment number: 32315674 
+body: @sipa on closer inspection I guess the patch provides the same benefits, with only downside being maintenance of the patch.
+ 
+
+comment number: 32316171 
+body: ACK on write the old name read the old and new.  We'll have to make a backwards incompatible change at some point and we can stop carrying the patch then.
+ 
+
+comment number: 32316409 
+body: also ACK on write the old name read the old and new.
+ 
+
+comment number: 33218269 
+body: This is fixed now that sipa's leveldb change has been merged.
+ 
+
+241. bug report number : ['3522']
+comment number: 32152352 
+body: @theuni Seems it is missing zlib for some reason?
+
+**Edit:** this is the failing check
+https://github.com/bitcoin/bitcoin/blob/master/src/m4/bitcoin_qt.m4#L318
+From inspection of config.log it looks like it can't link against -lz.
+
+**Edit2:** removing the explicit check for libz solves the build issue . Why is there an explicit check for lz in there in the first place?
+ 
+
+comment number: 32214238 
+body: @laanwj Ah, yep. I have a libz in my win32 environment, so I didn't notice.
+
+libz is optional for qt4, mandatory for qt5. I'll PR a fix.
+ 
+
+comment number: 32251821 
+body: @theuni  I actually need that line now that I use Qt5 and with system libz/libpng, so consider this fixed.
+ 
+
+242. bug report number : ['3496']
+comment number: 31811786 
+body: Looking on google, error -30974 is DB_VERSION_MISMATCH
+
+This means you are probably using bitcoin compiled against BDB 4.8 and BDB 5.1 interchangeably. Using a wallet produced with BDB 5.1 with BDB 4.8 causes this error (no backward compatibility).
+Just move the wallet out of the way and it should work again. If it was never used, at least you don't need to recover anything.
+
+BTW: Git master has a `--disable-wallet` compilation option as well as as `-disable-wallet`, this may help you in this case.
+ 
+
+comment number: 31811973 
+body: "Just move the wallet out of the way and it should work again."
+
+Every time this happens I just delete the wallet entirely and start up again. After a several days it happens again.
+
+I'm not recompiling bitcoind, or taking any actions at all that should affect the wallet, in between manifestations of this bug.
+ 
+
+comment number: 31812258 
+body: That's strange...
+Are you removing any other wallet-related files (for example, the database environment) from ~/.bitcoin manually between startups?
+Or maybe doing unclean shutdowns?
+ 
+
+comment number: 31812432 
+body: I haven't been removing the database directory. I can try that.
+
+Haven't had any unclean shutdowns in recent memory, just clean shutdowns and the ones caused by this error.
+ 
+
+comment number: 31812551 
+body: I just did a clean shutdown and noted the database directory was not present after the shutdown (did not need to delete it manually).
+
+I deleted the new wallet.dat it just got done creating and restarted again.
+ 
+
+comment number: 31812910 
+body: This is almost scary.
+Could there be some other process messing with your wallet.dat?
+ 
+
+comment number: 31813071 
+body: The node is running in a headless virtual machine with nothing else running except bitcoind (that I've put there anyway).
+
+I can start keeping copies of the problematic wallet.dat files.
+ 
+
+comment number: 42060915 
+body: I'd recommend upgrading to 0.9.x and running with `-disablewallet` (or if you compile it yourself, compiling bitcoin without wallet support with `--disable-wallet`).
+ 
+
+243. bug report number : ['3495']
+comment number: 31810742 
+body: Looks like a duplicate of #3485, except that it happened on another OS
+ 
+
+244. bug report number : ['3494']
+comment number: 31809808 
+body: I've not seen this on Windows recently.
+ 
+
+comment number: 31817423 
+body: https://litecointalk.org/index.php?topic=12526.0
+It is unclear if it is related to what @laanwj is experiencing, but we found a network related issue with boost-1.54 on win32 builds.  Litecoin's 0.8.6.1 gitian win32 was upgraded from boost-1.50 to boost-1.54 to match Bitcoin master.  Some (but not all) Windows users have an issue where networking just stops randomly after a few hours.  getpeerinfo thinks it still has peers but netstat shows they are long gone.  GUI still operates, networking just stops and debug.log shows things like this:
+
+```
+2013-12-28 12:40:46 socket send error 10054
+2013-12-28 12:40:46 disconnecting node 125.86.21.116:1985
+```
+
+Downgrading back to boost-1.50 seems to fix the issue.  I am attempting to narrow it down more.
+
+I think merely upgrading Bitcoin 0.8.6 gitian win32 to boost-1.54 will have the same problem.  It is entirely likely bitcoin master gitian win32 is similarly affected.
+ 
+
+comment number: 31827681 
+body: Today I've been completely unable to reproduce this issue.
+That may have to do with my attempt at adding debug information; Heisenbug? will try a clean build and see if it brings back the issue.
+
+Edit: yep, without debug information it's back! :-(
+
+Something all the crashing sessions have in common:
+
+```
+2014-01-08 12:48:30 Added time data, samples 4, offset -281217278672897 (-4686954644548 minutes)
+2014-01-08 13:16:15 Added time data, samples 3, offset -281217278672795 (-4686954644546 minutes)
+2014-01-08 13:48:31 Added time data, samples 2, offset -281217278672897 (-4686954644548 minutes)
+2014-01-08 13:51:32 Added time data, samples 2, offset -281217278672896 (-4686954644548 minutes)
+```
+
+Either all the peers return crazy values, or GetTime returns an invalid value (this is subtracted). My bet is on the second.
+
+Yep, GetTime returns junk (it thinks it's in the far far future), peer is well-behaved:
+
+```
+2014-01-08 14:55:19 GetTime is 281218667865815, nTime is 1389192919
+```
+ 
+
+comment number: 31845096 
+body: Ok this is weird.
+time(NULL) returns (random?) data in the upper part of the uint64_t. If I add an explicit &0xffffffff in GetTime, it works.
+ 
+
+comment number: 31845969 
+body: Maybe time_t on windows natively returns a 32-bit integer, but it's declared as returning a 64-bit one?
+ 
+
+comment number: 31849134 
+body: That could be the case.
+The curious thing is that the upper word is always the same, so it is not random stack corruption being returned:
+
+```
+0000ffc4 52cd7958
+```
+
+sizeof(time_t) is 8 bytes on mingw.
+So it may indeed be a misdefinition somewhere (but not in bitcoin -- it also happens with a minimal test).
+ 
+
+comment number: 31849728 
+body: I've narrowed down the problem to:
+
+```
+-D_FILE_OFFSET_BITS=64
+```
+
+This option changes the size of time_t from 4 to 8, and adds the random gunk on time(NULL).
+
+Note: This may be a wine bug. I haven't tested anything on an actual windows box.
+
+Another thing that's worth looking at may be why a (huge) time discrepancy causes a segmentation fault in the network code.
+ 
+
+comment number: 31852013 
+body: Ok, this is confirmed a wine bug.
+
+wine 1.4 (Ubuntu 12.04):
+
+```
+281218667872263
+ffc452cd8007
+size=8
+```
+
+wine 1.4.1 (Ubuntu 13.10):
+
+```
+1389199241
+52cd7f89
+size=8
+```
+
+Edit: also checked that the crash doesn't happen when making GetTime() return outrageous times in general. That, too, is a wine issue probably with time_t size conflict.
+ 
+
+comment number: 31882901 
+body: This looks to be http://sourceforge.net/p/mingw-w64/bugs/279/ . It's a toolchain issue that will manifest when building with D_FILE_OFFSET_BITS=64 (which is correct). This value should not affect time_t, but in the buggy versions it did.
+
+sizeof(time_t) should be 4 for win32. If it's 8, the headers are buggy and runtime will be unpredictable. At runtime, a 4byte value is stored in an 8byte var, leaving half uninit'd. Using a recent mingw it's 4 as expected. I'm assuming gitian's version still has this bug.
+
+This should be reopened. It's a build-time issue that may manifest at runtime.
+ 
+
+comment number: 31910211 
+body: @theuni In that case we should define  `_USE_32BIT_TIME_T` if mingw. This overrides the file offset bits...
+ 
+
+comment number: 31911424 
+body: See #3497 
+
+FYI the output with `-D_FILE_OFFSET_BITS=64 -D_USE_32BIT_TIME_T` (correct):
+
+```
+1389256547
+52ce5f63
+size=4
+```
+ 
+
+comment number: 31912855 
+body: Discussion continues in #3497
+ 
+
+245. bug report number : ['3478']
+comment number: 31510356 
+body: Ouch. We need to fix this before the 0.9.0 release.
+ 
+
+246. bug report number : ['3456']
+comment number: 31105536 
+body: What version of bitcoin?
+From the GUI or directly from RPC?
+Any more specific error in debug.log?
+ 
+
+comment number: 31105862 
+body: @laanwj  Bitcoind version 8.6. 
+
+No error messages in the debug.log but there some messages related to flushing the wallet
+
+```
+2013-12-23 02:57:03 ThreadRPCServer method=importprivkey
+2013-12-23 02:57:04 AcceptToMemoryPool: 178.63.190.234:8333 /Satoshi:0.8.2.2/ : accepted c055ddde27996e3eb4370b37f3018cc517c173f51ec4091f3dbad1e25fcb6367 (poolsz 112)
+2013-12-23 02:57:05 Flushing wallet.dat
+2013-12-23 02:57:05 Flushed wallet.dat 5ms
+```
+ 
+
+comment number: 31106564 
+body: My guess is that your wallet is still locked somehow and that you need to unlock it.
+`importprivkey` does not check for the wallet to be locked and gives a weird error message if that is still the case (see #957, #3457).
+
+The only other cause of this error (AFAIK) would be a database problem with your wallet, so let's first completely rule out the wallet lock status.
+ 
+
+comment number: 31111948 
+body: The most common cause of this error message is actually that one already has the key imported.
+
+IIRC, git head has a specific message for that.
+ 
+
+comment number: 31112046 
+body: Yes, there is a check for that nowadays. Didn't know that wasn't in 0.8.
+ 
+
+comment number: 31121922 
+body: @laanwj, Originally when I tried, the wallet does not even have the passphasse, so there we can rule out the case of locked. Later I added passphase and tried. I have posted getinfo, it has unlock_until set to 1387806110 which shows wallet is unlocked.
+
+@sipa @laanwj In 8.6, there is no check for existing keys, but I have tried with different keys, none of them worked https://github.com/bitcoin/bitcoin/blob/0.8.6/src/rpcdump.cpp#L35-L78
+ 
+
+comment number: 44377683 
+body: Does this still happen with 0.9.1?
+ 
+
+247. bug report number : ['3384']
+comment number: 31105580 
+body: Do not combine use of labels in the GUI and the accounts feature.
+Due to historical reasons these use the same wallet data in different ways. 
+This causes strange conflicts. You won't lose coins due to it, but don't expect it to do anything sensible either.
+ 
+
+comment number: 31107092 
+body: Sorry, I have no idea what you are talking about. I checked "listaccounts" only after I saw duplicated labels, with different numbers in bitcoin-qt.
+Again, to reiterate: I created an address by pressing "new address" in receive window, added it a label. After some time I got another address, with the same label, added.
+Same thing happened when I loaded privkey using "importprivkey" from debug window.
+
+The problem is not in what listaccounts shows, but rather in duplicated addresses in normal window, created by who-knows-what.
+ 
+
+comment number: 31107261 
+body: So you are not using any of the account functionality through RPC? And purely using the GUI, except for `importprivkey`?
+
+BTW: it appears that the addresses are not duplicated. There are just multiple addresses with the same label.
+ 
+
+comment number: 31107374 
+body: Yes. The only thing I did not-clicking was importprivkey. And I know the address is not the same, but still - why is it there? How come it showed?
+ 
+
+comment number: 31107529 
+body: Don't know, it does sound like a kind of bug. It shouldn't be creating new addresses automatically.
+
+Might be an issue while editing the label. Then after restarting the client there are suddenly more addresses. I remember a few problems with the address list have been fixed in 0.9, this may be one of them.
+ 
+
+248. bug report number : ['3376']
+comment number: 30205710 
+body: Looks like a leveldb corruption.
+Was there an unclean shutdown/unmount or power failure or so?
+
+Running with `-reindex` should solve it.
+ 
+
+comment number: 32658819 
+body: Thanks, that fixed mine that has been down for months. Would be great if they had an error handler catch that error and go into -reindex automatically, maybe with a messagebox notifying the user of the incorrect shutdown.
+ 
+
+comment number: 37496791 
+body: This is a duplicate of #2631, although it has a better title.
+ 
+
+249. bug report number : ['3333']
+comment number: 29550040 
+body: I wonder whether this is a wallet sending these empty transactions as observed in #3190.
+ 
+
+comment number: 30669377 
+body: This is different from the vin problem.
+The provided wallet has a few corrupted tx records.
+
+Stack trace shows that GetDebit is called on a CWalletTx that has pwallet==0.
+
+```
+#6  CWallet::GetDebit (this=this@entry=0x0, txin=...) at wallet.cpp:568
+#7  0x000055555566ad6b in CWallet::GetDebit (this=0x0, tx=...) at ../../src/wallet.h:273
+#8  0x000055555566c6bd in GetDebit (this=0x55555be2ec20) at ../../src/wallet.h:595
+#9  TransactionRecord::decomposeTransaction (wallet=0x55555c092f20, wtx=...) at transactionrecord.cpp:35
+#10 0x0000555555652ee9 in refreshWallet (this=0x555559acfc80) at transactiontablemodel.cpp:85
+#11 TransactionTableModel::TransactionTableModel (this=0x5555564797b0, wallet=<optimized out>, parent=<optimized out>)
+at transactiontablemodel.cpp:236
+#12 0x0000555555608f8f in WalletModel::WalletModel (this=0x55555a624bd0, wallet=0x55555c092f20, optionsModel=<optimized out>, 
+    parent=<optimized out>) at walletmodel.cpp:37
+#13 0x00005555555b2605 in main (argc=2, argv=<optimized out>) at bitcoin.cpp:326
+```
+
+Hmm. Invalid CWalletTx should be deleted from the wallet on load immediately, but somehow that's not happening and they linger around with pwallet==0.
+ 
+
+comment number: 30675752 
+body: The problem is that the wallet transaction loading code is not exception safe.
+
+See #3426 for fix
+ 
+
+250. bug report number : ['3317']
+comment number: 32617919 
+body: Should be fixed with 0.8.6
+ 
+
+comment number: 56867211 
+body: @laanwj If you don't mind, I'm getting this issue on an altcoin, how was it fixed
+ 
+
+comment number: 56929924 
+body: I don't remember. Looks like a crash in the GUI code though. You could look at the diff between 0.8.5 and 0.8.6.
+ 
+
+251. bug report number : ['3289']
+comment number: 32897426 
+body: It isn't a matter of a full disk?
+ 
+
+comment number: 33004156 
+body: We need a full debug.log, to see more details...
+ 
+
+comment number: 33279733 
+body: well, it doesn't appear to be a problem anymore, as litecoin-qt works now... 
+
+On Wednesday, January 22, 2014 3:12 AM, P. Kaufmann notifications@github.com wrote:
+
+We need a full debug.log, to see more details...
+
+> —
+> Reply to this email directly or view it on GitHub.
+ 
+
+252. bug report number : ['3274']
+comment number: 32618758 
+body: The problem here is that the BOOST_CPPFLAGS aren't passed when doing the sleep test.
+Should be fixed by: https://github.com/laanwj/bitcoin/commit/714cdecb0398a075e80e2263a09b9fb3a4fe70ea (part of #2704)
+ 
+
+comment number: 55218786 
+body: the updated version of configure.ac has the fix. still have the same issue. config.log at https://gist.github.com/aa6779337bcbb4ae8943.git 
+ 
+
+comment number: 55225616 
+body: @kathy007 that gist link doesn't work (shows as empty here)
+ 
+
+comment number: 55256399 
+body: @laanwj sorry here is the link https://gist.github.com/kathy007/aa6779337bcbb4ae8943
+ 
+
+comment number: 55260570 
+body: Curious - both test programs fail to link.
+
+```
+configure:23587: g++ -o conftest -L/usr/local/include -Wstack-protector -fstack-protector-all -fPIE -fvisibility=hidden -I/bitcoin/db4/include/ -DBOOST_SPIRIT_THREADSAFE -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -pthread -I/usr/include -L/bitcoin/db4/lib/ -Wl,-z,relro -Wl,-z,now -pie conftest.cpp -L/usr/lib -lboost_system -lboost_filesystem -lboost_program_options-mt -lboost_thread -lboost_chrono-mt -lminiupnpc -lminiupnpc -lminiupnpc -lminiupnpc -lrt -lanl >&5
+/tmp/ccgxbg06.o: In function `boost::this_thread::sleep_for(boost::chrono::duration<long, boost::ratio<1l, 1000000000l> > const&)':
+conftest.cpp:(.text._ZN5boost11this_thread9sleep_forERKNS_6chrono8durationIlNS_5ratioILl1ELl1000000000EEEEE[_ZN5boost11this_thread9sleep_forERKNS_6chrono8durationIlNS_5ratioILl1ELl1000000000EEEEE]+0x4d): undefined reference to `boost::this_thread::hiden::sleep_for(timespec const&)'
+collect2: error: ld returned 1 exit status
+```
+
+```
+configure:23627: g++ -o conftest -L/usr/local/include -Wstack-protector -fstack-protector-all -fPIE -fvisibility=hidden -I/bitcoin/db4/include/ -DBOOST_SPIRIT_THREADSAFE -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -pthread -I/usr/include -L/bitcoin/db4/lib/ -Wl,-z,relro -Wl,-z,now -pie conftest.cpp -L/usr/lib -lboost_system -lboost_filesystem -lboost_program_options-mt -lboost_thread -lminiupnpc -lminiupnpc -lminiupnpc -lminiupnpc -lrt -lanl >&5
+/tmp/ccIBP6Rb.o: In function `boost::this_thread::sleep(boost::posix_time::ptime const&)':
+conftest.cpp:(.text._ZN5boost11this_thread5sleepERKNS_10posix_time5ptimeE[_ZN5boost11this_thread5sleepERKNS_10posix_time5ptimeE]+0x4d): undefined reference to `boost::this_thread::hiden::sleep_until(timespec const&)'
+collect2: error: ld returned 1 exit status
+```
+
+Very strange. This could be a conflict between two sets of boost libraries. @theuni do you have any idea what could cause this?
+I'm especially wondering at the `-lboost_system -lboost_filesystem -lboost_program_options-mt -lboost_thread` part. Some of the libraries have -mt, some do not, which seems to suggest it is mixing two sets of libraries.
+What platform is this, and which boost version?
+ 
+
+comment number: 55260835 
+body: I'm using debian 7.6 and boost1.56.0
+ 
+
+comment number: 55262580 
+body: Did you compile boost from source, or are you using the distro-provided dev packages?
+ 
+
+comment number: 55262886 
+body: I didn't use the package, just followed build-unix.md.
+ 
+
+comment number: 55323675 
+body: You didn't give a --with-boost option to point to the one you compiled, so it's finding the ones on your system (which are presumably borked, which is why you're building your own).
+Use something like ./configure --with-boost=/usr/local, where /usr/local is the prefix where boost was installed.
+ 
+
+comment number: 55334744 
+body: Hi Thanks @theuni for your help! I think that solves the "sleep implementation problem" but I'm getting another problem : configure: error: pkg-config not found. (I updated the gist)
+ 
+
+comment number: 55336341 
+body: apt-get install pkg-config. Is that not listed in the required packages?
+ 
+
+comment number: 55337939 
+body: it works. Thank you so much for your help! 
+ 
+
+comment number: 266314156 
+body: On Debian 8 with all the dependencies required for the install i'm still getting this result.
+
+        ./configure CPPFLAGS="-I/usr/local/BerkeleyDB.4.8/include -O2" LDFLAGS="-L/usr/local/BerkeleyDB.4.8/lib" CXXFLAGS="--param ggc-min-expand=1 --param ggc-min-heapsize=32768" --with-boost="/usr/include/boost" --with-boost-libdir="/usr/lib/x86_64-linux-gnu" 
+
+comment number: 287439165 
+body: On ubuntu I was running into this after no error with `sudo apt-get install libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev libboost-test-dev libboost-thread-dev`. `sudo apt-get install libboost-all-dev` fixed it. 
+
+comment number: 287536814 
+body: What ubuntu version? 
+
+253. bug report number : ['3245']
+comment number: 28393994 
+body: @diapolo Can you please check if the same happens on windows7/8 whatever you're running, I only have XP VMs
+ 
+
+comment number: 28519615 
+body: AFAIK XP has no IPv6 stack, I'm not sure why the test fail though... I ran them also on Win7 x64 and got no errors.
+ 
+
+comment number: 28626456 
+body: Yes, AFAIK also XP has no IPv6 support either. But I wouldn't expect address parsing to fail due to that. Or maybe it's to be expected as we (and boost) simply use the OS provided functions.
+
+Thanks for verifying that it works on newer Windows.
+
+Closing the issue as we don't need IPv6 address parsing on XP. A "solution" may be to disable those tests on XP, but mehh this is more transparent.
+ 
+
+254. bug report number : ['3216']
+comment number: 27942649 
+body: Strange. So you mean pasting into the filter fields?
+ 
+
+comment number: 27942725 
+body: Yes, in filter field. You can see it in the picture with paste option grayed out.
+Anyone having this problem?
+Windows 7 64 bit OS
+ 
+
+comment number: 27942894 
+body: Works fine for me in Linux. Both pasting from inside the client and from a web browser, and using the context menu as well as Ctrl+V.
+
+Do you have any toolbars or tray programs or such running that interact with the clipboard?
+ 
+
+comment number: 27942933 
+body: Edit: for some strange reason now its working correctly, even with out system restart or client restart.
+ 
+
+comment number: 27943001 
+body: I think the issue can be closed or deleted, seems some glitch in my computer.
+ 
+
+255. bug report number : ['3186']
+comment number: 28401107 
+body: I've tried the following:
+- bitcoin-qt -testnet -txindex: question of reindexing appears
+  - choose Abort -> quits without
+  - choose OK -> bitcoin starts reindexing
+- bitcoin-qt -testnet **without** -txindex: question of reindexing appears
+  - choose Abort -> quits without
+  - choose OK -> bitcoin starts reindexing
+
+Unable to reproduce this error.
+ 
+
+comment number: 28406441 
+body: Yesterday I compiled Qt5 debug libs, so I can try to debug this tomorrow.
+ 
+
+comment number: 28518831 
+body: Seems this is fixed, I also couldn't reproduce it anymore.
+ 
+
+256. bug report number : ['3136']
+comment number: 27192563 
+body: I can't reproduce this (on linux). I've had a problem with my testnet wallet so needed to rebuild a few times yesterday. When I clicked "abort" there was no crash.
+I'm not using -txindex though.
+ 
+
+comment number: 27192815 
+body: Perhaps you can give it a try with -txindex then?
+ 
+
+comment number: 28519132 
+body: I tried to debug this, but failed badly... I get a segfault related to `path.hpp`, which is from Boost filesystem. This happens after `2013-11-14 20:09:45 Shutdown : done`. I just see that the object contains the correct path to my testnet3 datadir and is unrelated to our datadir caching (as I disabled it for testing purposes).
+
+Perhaps there is some global that get's destructed after everything is already shutdown, dunno yet...
+
+@laanwj Any idea how I can nail this down further?
+
+Edit: I'm going to try Boost 1.55.0 tomorrow and see if that helps ;).
+ 
+
+comment number: 28563109 
+body: Yes that's probably an destruction order problem, do you get a traceback?
+
+Otherwise I don't know a good way to debug it except for selectively commenting out code.
+ 
+
+comment number: 32601458 
+body: I wonder if this also happens with gitian builds.
+ 
+
+comment number: 41999734 
+body: Does this still happen with current master?
+ 
+
+comment number: 42000097 
+body: Tested a minute ago, yes still happens with 0.9.1.
+
+<pre>
+  Problemereignisname:  BEX64
+  Anwendungsname:   bitcoin-qt.exe
+  Anwendungsversion:    0.9.1.0
+  Anwendungszeitstempel:    51a93980
+  Fehlermodulname:  StackHash_e7de
+  Fehlermodulversion:   0.0.0.0
+  Fehlermodulzeitstempel:   00000000
+  Ausnahmeoffset:   PCH_AE_FROM_ntdll+0x000000000009B13A
+  Ausnahmecode: c0000005
+  Ausnahmedaten:    0000000000000008
+</pre>
+ 
+
+comment number: 55097256 
+body: I found out that this code in path.hpp causes the segfault:
+
+<pre>
+#   ifdef BOOST_WINDOWS_API
+    const std::string string() const { return string(codecvt()); } 
+</pre>
+
+This line causes it:
+`DbEnv(0).remove(path.string().c_str(), 0);`
+https://github.com/bitcoin/bitcoin/blob/master/src/db.cpp#L49
+
+I was able to prevent the crash by not using a boost::path there, but add a std::string to the class, init that with `path.string()` at the beginning and use that in the above call.
+
+@laanwj Any idea for this? A use-after-free or something like that?
+ 
+
+comment number: 55104975 
+body: This is yet another shutdown order issue.
+
+CDbEnv ideally shouldn't be a global object that has the lifetime of the program. I remember this 
+also came up for testing by @SergioDemianLerner #4688.
+ 
+
+comment number: 78145653 
+body: I tested this on Windows 8.1 x64 and Windows 10 TP with the 0.9, 0.10 releases, as well as the master branch (build via Gitian route).
+
+To reproduce:
+1. Start `bitcoin-qt.exe`, pointing to a new datadir (`-datadir=xxx`, `-choosedatadir`)
+2. Shutdown the client
+3. Start `bitcoin-qt.exe -txindex=1`
+4. Decline to rebuild index
+5. Crash
+
+A similar event can be triggered and observed, when executing `bitcoind.exe` without `rpcuser` and `rpcpassword` defined, which also results in an application crash.
+
+FWIW, I uploaded the crash report, including error dump files: http://bitwatch.co/uploads/AppCrash_bitcoin-qt_w10x64.zip (1.414 KB)
+
+Running `Process Monitor` hints a buffer overflow during the shutdown:
+
+![bufferoverflow](https://cloud.githubusercontent.com/assets/5836089/6568061/dff6402e-c6d1-11e4-9ccf-43a1c2dced41.png)
+
+This error does not occure, when using `-disablewallet` or a wallet-less build.
+ 
+
+comment number: 84321884 
+body: As follow up: it's a memory access violation and I sort-of debugged it on an assembler level, where I saw that the crash occured when jumping to `0xFEEEFEEE + x`, which indicates previously [freed memory](https://www.google.de/search?q=0xFEEEFEEE) on Windows.
+
+The hint about `const std::string string() const { return string(codecvt()); }` was golden, as this indeed pointed to root cause. [Boost path](https://github.com/boostorg/filesystem/blob/boost-1.55.0/src/path.cpp) uses a static initialized pointer internally, which appears to be deinitialized during shutdown, but if this is not done by the main thread, the pointer appears to be already deinitialized, even though there is still an attempted access later. An appearingly working solution was to force the initialization by the main thread.
+ 
+
+comment number: 84363320 
+body: Tested with #5877 on top of current master (https://builds.jonasschnelli.ch/pulls/5877/) on Windows 7. Crash no longer happens.
+Testes also current master on same Window 7 instance and could reproduce the reindex->abort crash.
+ 
+
+comment number: 85375999 
+body: Thanks a lot for testing @jonaschnelli! Closing this.
+ 
+
+comment number: 111933797 
+body: @laanwj This needs to be reopened, as the bug was reintroduced or is at least still present! I'm going for a much simpler fix and will open a pull in a few minutes.
+ 
+
+comment number: 111934175 
+body: See #6282...
+ 
+
+257. bug report number : ['3120']
+comment number: 28480680 
+body: Its been so much time since I stop coding in C++ and Qt. these days I'm going to start reviewing, and trying to understand the code of the project.
+
+An example of how you could solve part of the problem:
+
+```
+ dnl
+ dnl QT
+ dnl
+ AC_ARG_ENABLE(qt, [
+   AS_HELP_STRING([--disable-qt], [Qt UI support (default enabled)])],, [
+   AS_IF([test "${SYS}" = "darwin"], [
+     enable_qt="no"
+   ])
+ ])
+ AS_IF([test "${enable_qt}" != "no"], [
+   PKG_CHECK_MODULES([QT], [Qt5Core >= 5 Qt5Widgets Qt5Gui], [
+       QT_PATH="$(eval $PKG_CONFIG --variable=exec_prefix QtCore)"
+       AC_PATH_PROGS(MOC, [moc-qt5 moc], moc, [${QT_PATH}/bin ${CONTRIB_DIR}/bin])
+       AC_PATH_PROG(RCC, [rcc-qt5 rcc], rcc, [${QT_PATH}/bin ${CONTRIB_DIR}/bin])
+       AC_PATH_PROGS(UIC, [uic-qt5 uic], uic, [${QT_PATH}/bin ${CONTRIB_DIR}/bin])
+     ], [
+       PKG_CHECK_MODULES([QT], [QtCore QtGui >= 4.6.0],, [
+         AS_IF([test -n "${enable_qt}"],[
+           AC_MSG_ERROR([${QT_PKG_ERRORS}.])
+         ],[
+           AC_MSG_WARN([${QT_PKG_ERRORS}.])
+         ])
+         enable_qt="no"
+       ])
+       QT_PATH="$(eval $PKG_CONFIG --variable=exec_prefix QtCore)"
+       AC_PATH_PROGS(MOC, [moc-qt4 moc], moc, [${QT_PATH}/bin ${CONTRIB_DIR}/bin])
+       AC_PATH_PROG(RCC, rcc, rcc, [${QT_PATH}/bin ${CONTRIB_DIR}/bin])
+       AC_PATH_PROGS(UIC, [uic-qt4 uic], uic, [${QT_PATH}/bin ${CONTRIB_DIR}/bin])
+     ])
+ ])
+ AS_IF([test "${enable_qt}" != "no"], [
+   VLC_ADD_PLUGIN([qt4])
+   ALIASES="${ALIASES} qvlc"
+
+   AC_LANG_PUSH([C++])
+   VLC_SAVE_FLAGS
+
+   AC_MSG_CHECKING([whether Qt uses Xlib])
+   CPPFLAGS="${CPPFLAGS} ${QT_CFLAGS}"
+   AC_PREPROC_IFELSE([AC_LANG_SOURCE([
+ #include <QWidget>
+ #if !defined (Q_WS_X11)
+ # error Fail
+ #endif
+   ])], [
+     AC_MSG_RESULT([yes])
+   ], [
+     AC_MSG_RESULT([no])
+   ])
+
+   VLC_RESTORE_FLAGS
+   AC_LANG_POP([C++])
+
+ ])
+ AM_CONDITIONAL(ENABLE_QT4, [test "$enable_qt" != "no"]) 
+```
+
+Regards from Uruguay
+ 
+
+comment number: 28519690 
+body: There needs to be Qt5 support, before I'm trying autotools... so I whished there would be some patches for it :).
+ 
+
+comment number: 28562988 
+body: Yes the problem is that no one in the dev team is an autotools wizard, so we're kind of reliant on other's patches here.
+ 
+
+comment number: 32020056 
+body: See #3346
+ 
+
+258. bug report number : ['3118']
+comment number: 26704510 
+body: In that issue it is mentioned that the problem is solved, so are you sure that this is the same issue?
+
+If you are sure please post there, notify me and I'll reopen the issue. Having an issue referring to another issue in the title is not optimal.
+ 
+
+259. bug report number : ['3112']
+comment number: 27140486 
+body: It appears that this script is expecting getblock to return the block data as a hex string. Is this supposed to work with a specially compiled bitcoind?
+ 
+
+comment number: 27141218 
+body: @weex it returns the block as a hex string, if you call it in non-verbose mode, which the script appears to do (I just glanced at it)
+
+Also, I just tested it:
+
+$ python ./linearize.py a.cfg
+Wrote block 0
+Wrote block 1000
+Wrote block 2000
+Wrote block 3000
+ 
+
+comment number: 27141250 
+body: Closing.  It is meant for 0.9.
+ 
+
+comment number: 46227312 
+body: I'm trying to adapt this to an alt coin (Sexcoin) but keep getting this error;
+  File "./linearize.py", line 130, in <module>
+    get_blocks(settings)
+  File "./linearize.py", line 79, in get_blocks
+    data = getblock(rpc, settings, height)
+  File "./linearize.py", line 68, in getblock
+    data = hexdata.decode('hex')
+AttributeError: 'dict' object has no attribute 'decode'
+
+my cfg file and conf file for the coin are sync'd and not a connection issue,
+I've changed the netmagic to the first for octets of the coin:fbc0b6db
+but I'm out of ideas on why this wouldn't work.
+ 
+
+260. bug report number : ['3110']
+261. bug report number : ['3090']
+comment number: 26321453 
+body: Indeed, this should clearly be !memcmp(...). That's quite a sneaky bug.
+
+Phew, luckily the key  == functions are not used anywhere. I made `CKey:==`, `CExtPubKey:==` and `CExtKey:==` private and everything still compiles.
+
+Not meant as excuse not to fix this, but at least there's no security problem with the current releases.
+ 
+
+comment number: 26322899 
+body: ^ ^ , I saw many many unused codes in bitcoind, I am rewriting a c++11 version without boost & jsonspirit.  hope I can help.  
+ 
+
+262. bug report number : ['3070']
+comment number: 26034357 
+body: "make clean" works because it regenerates the makefiles from scratch.
+
+https://www.flameeyes.eu/autotools-mythbuster/automake/maintainer.html
+This may be relevant.
+
+It sounds like you want make to detect that it needs to regenerate its own rules.  I'm uncertain if that will play nice with faketime in gitian?
+ 
+
+comment number: 39797660 
+body: #3989 - it's been suggested that moving away from recursive Makefiles is the best solution.
+ 
+
+comment number: 39799862 
+body: As we're moving towards more modularized source trees, we'll need a solution for interdependencies anyway, I guess? (autotools noob here)
+ 
+
+comment number: 42001280 
+body: #4118 is a relative to this issue.
+ 
+
+comment number: 42001428 
+body: @rebroad can you please stop pimping your issue everywhere; if you have a solution, that's great, but refering to another issue where the problem is re-stated is not constructive.
+ 
+
+comment number: 45349898 
+body: Fixed-- I'm a happy camper.
+ 
+
+263. bug report number : ['3063']
+comment number: 25818542 
+body: I suppose the priority rule should be to prefer _any_ moc in the qt-bindir directory above any moc elsewhere.
+Looking at the configure script it does the following
+
+```
+for ac_prog in moc-qt4 moc4 moc
+    <search for program named ac_prog> in qt_binpath, then rest of path
+    -> if found, select it and exit loop
+```
+
+This is generated from the following configure.ac line:
+
+```
+AC_PATH_PROGS([MOC], [moc-qt4 moc4 moc],, $qt_bin_path:$PATH)
+```
+
+That's kind of where my automake knowledge stops though...
+ 
+
+comment number: 26875861 
+body: This was my main argument against https://github.com/bitcoin/bitcoin/commit/9a09c0091c33a8f22f48b5e6e5b8f3b400c43ff3 . This is working "as intended" unfortunately.
+
+Should be fixed with the qt5 support. I'll try to get a PR pushed up this week.
+ 
+
+comment number: 33356291 
+body: @theuni Can you confirm this is fixed?
+ 
+
+264. bug report number : ['3033']
+comment number: 25188017 
+body: This looks like a problem with the LevelDB code?
+ 
+
+comment number: 25683872 
+body: Seems like database corruption. You'll have to start with the -reindex command-line flag to rebuild it.
+ 
+
+comment number: 25684489 
+body: @sipa We should somehow catch these even better and offer help via our reindex dialog? Could latest LevelDB version help here?
+ 
+
+comment number: 28394198 
+body: @lzrloveyou did a reindex work to solve this?
+ 
+
+comment number: 32022630 
+body: Closing due to inactivity.
+ 
+
+265. bug report number : ['3007']
+comment number: 66413473 
+body: Fixed by #5399
+ 
+
+266. bug report number : ['3003']
+comment number: 24536037 
+body: I remember having the same issues some days ago.
+While looking at my config.log, i just saw that i gave the --libdir.
+Try `./configure --without-qt --disable-tests --disable-debug --libdir=/opt/local/lib/`
+ 
+
+comment number: 24536691 
+body: That didn't fix anything. I think libdir would only help if it couldn't find any of the macports libs, but you can see from the previous line in the error that it did indeed find libboost_chrono-mt.
+ 
+
+comment number: 24538647 
+body: hmm... just freshly checkout the master and runned into the same issue.
+Played arround with add/remove `--disable-tests --disable-debug` and `--with-qt` and it disappeared somehow...
+ 
+
+comment number: 24539324 
+body: Please paste a copy of your config.log on pastebin (it'll be way too big for here) and we'll have a look.
+ 
+
+comment number: 24539463 
+body: configure session: http://pastebin.com/z7uLf69x
+config.log: http://pastebin.com/d3MXjzR6
+ 
+
+comment number: 24539653 
+body: Ok. Your problem is that you're using --disable-debug. That has a special meaning in OSX (force i386). We're currently discussing how to fix that, as it's pretty broken behavior.
+
+Until we get the debug/release stuff straightened out in the next few days, just don't use --disable-debug.
+ 
+
+comment number: 24539657 
+body: config.log: http://pastebin.com/TkkNfm8S
+ 
+
+comment number: 24539690 
+body: cool beans. thanks
+ 
+
+comment number: 24539787 
+body: @BugAndNewsReporter yep, your log shows the same.
+ 
+
+comment number: 27172970 
+body: Nope. I'm not using that flag, and I see the same error. All I have is ./configure --without-qt
+
+This is OS X Mavericks. The problem appears to be that the custom AC_TRY_LINK stuff for boost sleep isn't include BOOST_INCLUDES so it can't find the header files.
+ 
+
+comment number: 27175790 
+body: The first problem was with linking. If yours is with includes, could you please paste the config.log?
+
+I'm not updating to Mavericks on my dev macbook so that I can still have a 10.6 install to reference.
+ 
+
+comment number: 28159253 
+body: Does boost maybe name the library differently in OSX/windows?  For example, "boost_thread" is "boost_thread-mt" in osx.  I see that this is checking for "boost_chrono-mt" so maybe its something related to that?
+ 
+
+comment number: 28159408 
+body: config.log of the failed run:
+
+http://pastebin.com/Y1PzbcNj
+ 
+
+comment number: 28238730 
+body: Yep, the m4's find the path and store it, but we don't use it when doing our own checks. Exactly as @mikehearn said.
+
+Fix is to store the good cppflags before the chrono check and add boost's includes:
+
+```
+TEMP_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $BOOST_INCLUDES"
+```
+
+and reset it after the sleep implementation is set:
+
+```
+CPPFLAGS="$TEMP_CPPFLAGS"
+```
+ 
+
+comment number: 28645555 
+body: I was having this issue with boost 1.53, turns out that the issue was libpthread not getting linked in. added -lpthread to CXX_FLAGS flags fixed it for me.
+
+@mikehearn
+
+your error is conftest.cpp:35:12: fatal error: 'boost/version.hpp' file not found your issue is that it can't find the boost headers in the path. you might be able to fix it by running ./configure CXXFLAGS="-I /path/to/boost/headers"
+ 
+
+comment number: 28652719 
+body: No, the issue is well understood by now. theuni - are you planning to submit a pull req for this or should I?
+ 
+
+comment number: 28662474 
+body: @mikehearn I will push up a branch today. If you wouldn't mind verifying that it works as intended, I'll PR it after that.
+
+@fryx: lpthread is a different issue. Autoconf should be linking in any necessary threading lib automatically. If it's not, it's a bug. Would you mind opening another ticket for it and linking a config.log demonstrating the problem? 
+ 
+
+comment number: 28786506 
+body: This was a solution for the same problem for me 
+./configure CXXFLAGS="-I /path/to/boost/headers". Thnx fryx. Using Mavericks.
+ 
+
+comment number: 28814360 
+body: @mikehearn Sorry for the delay. Mind testing: https://github.com/theuni/bitcoin/commit/5a531982a5d6ec3a6141bba60dcf952e2b4b1669 ?
+ 
+
+comment number: 28826053 
+body: Doesn't work for me.
+ 
+
+comment number: 28829091 
+body: Did you remember to re-run autogen.sh ?
+ 
+
+comment number: 28842030 
+body: Yep, but it's ok. This works for me ./configure CXXFLAGS="-I /usr/local/include". 
+Other things I had problems with is that I had different boost libraries in /usr/local/lib then the ones from homebrew, so that's why my linker failed later. Solution was to 
+
+rm /usr/local/lib/libboost_\* 
+brew link boost
+
+Now I can compile everything.
+ 
+
+comment number: 28910183 
+body: Yes it works, thanks, although I then hit a different build error later (for some reason it can't find x86_64 versions of STL symbols). A pull req for that would be great.
+ 
+
+comment number: 31202805 
+body: Hey, when I tried to build bitcoin-qt using Qt Creator, I got this error (missing boost sleep implementation) which occurs in util.h, any idea on how to fix it? I tried what you suggested here but nth worked with me.
+
+P.S. I'm running Ubuntu 12.04
+
+inline void MilliSleep(int64_t n)
+{
+// Boost's sleep_for was uninterruptable when backed by nanosleep from 1.50
+// until fixed in 1.52. Use the deprecated sleep method for the broken case.
+// See: https://svn.boost.org/trac/boost/ticket/7238
+#if defined(HAVE_WORKING_BOOST_SLEEP_FOR)
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(n));
+#elif defined(HAVE_WORKING_BOOST_SLEEP)
+    boost::this_thread::sleep(boost::posix_time::milliseconds(n));
+#else
+//should never get here
+#error missing boost sleep implementation
+#endif
+}
+ 
+
+comment number: 31204274 
+body: @NurMasdar, this ticket is about OSX.  I'm guessing your issue is something else.
+
+Additionally, I think this ticket can be closed.  This appears to have been an issue with boost not being properly linked.
+ 
+
+comment number: 31214192 
+body: @NurMasdar you must be missing some boost dependency, have you installed all of the packages suggested in build-unix.md?
+ 
+
+comment number: 39493824 
+body: None of those work for me... Still says sleep missing error.
+ 
+
+comment number: 39536192 
+body: @kthxbai2u can you pastebin your config.log somewhere?
+ 
+
+comment number: 39655006 
+body: I've found the issue must be a bug in the configure, as removing the step and forcing -DHAVE_WORKING_BOOST_SLEEP_FOR=1 in my compile works just fine. Of course, I am _also_ linking against static boost (and other) libs and have a patched boost header set. If anyone cares there's a .xcodeproj for dogecoind, some precompiled static libs, and a script to patch the boost headers over in https://github.com/dogecoin/dogecoin/tree/1.7-dev/contrib/macbuild 
+ 
+
+comment number: 39761675 
+body: To those with this issue, could you please confirm that you're actually building bitcoin and not something else? Also, please confirm exactly which revision you're building, with which OS version, and where your dependencies came from. This isn't going anywhere until we can determine the actual problem.
+ 
+
+267. bug report number : ['2998']
+comment number: 24474530 
+body: This path should already be searched if /usr/pkg/include is in your include path... Can you post a config.log?
+ 
+
+comment number: 25126133 
+body: Same issue here:
+
+CentOS running on a virtual machine.
+
+> > locate db_cxx.h
+> /usr/include/db_cxx.h
+> /usr/include/db4/db_cxx.h
+> /usr/share/doc/db4-devel-4.7.25/ref/upgrade.3.0/db_cxx.html
+> > _
+
+Contents of config.log: http://pastebin.com/N1jW9GuF
+ 
+
+comment number: 25684220 
+body: Still an issue with latest master? AFAIK there were changes with the new autotools system so perhaps you can try again.
+ 
+
+comment number: 26410333 
+body: Same problem on ubuntu 13.04.
+ 
+
+comment number: 26411455 
+body: sudo apt-get install libdb++-dev solves my problem.
+ 
+
+comment number: 26412605 
+body: Obviously you get that error if libdb is not installed... if you read carefully, the original poster has the library installed but it is not detected, so it is not the same problem.
+ 
+
+comment number: 29506443 
+body: Since there is no libdb++ in official CentOs repo, I've done the following to fix this problem
+1. Download sources of BerkeleyDb 4.8 
+2. Go to <path to BDB folder>/build_unix/
+3. ../dist/configure --prefix=/usr/local --enable-cxx
+4. make
+5. (as root) make install
+ 
+
+comment number: 29899326 
+body: Alex, thank you!
+ 
+
+comment number: 31396139 
+body: <del>I have the same issue: I've compiled BDB from source but dont want to install it. Can I point the configure script to my db_cxx.h somehow?</del>
+
+Edit: I've added it to `./src/m4/bitcoin_find_bdb48.m4`:
+
+```
+  bdbdirlist=/path/to/compiled/db-4.8.30.NC/build_unix/build/include
+```
+
+Works.
+ 
+
+comment number: 32613878 
+body: a better option would be to add a --with-db4 option to configure
+ 
+
+comment number: 32676755 
+body: Yes, or BDB_CFLAGS/BDB_LIBS as proposed in #3550
+ 
+
+comment number: 33898277 
+body: This can be fixed by doing the following:
+`cd ~/db-4.8.30.NC/build_unix
+make
+sudo make install`
+Check that there is a BerkeleyDB.4.8 folder in /usr/local
+`ls /usr/local`
+then create a symbolic link:
+`ln -s /usr/local/BerkeleyDB.4.8 /usr/include/db4.8`
+and then do:
+`ln -s /usr/local/db4.8/include/* /usr/include
+ln -s /usr/local/db4.8/lib/* /usr/lib`
+ 
+
+comment number: 38650478 
+body: Any benefit to the symlink vs something like:
+
+``` bash
+echo "/usr/local/lib" > /etc/ld.so.conf.d/db-4.8.30.conf
+ldconfig
+```
+ 
+
+comment number: 38654785 
+body: Or build a static library and not a shared one, so you don't have to install the library on your system search path at all.
+ 
+
+comment number: 41593933 
+body: [centos 6.5, current bitcoin version] I seem to have successfully compiled bitcoind, however, when I try to run it, I get the following:
+
+`./bitcoind: error while loading shared libraries: libdb_cxx-4.8.so: cannot open shared object file: No such file or directory`
+
+Having followed the directions here, I downloaded and compiled 4.8 source, but I can't seem to get any BerkeleyDB.4.8 folders to be generated in /usr/local.
+I have, however, located libdb_cxx-4.8.so in db-4.8.30.NC/build_unix/.libs
+
+If I simply copy or reference this .so file in the correct places, should that resolve the issue?
+Using 'locate libdb_cxx' I get entries for 'libdb_cxx.so' and 'libdb_cxx-4.7.so' in /usr/lib64, but that's all.
+
+Should I point bitcoin/src/m4/bitcoin_find_bdb48.m4, line:7, to
+'bdbdirlist=/root/berkeley-db/db-4.8.30.NC/build_unix/.libs' ?  (the db-4.8.30.NC/build_unix/build/include directory mentioned above does not exist for me).
+
+Copying libdb_cxx-4.8.so do /usr/lib64 does not seem to resolve the issue.
+
+My apologies in advance for my limited understanding.  I'm still getting up to speed with several layers of abstraction involved here.  Thanks in advance. Full post here: https://bitcointalk.org/index.php?topic=588032
+ 
+
+comment number: 41594921 
+body: dlio, have you tried to 'make install' from 'db-4.8.30.NC/build_unix/' ? It should put many of the files in their proper places if I remember correctly.
+ 
+
+comment number: 41597274 
+body: Thanks for the quick reply coincapsig.
+
+I have tried this following alexander's method as per the above:
+`1. Download sources of BerkeleyDb 4.8 
+2. Go to /build_unix/
+3. ../dist/configure --prefix=/usr/local --enable-cxx
+4. make
+5. (as root) make install`
+
+but doing a `locate libdb_cxx` still only shows the ibdb_cxx.so and libdb_cxx-4.7.so as being in /usr/lib64/
+ 
+
+comment number: 43163246 
+body: I feel your pain dilo, I have the exact same issue on this build: 
+Linux version 2.6.32-431.11.2.el6.x86_64 (mockbuild@c6b8.bsys.dev.centos.org) (gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) ) #1 SMP Tue Mar 25 19:59:55 UTC 2014
+
+Here is the output from the last 2 lines before ./configure fails.
+
+checking for Berkeley DB C++ headers... no
+configure: error: libdb_cxx headers missing
+
+I have also done as Alex has said above and it did not work for me either.
+ 
+
+comment number: 43188273 
+body: For those building libcxx from scratch, can you try following the updated steps here?
+
+https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#berkeley-db
+
+This avoids having to install globally.
+ 
+
+comment number: 46063749 
+body: @akstunt .. I had the same issue on Ubuntu 12.04:
+
+```
+checking for Berkeley DB C++ headers... no
+configure: error: libdb_cxx headers missing
+```
+
+Here's how I fixed it:
+
+```
+sudo apt-get install libdb4.8++-dev
+```
+
+Then just run the `./configure` again.
+ 
+
+comment number: 184064439 
+body: This exact same problem lives on.  Debian 7.9 in Feb 2016.
+
+This solved the problem, sort of:
+apt-get install libdb++-dev
+
+The consequent new error was this:
+configure: error: Found Berkeley DB other than 4.8, required for portable wallets (--with-incompatible-bdb to ignore)
+
+Adding the above suggestion to configure allowed compilation, but this warning appeared:
+configure: WARNING: Found Berkeley DB other than 4.8; wallets opened by this build will not be portable!
+ 
+
+comment number: 238446230 
+body: @MichaelBrenden   my ubuntu wily has the same problems,and use 
+./configure --with-incompatible-bdb solve the problems .
+ref:http://brianchan.us/home/2013/11/26/installing-bitcoin-in-ubuntu/
+ 
+
+comment number: 273568569 
+body: on Fedora 24 (and probably other redhat like)
+solved it with
+dnf install libdb4-cxx-devel 
+
+comment number: 320187240 
+body: I have a headache and I haven't solved this problem 
+
+comment number: 331249009 
+body: @chenluyong what did you try and what was the outcome? 
+
+comment number: 331328053 
+body: @ronaldpetty The problem seems to have been solved, but I haven't recorded it 
+
+comment number: 331707922 
+body: install libdb-devel 
+
+comment number: 343715643 
+body: On Ubuntu 16.04, here is how I solved it.
+
+sudo add-apt-repository ppa:bitcoin/bitcoin
+sudo apt-get update
+sudo apt-get install libdb4.8-dev libdb4.8++-dev 
+
+comment number: 353910469 
+body: On centos 7.4 and installed libdb、libdb-devel、libdb-cxx、libdb-cxx-devel, but the version is too high. So I searched lower version at https://www.rpmfind.net.
+Use rpm to install
+```
+rpm -ivh libdb4-4.8.30-13.el7.x86_64.rpm
+rpm -ivh libdb4-devel-4.8.30-13.el7.x86_64.rpm
+rpm -ivh libdb4-cxx-4.8.30-13.el7.x86_64.rpm 
+rpm -ivh libdb4-cxx-devel-4.8.30-13.el7.x86_64.rpm
+```
+Then `./configure` passed. 
+
+comment number: 354224962 
+body: @yuexiahandao 
+your suggestion helped me.thx.
+
+here is my env:
+
+```
+[root@localhost bitcoin]# cat /etc/redhat-release 
+CentOS Linux release 7.2.1511 (Core) 
+[root@localhost bitcoin]# uname -rm
+3.10.0-327.el7.x86_64 x86_64
+[root@localhost bitcoin]# 
+```
+
+here is the problem:
+
+```
+[root@localhost bitcoin]# ./configure 
+checking build system type... x86_64-unknown-linux-gnu
+checking host system type... x86_64-unknown-linux-gnu
+...
+...
+checking for MSG_NOSIGNAL... yes
+checking for Berkeley DB C++ headers... no
+configure: error: libdb_cxx headers missing
+[root@localhost bitcoin]#
+```
+
+last,the resolution is:
+
+```
+wget http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/l/libdb4-4.8.30-13.el7.x86_64.rpm
+wget http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/l/libdb4-devel-4.8.30-13.el7.x86_64.rpm
+wget http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/l/libdb4-cxx-4.8.30-13.el7.x86_64.rpm
+wget http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/l/libdb4-cxx-devel-4.8.30-13.el7.x86_64.rpm
+```
+
+and
+
+```
+rpm -ivh libdb4-4.8.30-13.el7.x86_64.rpm
+rpm -ivh libdb4-devel-4.8.30-13.el7.x86_64.rpm
+rpm -ivh libdb4-cxx-4.8.30-13.el7.x86_64.rpm 
+rpm -ivh libdb4-cxx-devel-4.8.30-13.el7.x86_64.rpm﻿​
+```
+ 
+
+268. bug report number : ['2990']
+comment number: 24396584 
+body: http://support.microsoft.com/kb/2800213
+
+Workaround registry setting to force UTC hardware clock caused at least one bug as recently as Feb 2013 ... this sort of thing really isn't supported by microsoft.
+ 
+
+comment number: 24399524 
+body: https://github.com/bitcoin/bitcoin/commit/8686f6467c9db2606706baca33842c97ff7621f8
+
+Current version as found in 0.8.5 assumes:
+
+```
+static int64 nTimeOffset = 0;
+```
+
+followed immediately by dummy function which returns that hardcoded value:
+
+```
+int64 GetTimeOffset()
+{
+    return nTimeOffset;
+}
+```
+
+Some poorly (not at all) commented code follows a "humorous" comment:
+
+```
+//
+// "Never go to sea with two chronometers; take one or three."
+// Our three time sources are:
+//  - System clock
+//  - Median of other nodes clocks
+//  - The user (asking the user to fix the system clock if the first two disagree)
+//
+```
+
+All of this code was in util.cpp, and I couldn't make sense of the purpose of large portions of how or why "zero" was hardcoded in so many places (mainly from the lack of comments)
+ 
+
+comment number: 24428668 
+body: nTimeOffset is not a hardcoded value, it is adjusted based on the time reported by your network peers.
+
+And I don't think this is a Windows issue-- I saw the same thing happen on my OSX machine yesterday when I first connected, most likely caused by connecting to peers that either have their time set incorrectly accidentally (did daylight savings time start or stop somewhere recently?) or on purpose.
+ 
+
+comment number: 24431803 
+body: See my comments on #bitcoin-dev around 11:43 pacific.
+ 
+
+comment number: 30150590 
+body: Did someone rename this issue? I was coming back to try and review the status, but found that the title no longer mentioned windows... what happened? Did I just remember wrong?
+ 
+
+comment number: 30151472 
+body: As this is not a windows specific issue, I edited the title and also added a message to the opening post.
+ 
+
+comment number: 48915727 
+body: Acking the discussion on freenode in #bitcoin-dev, ongoing at this time.<br>(_at or around 11:37 Local NY time, 2014 July 14_)
+ 
+
+comment number: 269792815 
+body: Is this even a bug on our side? The only thing I see that can be done is to change the warning message http://bitcoinstats.com/irc/bitcoin-dev/logs/2014/07/14#l1405352477.0 
+
+comment number: 272371465 
+body: I don't actually know if this is an ongoing issue, since I haven't used bitcoin in a long time (*been something like 2 years now*)
+
+If someone has additional information about the issue or knows if there was a change made to the behavior, feel free to update or close #2990 as appropriate. I don't have any relevant/recent knowledge, regardless of what happens here. 
+
+269. bug report number : ['2983']
+comment number: 26783289 
+body: Looks like the blocks data became corrupted somehow.
+
+Can you try to remove all the data files except for wallet.dat and restart?
+
+If that doesn't work, please post any information from debug.log that can help debug the issue.
+ 
+
+comment number: 26785370 
+body: @laanwj Since 0.8, there is no need to advise people to wipe their data directories, `-reindex` has the same effect, but can reuse blocks that aren't damaged.
+ 
+
+270. bug report number : ['2954']
+comment number: 23606595 
+body: Sometimes shutdown time is normal, sometimes it's slow as hell :-/.
+ 
+
+comment number: 23616533 
+body: I'm seeing this behaviour with a latent proxy too. Minutes for the threads to terminate. 
+ 
+
+comment number: 23633727 
+body: @63 What OS are you using? Any special configuration?
+ 
+
+comment number: 23635271 
+body: @Diapolo Last build from github, OSX, proxying through Tor, not listening. 
+ 
+
+comment number: 23926569 
+body: Can any of the core devs take a look please? @gmaxwell @gavinandresen @jgarzik
+ 
+
+comment number: 24643363 
+body: Sad that most core-devs seem to currently do fancy things and have no time for such bug reports...
+ 
+
+comment number: 24644598 
+body: "Shutdown is slow when I'm using a proxy" is not high on the priority list of things to fix.
+ 
+
+comment number: 24650204 
+body: Sometimes I whish, we would prefer fixing things before inventing new ones... I mean there are quite some unanswered bug reports here, which are old. I will report them in the future, but currently it's not motivating. At least IMHO all bugs should get reviewed and tagged!
+ 
+
+comment number: 24717488 
+body: Fwiw, a quick backtrace shows this waiting on the recv() in Socks5().
+ 
+
+comment number: 28302427 
+body: I've recently seen this problem as well. It appears that threads waiting for the proxy to reply can hang shutdown.
+Next time I encounter this issue I'll investigate further.
+ 
+
+comment number: 28311652 
+body: I also intent to debug this, when I've built a Qt debug build :).
+ 
+
+comment number: 45892736 
+body: @laanwj Any progress here? My guess is it is related to our SOCKS5 code (as @theuni said above) or perhaps even it just happens when using Tor. It seems Tor is trying at least 121 secs, before telling our client (Bitcoin Core) it can't get a connection `Jun 12 15:41:27.477 [Hinweis] Tried for 121 seconds to get a connection to 83.227.173.83:8333. Giving up.`... which could lead to the delay during shutdown.
+ 
+
+271. bug report number : ['2927']
+comment number: 23225947 
+body: If using Bitcoin-Qt make sure to unset the UPnP option. For using bitcoind, I'm looking into a little patch currently.
+ 
+
+comment number: 23226338 
+body: @63 Thanks for the report!  A lot of the developers build with UPNP much of the time (or, well, at least I do), unfortunate that this slipped through.
+
+@Diapolo we should not UPNP if listen=0, and separately, we should not UPNP if onlynet=tor.
+ 
+
+comment number: 23228203 
+body: As far as I can see, -listen=0 should already disable UPnP by default. Only if you enable it explicitly through -upnp (or upnp=1), or the GUI should it be enabled. If that's not the case, it's a bug.
+ 
+
+comment number: 23393408 
+body: @sipa Reproduced in the latest master. 
+
+`bitcoin.conf`:
+![](https://f.cloud.github.com/assets/5250052/1040007/00088eb8-0fa8-11e3-8c4c-3322daa47c3b.png)
+
+active UPNP mappings on the router: 
+![](https://f.cloud.github.com/assets/5250052/1040014/3e42dc92-0fa8-11e3-9dc9-da36f90be40a.png)
+ 
+
+comment number: 27956622 
+body: My reasoning would be that the bind=XXX re-enables listen, and hence upnp is not disabled.
+
+Edit: does it work if you explicitly add upnp=0 to the config?
+ 
+
+comment number: 27958594 
+body: If you explicitly set listen to false, bind shouldn't re-enable it.
+ 
+
+comment number: 29490948 
+body: Yes, @laanwj, running with the line 
+
+```
+upnp=0 
+```
+
+or compiling without UPNP does work, but logically if we're not `listen`ing it shouldn't be enabled to begin with, right?
+ 
+
+comment number: 32601568 
+body: Guess this needs to be fixed before 0.9 as well.
+ 
+
+comment number: 32614597 
+body: Would this suffice (change in net.cpp)?
+
+<pre>
+    // only map ports when not using Tor
+    if (!IsLimited(NET_TOR))
+        // Map ports with UPnP
+        MapPort(GetBoolArg("-upnp", fDefaultUpnp));
+</pre>
+
+We already have in init.cpp the check for listen:
+
+<pre>
+    if (!GetBoolArg("-listen", true)) {
+        // do not map ports or try to retrieve public IP when not listening (pointless)
+        SoftSetBoolArg("-upnp", false);
+        SoftSetBoolArg("-discover", false);
+    }
+</pre>
+ 
+
+comment number: 32614956 
+body: Your change would make it impossible to map ports when using Tor.
+
+The goal is to make the default (if not overridden using -upnp) to not map ports when using Tor, not to make it completely impossible.
+ 
+
+comment number: 32615579 
+body: I'm out... too many cases to consider for my ill brain ^^.
+ 
+
+comment number: 42782808 
+body: This appears to have been already solved:
+
+```
+if (!GetBoolArg("-listen", true)) {
+    // do not map ports or try to retrieve public IP when not listening (pointless)
+    if (SoftSetBoolArg("-upnp", false))
+...
+```
+ 
+
+comment number: 42798268 
+body: @gmaxwell well, the problem seems to be that he has a bind:XXX statement (for a hidden service), which re-enables listen so it never goes into that.
+ 
+
+comment number: 102989530 
+body: Foremost, if your goal is to hide completely behind a proxy you should use `-proxy`, not `-tor`. `-tor` is _only_ meant for hyrid Tor/clearnet nodes.
+
+Given that, see #6153 for fix.
+ 
+
+272. bug report number : ['2889']
+comment number: 22428463 
+body: After further tests, it seems to have nothing to do with blocks at all, but even a simple command like "getdifficulty" will cause the RPC server to stop sending responses after about 28,000 requests:
+
+``` javascript
+var rpc=require('json-rpc2');
+var bitcoind=rpc.Client.create(8332, "localhost",
+  "bitcoinrpc", "password");
+var chain=function(i){
+  bitcoind.call('getdifficulty',[],function(err,result){
+    if (err){
+      console.log(String(err));
+      if (String(err)=="Error: Have no response object"){
+        console.log("Thought so.");
+      }
+      return;
+    }
+    console.log(result, i);
+    chain(i+1);
+  });
+};
+chain(0);
+```
+ 
+
+comment number: 22438885 
+body: Perhaps there is a memory leak in the RPC server we didn't yet catch? Does bitcoind consume a weird amount of memory after 28000 requests?
+ 
+
+comment number: 22438947 
+body: How long is "temporarily"?
+
+EDIT: a few seconds, apparently. That can just be a new block that arrives and is being processed, I think. RPC commands (and pretty much everything) stops working then. A few seconds sounds long though.
+ 
+
+comment number: 22449518 
+body: > Perhaps there is a memory leak in the RPC server we didn't yet catch? Does bitcoind consume a weird amount of memory after 28000 requests?
+
+No, the memory usage is low. It does use a lot of CPU though - about 50% CPU usage according to top.
+
+> How long is "temporarily"?
+
+It depends. Sometimes it last a few seconds, sometimes it lasts tens of seconds.
+
+> EDIT: a few seconds, apparently. That can just be a new block that arrives and is being processed, I think. RPC commands (and pretty much everything) stops working then. A few seconds sounds long though.
+
+It's not due to a new block. I just tested it and it froze several times before a new block was found.
+ 
+
+comment number: 36019465 
+body: I can actually confirm that myself. I can add this the stopping doesn't happen abruptly. For me, responses to RPC requests that are fired in quick succession become gradually slower and slower. After some time though, bitcoind seems to recover and the sequence of requests can be attempted again, but the pattern repeats (high number of requests fullfilled at first, then gradually becomes slower and slower)
+
+Interestingly, bitcoind's memory usage doesn't grow, and remains more or less constant during the whole process. Its CPU usage also doesn't grow, but instead seems to be proportional to the rate of the responses it gives. Looking at the CPU usage, you can see high usage at first (when the rate of requests is high), and then the CPU usage gradually declines.
+
+This looks to me like bitcoind is really sleeping (or waiting for something) for some time before, during or after completing the request.
+ 
+
+comment number: 37683021 
+body: I'm have the same problem -- albeit with bitcoind stop responding to RPC for minutes. During this time, running even `bitcoind help` locally will just hang.
+
+Perhaps coincidentally, but I'm also using node to make rpc calls.  I tried a very basic, local bash loop executing commands -- and did not have the same pause problem. I am wondering if it could be something related to the library used making these rpc calls. Perhaps it's not immediately ending connections?
+ 
+
+comment number: 37683669 
+body: Bash loop that appears to not cause problems:
+
+```
+COUNTER = 1
+while true; do
+echo $COUNTER
+bitcoind getdifficulty
+let COUNTER+=1
+done
+```
+ 
+
+comment number: 37683970 
+body: I've been using Java's HttpUrlConnection mechanism to do those calls. I know that it makes use of the HTTP keepalive feature to avoid having to setup and teardown a new TCP connection for each request. NodeJS probably does the same.
+
+However, the bash loop obviously doesn't do that. Could this be what causes the difference?
+ 
+
+comment number: 37684250 
+body: I'll try doing some tests that add the header "Connection: close" to the request so that keepalive is disabled, and see if that makes a difference.
+ 
+
+comment number: 37705322 
+body: Since a 10ms timeout is enough to make the problem go away in the first example, I suspect the bash loop is simply too slow to reproduce the problem.
+ 
+
+comment number: 111479560 
+body: This is hapenning on my server after every few weeks .  We have a getblock call to bitcoind for each blocks. After few block numbers bitcoind RPC hangs ( I have tried waiting for 30 min , but doesn't help, have to kill bitcoind and restart). Running bitcoind 0.10.2 .
+
+Is this fixed ?
+I can attempt to write a script to reproduce if this is not fixed yet... in the latest source 
+ 
+
+comment number: 111482477 
+body: No, it's not fixed, that's why this issue is still open. A script to reproduce it would be very useful.
+ 
+
+comment number: 120253927 
+body: I am not sure if this is bcoz of some throtlling feature on bitcoin , but this is how to reproduce
+
+``` python
+from bitcoinrpc.authproxy import AuthServiceProxy
+import sys
+import threading
+import traceback
+import time
+
+number = 5
+conn = [None] * number
+while(True):
+  for i in range(0, number):
+    try:
+      conn[i] = AuthServiceProxy(sys.argv[1])
+      count = conn[i].getblockcount()
+      raw_block=conn[i].getblock(conn[i].getblockhash(count))
+      print "Got block %d"%(count)  
+    except:
+      traceback.print_exc()
+      #Ignore and continue
+```
+
+Run the above script and then u can see the bitcoin-cli getinfo will stop responding. 
+ 
+
+comment number: 120254266 
+body: Basically on my server sometimes lots of these connections are going into CLOSE_WAIT state
+
+```
+python   6388 ubuntu   11u  IPv4 156823      0t0  TCP localhost:37917->localhost:8332 (ESTABLISHED)
+python   6388 ubuntu   13u  IPv4 125106      0t0  TCP localhost:36759->localhost:8332 (CLOSE_WAIT)
+python   6898 ubuntu   11u  IPv4 128729      0t0  TCP localhost:36958->localhost:8332 (ESTABLISHED)
+```
+
+When the number of these CLOSE_WAIT connections is becoming 5 ... rpc calls wont respond anymore and I have to restart my client
+ 
+
+comment number: 152208317 
+body: This is likely the same as #6454 and fixed by #5677 
+ 
+
+comment number: 359309590 
+body: This is not fixed. I'm running a bitcoin node (with large amount of ram (i.e. 64GB) and after several requests to get the unspent transactions the rpc service get stuck and stops to responds to new requests.  
+
+comment number: 359428105 
+body: @winteraz This issue is about five years old and was closed two years ago. If you are certain that you are running into the same issue, please open a new one and reference (link to) this issue.
+
+Also, make sure to include steps to reproduce and the version you are using. 
+
+273. bug report number : ['2887']
+comment number: 28312860 
+body: This should be tried out with my rework pull... #2612 (need to rebase it).
+ 
+
+comment number: 32601605 
+body: Should be fixed with the new options dialog by @diapolo
+ 
+
+274. bug report number : ['2846']
+comment number: 27418965 
+body: I had the same problem after I tried to delete unconfirmed transactions with pywallet.  Some transactions that I didn't delete weren't showing up.  I tried the -rescan, -txindex, and -reindex flags, but nothing worked.
+
+I eventually had to delete all transactions with pywallet and THEN do a -rescan to fix the problem.
+ 
+
+comment number: 371162785 
+body: I can't reproduce the issue in the OP, and there has been no further reports or discussion around this since 2013, so closing now 
+
+275. bug report number : ['2838']
+comment number: 21295031 
+body: It's Basic authentication; easier just to decode the base64 ;p
+ 
+
+comment number: 21296479 
+body: @jgarzik   he doesn't mean timing an actual authentication session, he means that even absent a user who knows the password an attacker who could reach the rpc port could analyze the timing of the rejections to derive the password one character at a time because the comparison shortcuts and thus returns faster when the error is at the front.
+
+If you've exposed your rpc port to an attacker— life is probably not good for you to begin with. But this should probably using a constant time comparison and also delay all failures. I'll look into it.
+ 
+
+comment number: 21542349 
+body: Please use CVE-2013-4165 for this issue as per http://openwall.com/lists/oss-security/2013/07/24/7
+ 
+
+comment number: 28296726 
+body: Solved by #2886 
+ 
+
+276. bug report number : ['2821']
+comment number: 64153303 
+body: The mempool can and will contain transactions with missing inputs (orphans) due to various reasons such as reorganization caused by downloading the blockchain while a miner thread is running as you've shown. This is due to the fact that reorganization does nothing with spent coinbase transactions. The assert is useless since the problem is not really a problem but rather a symptom something larger.
+
+Refer to #5267
+ 
+
+277. bug report number : ['2785']
+comment number: 21026851 
+body: Same issue again. This time I've opened Qt to see the corruption message, and chosen to not rebuild. I then opened Qt again to be certain that there was corruption, and again chosen to not rebuild. 
+
+I've then shutdown my computer, and when I opened Qt the next day with the intent of starting the rebuild, I've seen no corruption message and Qt opens and functions normally. Debug excerpt below.
+
+CTxMemPool::accept() : accepted 0ff7e52e6db85029f84e1deb0555fd7a55ef89517106ff6cc7b20ebb826f8e01 (poolsz 1365)
+received getdata for: tx 0ff7e52e6db85029f84e1deb0555fd7a55ef89517106ff6cc7b20ebb826f8e01
+Added 1 addresses from 108.28.174.70: 144 tried, 14212 new
+CTxMemPool::accept() : accepted a5d26c75f362f242eb8c69dc1de1a23dce06391705f8a32dde6c9a9ded20f02c (poolsz 1366)
+CTxMemPool::accept() : accepted 7637ee26947110612af59fb3eacc7197fcb3354d6176f94e6f7bf824905da36f (poolsz 1367)
+msghand thread interrupt
+opencon thread interrupt
+dumpaddr thread stop
+addcon thread interrupt
+net thread interrupt
+Flush(false)
+DBFlush(false) ended               0ms
+StopNode()
+UPNP_DeletePortMapping() returned : 0
+upnp thread interrupt
+Flushed 14356 addresses to peers.dat  25ms
+Committing 487 changed transactions to coin database...
+Flush(true)
+wallet.dat refcount=0
+wallet.dat checkpoint
+wallet.dat detach
+wallet.dat closed
+DBFlush(true) ended              87ms
+
+Bitcoin version v0.8.3-beta (2013-06-25 10:27:24 -0400)
+Using OpenSSL version OpenSSL 1.0.1c 10 May 2012
+Startup time: 2013-07-15 09:10:22
+Default data directory /Users/xxxxx/Library/Application Support/Bitcoin
+Using data directory /Users/xxxxx/Library/Application Support/Bitcoin
+Using at most 125 connections (2560 file descriptors available)
+Using 8 threads for script verification
+init message: Verifying wallet...
+dbenv.open LogDir=/Users/xxxxx/Library/Application Support/Bitcoin/database ErrorFile=/Users/xxxxx/Library/Application Support/Bitcoin/db.log
+Bound to [::]:8333
+Bound to 0.0.0.0:8333
+init message: Loading block index...
+Opening LevelDB in /Users/xxxxx/Library/Application Support/Bitcoin/blocks/index
+Opened LevelDB successfully
+Opening LevelDB in /Users/xxxxx/Library/Application Support/Bitcoin/chainstate
+Opened LevelDB successfully
+LoadBlockIndexDB(): last block file = 70
+LoadBlockIndexDB(): last block file info: CBlockFileInfo(blocks=494, size=61594836, heights=246066...246559, time=2013-07-11...2013-07-14)
+LoadBlockIndexDB(): transaction index disabled
+LoadBlockIndexDB(): hashBestChain=00000000000000341ec038963b45848695b667222c4beccaf6b6a930bb2c2335  height=246559 date=2013-07-14 17:43:56
+init message: Verifying blocks...
+Verifying last 288 blocks at level 3
+LevelDB read failure: Corruption: block checksum mismatch
+Flush(false)
+DBFlush(false) ended               0ms
+StopNode()
+Flushed 0 addresses to peers.dat  1ms
+Committing 5518 changed transactions to coin database...
+Flush(true)
+DBFlush(true) ended               0ms
+
+Bitcoin version v0.8.3-beta (2013-06-25 10:27:24 -0400)
+Using OpenSSL version OpenSSL 1.0.1c 10 May 2012
+Startup time: 2013-07-15 09:27:36
+Default data directory /Users/xxxxx/Library/Application Support/Bitcoin
+Using data directory /Users/xxxxx/Library/Application Support/Bitcoin
+Using at most 125 connections (2560 file descriptors available)
+Using 8 threads for script verification
+init message: Verifying wallet...
+dbenv.open LogDir=/Users/xxxxx/Library/Application Support/Bitcoin/database ErrorFile=/Users/xxxxx/Library/Application Support/Bitcoin/db.log
+Bound to [::]:8333
+Bound to 0.0.0.0:8333
+init message: Loading block index...
+Opening LevelDB in /Users/xxxxx/Library/Application Support/Bitcoin/blocks/index
+Opened LevelDB successfully
+Opening LevelDB in /Users/xxxxx/Library/Application Support/Bitcoin/chainstate
+Opened LevelDB successfully
+LoadBlockIndexDB(): last block file = 70
+LoadBlockIndexDB(): last block file info: CBlockFileInfo(blocks=494, size=61594836, heights=246066...246559, time=2013-07-11...2013-07-14)
+LoadBlockIndexDB(): transaction index disabled
+LoadBlockIndexDB(): hashBestChain=00000000000000341ec038963b45848695b667222c4beccaf6b6a930bb2c2335  height=246559 date=2013-07-14 17:43:56
+init message: Verifying blocks...
+Verifying last 288 blocks at level 3
+LevelDB read failure: Corruption: block checksum mismatch
+Flush(false)
+DBFlush(false) ended               0ms
+StopNode()
+Flushed 0 addresses to peers.dat  0ms
+Committing 5518 changed transactions to coin database...
+Flush(true)
+DBFlush(true) ended               0ms
+
+Bitcoin version v0.8.3-beta (2013-06-25 10:27:24 -0400)
+Using OpenSSL version OpenSSL 1.0.1c 10 May 2012
+Startup time: 2013-07-16 07:36:40
+Default data directory /Users/xxxxx/Library/Application Support/Bitcoin
+Using data directory /Users/xxxxx/Library/Application Support/Bitcoin
+Using at most 125 connections (2560 file descriptors available)
+Using 8 threads for script verification
+init message: Verifying wallet...
+dbenv.open LogDir=/Users/xxxxx/Library/Application Support/Bitcoin/database ErrorFile=/Users/xxxxx/Library/Application Support/Bitcoin/db.log
+Bound to [::]:8333
+Bound to 0.0.0.0:8333
+init message: Loading block index...
+Opening LevelDB in /Users/xxxxx/Library/Application Support/Bitcoin/blocks/index
+Opened LevelDB successfully
+Opening LevelDB in /Users/xxxxx/Library/Application Support/Bitcoin/chainstate
+Opened LevelDB successfully
+LoadBlockIndexDB(): last block file = 70
+LoadBlockIndexDB(): last block file info: CBlockFileInfo(blocks=494, size=61594836, heights=246066...246559, time=2013-07-11...2013-07-14)
+LoadBlockIndexDB(): transaction index disabled
+LoadBlockIndexDB(): hashBestChain=00000000000000341ec038963b45848695b667222c4beccaf6b6a930bb2c2335  height=246559 date=2013-07-14 17:43:56
+init message: Verifying blocks...
+Verifying last 288 blocks at level 3
+No coin database inconsistencies in last 255 blocks (53474 transactions)
+ block index           16640ms
+init message: Loading wallet...
+nFileVersion = 80300
+ wallet                 1251ms
+init message: Loading addresses...
+Loaded 0 addresses from peers.dat  1ms
+mapBlockIndex.size() = 246561
+nBestHeight = 246559
+setKeyPool.size() = 100
+mapWallet.size() = 25
+mapAddressBook.size() = 29
+dnsseed thread start
+upnp thread start
+net thread start
+addcon thread start
+Loading addresses from DNS seeds (could take a while)
+opencon thread start
+msghand thread start
+dumpaddr thread start
+init message: Done loading
+refreshWallet
+Added 28 addresses from 178.18.90.41: 0 tried, 28 new
+ 
+
+comment number: 28297341 
+body: Very strange, this is an error coming from inside leveldb. Could this be some kind of transient disk/memory corruption issue?
+
+```
+LevelDB read failure: Corruption: block checksum mismatch
+```
+
+I suppose it's related to the other MacOSX leveldb corruption issues
+ 
+
+comment number: 28675347 
+body: Related discussion http://bitcoinstats.com/irc/bitcoin-dev/logs/2013/07/25#l1374759085
+ 
+
+comment number: 29362227 
+body: Can you guys with the issue please run this on a terminal and paste the output here?
+
+ diskutil list
+
+Please describe which disk and partition that the db / bitcoin-qt supporting files is on as well - trying to track down a bigger picture issue.
+ 
+
+comment number: 29362734 
+body: /dev/disk0
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                        *120.0 GB   disk0
+   1:                        EFI                         209.7 MB   disk0s1
+   2:                  Apple_HFS Lion SSD                119.7 GB   disk0s2
+/dev/disk1
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                        *1.0 TB     disk1
+   1:                        EFI                         209.7 MB   disk1s1
+   2:                  Apple_HFS SpinTB                  999.9 GB   disk1s2
+
+I've had corruption happen running on both of these (the SSD and the non-SSD).
+
+http://www.skypaint.com/leveldb_corruption/  has a couple of corrupt chainstate dbs.
+(or will soon, second upload is still happening).
+ 
+
+comment number: 29362866 
+body: Thanks checking it out now! Can you confirm that both corruptions occurred on disks using HFS??? Any if possible can you confirm if these are HFS with case sensitive settings enabled?
+ 
+
+comment number: 29363100 
+body: I don't have the skills to fix this but I can recreate the problem.
+1) Go to system preferences and click on Date/Time. Set the date to 2012. Close System preferences and hit save. Open Bitcoin-qt and get the corrupted database message. Click abort.
+2) Set system preferences and click set date and time automatically. Open Bitcoin-qt and the database is fine.
+Can you use an atomic clock API and rely on that instead of the system clock to prevent leveldb from becoming corrupted? 
+ 
+
+comment number: 29365677 
+body: @jordan314 that's a different issue ("CheckBlock() : block timestamp too far in the future") not related to corruption, see #2007
+ 
+
+comment number: 29393003 
+body: I believe I have a fix.  I've submitted to the LevelDB devs for review:  https://groups.google.com/d/msg/leveldb/GXhx8YvFiig/FhMHoWz7MNAJ
+ 
+
+comment number: 32601762 
+body: Closing, this is the well-known MacOSX corruption issue and should be fixed in 0.8.6 and master.
+ 
+
+comment number: 111703748 
+body: I'm having a sort of error like this, my node on a VPS server crashes pretty often because of this error. I've made a script that checks if the node is running every minute, but it's kinda annoying. I'm running Bitcoin core v0.10.1 on Ubuntu 12.04_x64
+Debug.log file:
+
+3c26bfff664f03a939468cb0  height=298522  log2_work=78.316982  tx=37876897  date=2014-05-01 01:13:17 progress=0.260683  cache=13132
+2015-06-13 12:00:20 opencon thread interrupt
+2015-06-13 12:00:20 dumpaddr thread stop
+2015-06-13 12:00:20 addcon thread interrupt
+2015-06-13 12:00:20 net thread interrupt
+2015-06-13 12:00:26 UpdateTip: new best=0000000000000000088c21d8a6f9bae5f5009ca14525c21884a83679b9c12b18  height=298523  log2_work=78.317113  tx=37877528  date=2014-05-01 01:29:17 progress=0.260703  cache=14282
+2015-06-13 12:00:26 msghand thread interrupt
+2015-06-13 12:00:26 Shutdown: In progress...
+2015-06-13 12:00:26 RPCAcceptHandler: Error: Operation canceled
+2015-06-13 12:00:26 StopNode()
+2015-06-13 12:00:28 Shutdown: done
+2015-06-13 12:01:01
+ 
+
+278. bug report number : ['2779']
+comment number: 19706453 
+body: Client: v0.8.2-111-gd9ff1cd-beta
+Os; Ubuntu 12.04.2 LTS
+Machine: VirtualBox 64bit 2gb
+
+No libs manually installed.
+ 
+
+comment number: 19706854 
+body: Confirmed on Ubuntu 13.04 x86_64, v0.8.2-123-gb153ee6-beta
+ 
+
+comment number: 19708416 
+body: 1) had a valid, unencrypted wallet
+2) ran 'encryptwallet' under HEAD
+3) restarted with HEAD, reproduced problem
+4) restarted with 0.8.2, yielded the following output
+
+```
+2013-06-19 19:29:57 init message: Loading wallet...
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+2013-06-19 19:29:57 Error reading wallet database: CPrivKey pubkey inconsistency
+[...continues...]
+2013-06-19 19:29:57 Error loading wallet.dat: Wallet corrupted
+ wallet                  442ms
+2013-06-19 19:29:57 init message: Loading addresses...
+2013-06-19 19:29:57 Loaded 13808 addresses from peers.dat  30ms
+2013-06-19 19:29:57 Error: Error loading wallet.dat: Wallet corrupted
+```
+ 
+
+comment number: 19708889 
+body: Version 0.8.2 release appears to be OK.  Bisecting...
+ 
+
+comment number: 19710935 
+body: git bisect points the finger at #1863 and commit 3869fb89b60091281b43a35921057ba3f43c18f0 ...
+
+```
+
+3869fb89b60091281b43a35921057ba3f43c18f0 is the first bad commit
+commit 3869fb89b60091281b43a35921057ba3f43c18f0
+Author: Jeff Garzik <jgarzik@bitpay.com>
+Date:   Mon Jun 10 09:36:29 2013 -0400
+
+    Wallet: store key creation time. Calculate whole-wallet birthday.
+
+    This also encapsulate wallet-read state information into CWalletScanState.
+
+:040000 040000 95eb86835b8a3d9801cd9eafb5e2311515a3c8cb f72f6d6008efc40a803182799c55955e272ffc61 M  src
+```
+ 
+
+comment number: 19718237 
+body: @jgarzik CWallet::AddCryptedKey overrode CKeyStore::AddCryptedKey; since #1863 it does no longer, so the newly encrypted keys never get written. The easy solution is adding the timestamp to CKeyStore::AddCryptedKey, but that is sorta ugly... (it's data the keystore shouldn't care about).
+ 
+
+comment number: 19718628 
+body: @jgarzik Thinking a bit more, also about how CKeyMeta will get used for more than just birthdates (BIP32 in particular), how about this:
+- Key metadata is kept in a CWallet::mapKeyMetaData (std::map<CKeyId,CKeyMeta)
+- When generating a new key, time is put in that map, and new key is written
+- AddKey and AddCryptedKey do not take a creation time argument, but instead pull it from that map, if it exists there.
+
+This will make it easier to store key metadata along with the key itself in a wallet format update (avoiding repeating the pubkeys 3 times - once for the key, once for the keypool, once for the metadata).
+ 
+

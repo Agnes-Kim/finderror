@@ -1,0 +1,3510 @@
+389. bug report number : ['1231']
+comment number: 5599793 
+body: You are misunderstanding what that code does.
+
+Can you give a series of RPC commands that shows the bug?  setaccount associates a bitcoin address with an account, it we removed the "Detect when changing..." code as you suggest then you get situations where one address is associated with TWO accounts, which is wrong.
+ 
+
+comment number: 5642077 
+body: Here's series of actions to demonstrate the problem:
+1. Create address: http://vvcap.net/db/ig2jMMXnX1MTPybtAFM7.htp
+2. Now the customer paid for the item, and we want to rename account: http://vvcap.net/db/FKIoM_-Rvt4LXqBcp9a1.htp
+3. We get this: http://vvcap.net/db/go58vwdQsVlfVXqxz2N3.htp . This is the EXPECTED behavior, the one I want to reproduce using XMLRPC.
+4. I rename account back: http://vvcap.net/db/NthP4EtVkOgKaOhpkCQj.htp
+5. Now I do the same thing using bitcoind, which uses same xlmrpc: http://vvcap.net/db/kxooAA7LiRhaa0ktxOBF.htp
+6. EXPECTED: old address is replaced with "----> 02. Customer Actually Paid" and not kept anywhere else in the address book
+
+On 3.x versions, after that command, I have been getting address renamed, but "----> 01..." one relocated to a new. Same behavior I saw on another client, which I downloaded ~ 20-ish April 2012. I think it was 0.6.1, but maybe 0.6.0. According to the timestamps 0.6.1 didn't exist at this time, so maybe I'm imagining things. I did not take screenshots, and cannot reproduce it anymore.
+
+I retested now on all 0.6 versions and following are results:
+
+0.6.0 does not rename at all
+0.6.1 and 0.6.2 work as expected
+
+so I guess the bug is fixed. I have no idea why did I see that problem previously but not now. Since problem is not reproducibnle, I am closing the bug I guess.
+ 
+
+comment number: 5642541 
+body: Okay, I reproduced the problem. I was apparently renaming outgoing address, when bug is affecting receiving address. Here's how it goes:
+1. Start position: http://vvcap.net/db/MUThlEUsdjSUl1uhdqaW.htp
+2. Rename using daemon: http://vvcap.net/db/vWiLAQcDBlZc-recHldI.htp
+3. Get this: http://vvcap.net/db/9KAeMv31O700xXl91mqx.htp
+
+So, instead of renaming the address, setaccount relocated label to another address.
+
+Client version is here:  http://vvcap.net/db/8SgEs2t3RfMcJ_jD7UlM.htp
+ 
+
+comment number: 5672596 
+body: not "instead", btw.
+As I see on [3] — it renamed addres fine, but _also_ (not instead) it moved "----> 1" to another one (does it? doesn't you?)
+
+Btw, I remember something like that on very-very-very old bitcoin-qt releases, when it created new addresses every time I tried to rename existing, but than @laanwj fixed this.
+
+So, I guess, it is GUI-related bug (like it was on bitcoin-qt before moving it to main tree).
+ 
+
+comment number: 5990161 
+body: @msva You are right. What I was trying to say is that expected behavior is that account gets renamed and nothing else. Instead of that account gets renamed AND an old label gets relocated. The code that does it is located in RPC, at function `Value setaccount(const Array& params, bool fHelp)`, so it affects both GUI and daemon, and I saw this code in every incarnation of bitcoin client RPC.
+
+What makes this bug extra annoying is that essentially it makes impossible to get rid of the label once it is in the database, unless you use GUI.
+
+Is it possible to get this addressed anytime soon? I'm so tired of having to recompile client every time a new version comes out.
+ 
+
+comment number: 6305302 
+body: @msva, that bug was related to the "default address" (vchDefault). Indeed, the default address is no longer used or updated when QT_GUI is set.
+
+The problem here is that the "account system" is slightly different from the UI labels. It doesn't allow removing all addresses from an account, which is intended behavior not a bug. We cannot change this as programs might be relying on this.
+
+Maybe there should be a command to delete an account and move all its addresses to the "" label.
+ 
+
+comment number: 32023149 
+body: We're not going to touch the accounts for the foreseeable future.
+It is not even sure if the future wallet implementation will have such a feature at all.
+If you want anything else than the current state, it is recommended to build your own ledger system on top.
+ 
+
+390. bug report number : ['1167']
+391. bug report number : ['1156']
+392. bug report number : ['1148']
+comment number: 5347679 
+body: Get github to link to the commit: c2e8c8ac
+ 
+
+comment number: 5356467 
+body: The specific commit that caused this is faf705a
+ 
+
+comment number: 5357088 
+body: It breaks OP_CHECKMULTISIG, at least on my 64-bit Linux virtual machine:
+
+Exception thrown from this line in script.cpp:
+946                     int nKeysCount = CastToBigNum(stacktop(-i)).getint();
+(gdb) p i
+$7 = 1
+(gdb) p -i
+$8 = 4294967295
+ 
+
+comment number: 5357436 
+body: Fixed by reverting i to signed.
+ 
+
+393. bug report number : ['1107']
+comment number: 5143008 
+body: Is this a new install or an old one? Was it working before? If so what changed when it stopped? What version of bitcoin is this? 
+ 
+
+comment number: 5143093 
+body: This looks like a corrupted blk0001.dat file.
+ 
+
+comment number: 5147661 
+body: It is a brand new install from the ubuntu ppa.
+
+If I mv blk0001.dat to blk0001.old the application starts but then quits with message: unable to open blk0001.dat
+ 
+
+comment number: 5413614 
+body: This is happening for me also after bitcoin-qt SEGVed last night. Even after restoring the blk0001.dat and blkindex.dat back to a backup taken 2 weeks ago, it still does it.
+
+(Using Bitcoin version vCLIENT_VERSION_MAJOR.CLIENT_VERSION_MINOR.CLIENT_VERSION_REVISION.CLIENT_VERSION_BUILD-unk-beta (2012-04-13 12:20:17 +0100)
+ 
+
+comment number: 5414207 
+body: Your version string indicates an own build and not the last 0.6.1 RC1, right?
+@sipa How could a corrupt blk000x.dat be detected, to take care of this condition?
+ 
+
+comment number: 5420366 
+body: Also tested on 0.6.1 RC1 and exists also. However, I've since discovered it was the addr.dat file it was objecting to, not the blk files. Deleted addr.dat, and now running fine.
+ 
+
+comment number: 6671287 
+body: Closing this as "unreproduceable disk corruption problem."
+ 
+
+comment number: 6717500 
+body: This doesn't seem to be happening on 0.6.3
+ 
+
+394. bug report number : ['1106']
+comment number: 5146178 
+body: ACK
+
+Is this enough to remove -Wno-sign-compare from the build? Or are there still a lot of these warnings left even after this?
+ 
+
+comment number: 5146395 
+body: Still too many left in the headers, to remove -Wno-sign-compare.  Several key classes exported directly to the network assign and test 'unsigned int' types against -1.  A few other warnings require some thinking as well.  My patches get 75% of the warnings maybe.
+ 
+
+comment number: 5165377 
+body: ACK
+ 
+
+395. bug report number : ['1094']
+comment number: 5127347 
+body: It is unfortunate that AlreadyHave() is called in a loop, implying a lot of lock/release in a row (even if it is likely cached and uncontended).
+
+If LOCK() is moved outside AlreadyHave() and above its callers' loops, that reduces lock/release to one, but holds the lock for MSG_BLOCK in addition to MSG_TX.
+ 
+
+comment number: 5129131 
+body: How long do the loops run on average/worst-case? Is the runtime of the loops that enclose AlreadyHave dependent on I/O such as network/database?
+
+It looks like AlreadyHave runs very fast (just some hash lookups), however the enclosing loops contains network calls such as PushMessage. I suppose it is undesirable to hold the lock during those?
+
+In that case the current solution is best. It is also the best encapsulation.
+ 
+
+comment number: 5179288 
+body: ACK. If there is a performance problem arises for the processing of "inv" messages, we can always move the lock to a pre-processing step that filters the received inv list before further processing.
+ 
+
+comment number: 5179319 
+body: ACK, agreed, safety comes first
+
+Edit: Btw, what's the reason that mapBlockIndex / mapOrphanBlocks don't require a mutex?  Are they only ever accessed from one thread?
+ 
+
+comment number: 5179425 
+body: Actually, I'd prefer the txdb.ContainsTx() call to be outside of the lock, as the db lookup could be slow.
+ 
+
+comment number: 5179643 
+body: updated
+ 
+
+396. bug report number : ['1086']
+397. bug report number : ['1080']
+398. bug report number : ['1073']
+comment number: 5093716 
+body: Tagged this as a low-priority bug, because it fixes itself and using importprivkey via the RPC interface is a geek-only, seldom-used feature.
+ 
+
+comment number: 30443543 
+body: This is fixed. A blank wallet importing a private key now brings up the taskbar receive notification and the overview and transactions tabs are populated with correctly-dated transactions once rescan is complete.
+ 
+
+comment number: 30444045 
+body: Thanks qubez
+ 
+
+399. bug report number : ['1065']
+400. bug report number : ['1064']
+comment number: 5075339 
+body: Yes, that happens in Dutch as well.
+
+Problem is, I can't find the original (layered) image anymore. As we'd like to get rid of the splash screen eventually anyway (see #1028) designing a new one is too much bother.
+ 
+
+comment number: 5078419 
+body: I believe Samuel (on IRC) has been working on a new splash screen, as part of his GUI makeover attempts with tcatm.
+ 
+
+comment number: 5108786 
+body: As a last recourse, I'd propose the following image:
+
+![Resized splash image](http://ompldr.org/vZGN3bw)
+
+I tested several languages, with the default font size they all seem to fit nicely with this 250*194 image (aspect preserved).
+
+> I believe Samuel (on IRC) has been working on a new splash screen, as part of his GUI makeover attempts with tcatm.
+
+I was sure tcatm was some sort of... script used by the team to retrieve translations and that it was a shorthand for Transifex CATalogue Manager. Uh-oh...
+ 
+
+comment number: 6679566 
+body: @cardpuncher Is your graphics a simple resize of the current one?
+ 
+
+comment number: 6680467 
+body: I was playing around with the splash screen graphics:
+![new splash screen graphic V1](http://i50.tinypic.com/2i8zoli.jpg)
+![new splash screen graphic V2](http://i50.tinypic.com/o6bev4.jpg)
+![new splash screen graphic V3](http://i45.tinypic.com/20iza75.jpg)
+
+Based on:
+https://commons.wikimedia.org/wiki/File:Oxygen480-status-wallet-closed.svg and https://en.bitcoin.it/wiki/File:Bitcoin.png
+
+Created by me with PhotoFiltre.
+ 
+
+comment number: 6683464 
+body: On 30/06/12 00:14, Philip Kaufmann wrote:
+
+> @cardpuncher Is your graphics a simple resize of the current one?
+
+Yes, the image results from a quick resizing of the current JPEG with GIMP.
+
+## 
+
+One man alone can be pretty dumb sometimes, but for real bona fide
+stupidity, there ain't nothin' can beat teamwork.--Edward Abbey
+ 
+
+comment number: 6707374 
+body: I have to say I prefer the simple resize and wrap lines that don't fit instead of the new proposed one.
+ 
+
+comment number: 6707517 
+body: I still like the sharper version, but I'm completely fine with a resize of the current one. A line-wrap seems to be not possible for the QSplashScreen messages.
+ 
+
+comment number: 6707691 
+body: If you could line wrap, you dont need to scale it as much, so it wouldn't be as bad.
+http://lists.trolltech.com/qt-interest/2008-09/msg00453.html seems to indicate you can put html in there with style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space; "
+ 
+
+comment number: 6710083 
+body: I like the sharper one but it's too bling-y too my taste. Would make it look like a casino client. I don't use any gold on purpose in my graphics,  for example also why I went with the more abstract orange coin instead of Satoshi's gold coin.
+
+Line-wrapping sounds like a good intermediate idea until we get rid of the thing.
+ 
+
+comment number: 15832405 
+body: @laanwj I never got line-wrapping to work in the splash-screen + I would like to keep that screen (after some thoughts about it, I think it's a nice thing - which could just be improved). Perhaps we could add an abort button somehwere, like Office 2010 does in it's splash-screen?
+ 
+
+comment number: 15835196 
+body: Good idea. The problem really is that the initialization runs in the gui
+thread. So the window cannot react to events such as clicks right now.
+ 
+
+comment number: 17570769 
+body: @laanwj Can be closed, as our new splashscreen is bigger :).
+ 
+
+401. bug report number : ['1063']
+comment number: 5022458 
+body: 1) I think it's a pity that Qt doesn't break off long tooltip messages itself. How the hell are we (and translators) supposed to know how wide text gets rendered and what will, and will not run off the screen.
+
+2) Yes, that was forgotten when it was added.
+ 
+
+comment number: 5109913 
+body: The recommended way to fix this appears to be to add `<qt/>` in front of the message to make sure Qt interprets it as rich text instead of plaintext, and can apply its own formatting algorithm. It would be preferable to do this automatically for all tooltips. I'd loathe having to track this individually for every translated message in every language.
+
+Edit: Looking at the Qt source, I think this could be implemented globally by listening for `QEvent::ToolTipChange` events, then rewriting the messages to prefix `<qt/>`  _if it is not yet rich text_. See also:
+- http://doc.trolltech.com/4.7/qt.html#mightBeRichText
+- http://doc.trolltech.com/4.7/eventsandfilters.html
+ 
+
+comment number: 5111670 
+body: @laanwj I think it could also be done by replacing \n with a HTML-br as this is what's done for the lock symbol in the client, if the wallet is encrypted and / or unlocked ... that tooltip seems to be rich text already, right? I think there are only 2-4 places at all, where HTML-tags are used directly in the strings. Your idea seems cleaner, so we would only have to remove the current br-Tags (the ones for bold text should remain).
+ 
+
+comment number: 5112066 
+body: Yes, you are right, the programmatically generated tooltips will also have to be generated as rich text. `\n` will not do anything for formatting in rich text messages. If custom line breaks are desired, `<br>` should be used.
+ 
+
+comment number: 6670388 
+body: _<quote>then rewriting the tooltips to prefix `<qt/>` if it is not yet rich text.</quote>_
+You sure that is works? On my side `<qt/>` is displayed as plain text and there are no line breaks, so apparently the content of the tool tip is considered as plain text rather than rich text. Here's an example with revision 5fa8396 on Ubuntu 10.04.4 with GNOME 2.30:
+![tooltip glitch](http://ompldr.org/vZWsydg/bitcoin_tooltip_glitch.gif)
+ 
+
+comment number: 6672185 
+body: Works fine for me.
+
+What version of Qt?
+ 
+
+comment number: 6678042 
+body: On 29/06/12 20:30, Wladimir J. van der Laan wrote:
+
+> Works fine for me.
+> 
+> What version of Qt?
+
+Help > About Qt says "This program uses Qt version 4.6.2."
+
+## 
+
+One man alone can be pretty dumb sometimes, but for real bona fide
+stupidity, there ain't nothin' can beat teamwork.--Edward Abbey
+ 
+
+comment number: 6679205 
+body: @cardpuncher Can you upgrade, that's a rather old version ... we currently compile Bitcoin-Qt with 4.7.4 and available is 4.8.2.
+ 
+
+comment number: 6679843 
+body: Yep, that's the cause, you can compile bitcoin-qt with Qt<4.7 but then you have some slight quirks such as missing placeholder text and, it seems, this.
+ 
+
+comment number: 6679862 
+body: Btw the message says "Bitcon network"... lol that's one typo
+ 
+
+comment number: 6680394 
+body: That typo is awesome ^^.
+
+Edit: #1537
+ 
+
+402. bug report number : ['1062']
+comment number: 6510493 
+body: Can this be solved somehow by shortening the translated strings or is french a language of natively long strings :)?
+ 
+
+comment number: 6669928 
+body: On 22/06/12 17:29, Philip Kaufmann wrote:
+
+> Can this be solved somehow by shortening the translated strings or is french a language of natively long strings :)?
+
+Yes, French sentences are in average longer than... well, most other
+languages, which makes them good candidates as placeholders (and for
+headaches when one translates Android apps).
+
+I could shorten the translated strings a bit but they would look kind of
+weird (the equivalent of Show QR Code would become just QR Code,
+"Nouvelle Adresse" would become "Nouv. Adresse"). That said, note that
+in version 0.6.3, the problem also occurs with English sentences, so
+IMHO the best way to fix the issue is to modify the geometry of the
+window (i.e. increase its width).
+
+Interestingly, I grabbed the tarball of revision 5fa8396 from github and
+compiled it, and then I was surprised to see that the issue seemed to
+have been fixed... until I realized I hadn't enabled QR Code support
+with qmake. In short, with one less button, things look much better so
+increasing the width of the window should do the trick.
+
+PS: As described on #1064 a very similar problem also occurs with the
+splash screen image. A slightly bigger image appended to the bug report
+fixes the problem, so you may want to commit it until the splash screen
+is disabled entirely (rev 5fa8396 still has it).
+
+## 
+
+One man alone can be pretty dumb sometimes, but for real bona fide
+stupidity, there ain't nothin' can beat teamwork.--Edward Abbey
+ 
+
+comment number: 6679521 
+body: Is this only present for the address selection window and splash screen or are there other examples that would need a little resize?
+ 
+
+comment number: 6683518 
+body: On 30/06/12 00:12, Philip Kaufmann wrote:
+
+> Is this only present for the address selection window and splash screen or are there other examples that would need a little resize?
+
+IIRC I noticed nothing else with a similar problem when I was clicking
+frantically on every option Bitcoin has in order to test the French and
+Turkish translations; otherwise I believe I would have reported them
+too. I couldn't find anything else with a quick test now either :)
+
+## 
+
+One man alone can be pretty dumb sometimes, but for real bona fide
+stupidity, there ain't nothin' can beat teamwork.--Edward Abbey
+ 
+
+comment number: 6685337 
+body: Are you able to compile Bitcoin-Qt? Can you try this with 720 x 360 Pixel (edit addressbookpage.ui with Qt Designer and set the values on the main QWidget).
+ 
+
+comment number: 6686422 
+body: On 30/06/12 15:41, Philip Kaufmann wrote:
+
+> Are you able to compile Bitcoin-Qt? Can you try this with 720 x 360 Pixel (edit addressbookpage.ui with Qt Designer and set the values on the main QWidget).
+
+As we discussed on IRC, 760 x 380 seems to fix this issue. The result on
+my desktop is the following:
+![Desktop screenshot with the main and re-sized
+windows](http://ompldr.org/vZWtldQ/desktop_with_bitcoin.gif)
+
+## 
+
+One man alone can be pretty dumb sometimes, but for real bona fide
+stupidity, there ain't nothin' can beat teamwork.--Edward Abbey
+ 
+
+403. bug report number : ['1057']
+comment number: 5010172 
+body: Probably. It is the only place in the source where rand() is used.
+ 
+
+comment number: 5010188 
+body: I see it in commented code in main.cpp too:
+
+```
+    //while (rand() % 3 == 0)
+    //    mapNext[pindex->pprev].push_back(pindex);
+```
+
+I wonder if perhaps it's deliberate, because the wallet rand() code is in a tight loop and we don't want to exhaust our entropy source.
+ 
+
+comment number: 5010717 
+body: That loop execute a great many times— a proper cryptographically secure RNG is probably going to be noticeably slow here.   If it is, then would anyone object to using a fast PRNG seeded by RandBytes at the start of the function?
+
+In general I don't think there is a big privacy concern here— even knowing the random sequence completely shouldn't matter unless you also know the inputs under consideration.
+ 
+
+comment number: 5021913 
+body: @gmaxwell also, rand() is not thread-safe according to its man page, using rand_r(*seed) is recommended in that case is as it has explicit state. 
+
+If there is no privacy concern here, a simple solution would be using rand_r with the state (just one int) generated at the beginning of the function with GetRandInt(). 
+ 
+
+comment number: 31083130 
+body: We don't use rand() anymore but our own insecure_rand() for non-security-critical randomness that does get seeded. Closing this.
+ 
+
+404. bug report number : ['1024']
+comment number: 4872054 
+body: Do you have a backup of your wallet from before this issue happened?
+ 
+
+comment number: 4872214 
+body: of course not.
+ 
+
+comment number: 4899121 
+body: What about a try with 0.6 and the switch -walletupgrade (https://bitcointalk.org/index.php?topic=74858.0)?
+But use a copy of your wallet.dat just in case ...
+ 
+
+comment number: 4903494 
+body: same crash as described above with version 0.6.0.6 beta after -walletupgrade when i try to change my passphrase.
+ 
+
+comment number: 4924569 
+body: I ran into the same issue after upgrading to 0.6.0.6-beta, and same potential root cause, I tried entering the passphrase probably 30+ times and now when I try the correct phrase it crashes when attempting to send coins. 
+
+"This application has requested the Runtime to terminate it in an unusual way. Please contact the application's support team for more information"
+
+In the debug.log
+
+---
+
+EXCEPTION: 9key_error  
+CKey::SetSecret() : secret must be 32 bytes  
+N:\Program Files\Bitcoin.latest\bitcoin-qt.exe in Runaway exception
+
+I've tried killing my bitcoin directory and reloading all the blocks, even under different versions of bitcoin. I do have a backup prior to all of this from jan (it must have been after I encrypted my wallet) but that one has the same issue which is strange since it was backed up on a different computer (not running bitcoin) and hasnt been modified since then.
+
+I've looked around at issue 955 and 711, ran bitcointools but it didnt complain about anything. I've even tried using the backup-ed wallet and bitcointools new wallet on another machine and it still crashes. 
+
+I tried using the -upgradewallet switch, same issue (Log shows "performing wallet upgrade to 60000). The problem also happens if i try to change my passphrase.
+
+Any suggestions?
+ 
+
+comment number: 4957633 
+body: Update: I found the right pass it looks like the crash was being caused on an incorrect pass.
+
+Using 0.6.0.6-beta trying (incorrect-password1) when attempting to send coins or change passwords the client crashes. Because of this I figured it was the correct password due to other incorrect passwords not causing the client to crash (they would just cause the client to report incorrect pass).
+
+Figuring that one or more of the keys were corrupted sipa gave me two custom clients. 
+
+first patched client
+http://bitcoin.sipa.be/builds/0.6.0-1-gc8bd77b/ (404'd now I guess you should ask him if you really need it)
+When this was run with -recovery flag it checks all keys at decryption time and ignores the faulty ones, so if you use the wrong pass it wont have any funds since the decryption will fail. This tried to use a key that was removed (when i stupidly was using the wrong pass at this point) since it doesnt prevent the coin mechanism from choosing those coins or update the balance.
+
+second patched client
+http://bitcoin.sipa.be/builds/0.6.0-1-g694cc14/
+again you run this with -recovery from the cli or it will just be the same as 0.6.0.6-beta I believe. Using this patch it reports in the debug output which keys were removed because of which reason, and should update the balance. So if you use the wrong pass decryption will fail and the balance will show 0.00.
+
+After writing down all permutations of what my pass could be I found the correct passphrase and the released 0.6.0.6-beta client works as expected. I'll email the empty wallet to gmaxwell and hopefully he can figure out why the wrong pass causes it to crash.
+ 
+
+comment number: 4966388 
+body: This should be fixed by #1039.
+ 
+
+comment number: 4968719 
+body: ur teh r0x0rz. err... mostly. i still have to guess my passphrase. wee.
+ 
+
+405. bug report number : ['1011']
+comment number: 4834172 
+body: Currently all RPC calls take both cs_main and pwalletMain->cs_wallet locks, this is true of any rpc call.
+See https://github.com/bitcoin/bitcoin/blob/master/src/bitcoinrpc.cpp#L2529
+ 
+
+comment number: 4836921 
+body: A possible way to speed this up, especially for recently generated addresses, would be to allow a parameter to this RPC call that specifies the earliest block to consider in a rescan. 
+ 
+
+comment number: 132240058 
+body: @weex #6570
+ 
+
+comment number: 260050320 
+body: Just encountered this on 0.12.1. Following this link it turns out #7551 (merged into master 23 days ago) fixes this by adding the feature mentioned by weex. 
+
+@davout can you try with 0.13.1 (I think the fix went in before its release)? I can't upgrade my instance yet.
+ 
+
+406. bug report number : ['982']
+comment number: 4695837 
+body: Is this reproducible?  Are you running git-head or next-test? Anything special or weird about the addr.dat?
+ 
+
+comment number: 4695970 
+body: I can reproduce with both master and next-test by copying the addr.dat to my testnet dir. I don't know what caused whatever is in that addr.dat triggering this.
+ 
+
+comment number: 4696043 
+body: I can't reproduce it on master with luke's addr.dat file.
+ 
+
+comment number: 4696081 
+body: Interesting. I'd be willing to share my entire testnet dir with other devs (though not the general public).
+ 
+
+comment number: 4696174 
+body: Wallet and block index are only loaded after the point that caused the backtrace above. Can you still reproduce with empty database/ dir and __db\* files? If so, wallet.dat and blkindex.dat should not matter.
+ 
+
+comment number: 4766163 
+body: New reports: https://bitcointalk.org/index.php?topic=74447.0
+and twmz in IRC.
+ 
+
+407. bug report number : ['978']
+comment number: 4650910 
+body: Does listtransactions show it? Or did you start without -server?
+ 
+
+comment number: 4650974 
+body: Yes, listtransactions shows it.
+ 
+
+comment number: 4651652 
+body: ```
+(gdb) printf "%d\n", pwalletMain->vWalletUpdated.empty()
+Program received signal SIGSEGV, Segmentation fault.
+```
+
+:(
+
+Starting Bitcoin-Qt again shows it, I did _not_ need to rescan.
+
+Assuming QTimer works correctly, I think the problem must lie in TransactionTablePriv::updateWallet
+ 
+
+comment number: 4654591 
+body: DecomposeTransaction (and associated function showTransaction) decide whether transactions are visible or not in the UI:
+
+https://github.com/bitcoin/bitcoin/blob/master/src/qt/transactionrecord.cpp
+
+It might have something to do with the block chain depth check that happens there. Maybe if a coinbase transaction is rejected the first time, it is not added later on when the chain advances. 
+ 
+
+comment number: 4672185 
+body: Eligius payouts are coinbase transactions right?
+ 
+
+comment number: 4673747 
+body: Right, though as I mentioned, I'm pretty sure I've seen this occur with non-generation too.
+ 
+
+comment number: 4680487 
+body: If you don't trust the QTimer you may be interested in this commit in my sandbox, it removes the timers and updates the transaction list / address book when asked to by the core. Also fixes the problem that address created through rpc don't appear in the ui.
+
+https://github.com/laanwj/bitcoin/commit/8228c8d7d5a070d16939e29bf5b2988156116a1a
+ 
+
+comment number: 5710476 
+body: This should be solved by #1205, which allows for re-visiting transaction visibility. Mined transactions will become visible after they reach block depth 2.
+ 
+
+comment number: 5710675 
+body: They should be visible at depth 1...?
+ 
+
+comment number: 5710800 
+body: Maybe. But I haven't changed that part from the Satoshi client.
+ 
+
+comment number: 5710843 
+body: Uh, you're right... its <2, not <=2, see 
+https://github.com/bitcoin/bitcoin/blob/master/src/qt/transactionrecord.cpp#L22
+ 
+
+comment number: 7842892 
+body: Closing this issue; the wallet update code has been overhauled and this should no longer happen (and if it happens we have useful debug.log output). 
+ 
+
+408. bug report number : ['977']
+comment number: 4680761 
+body: @luke-jr should probably update the version string
+ 
+
+comment number: 4684718 
+body: Are you sure you're running 0.5.3.1?
+ 
+
+comment number: 4684754 
+body: Is it possible you are still running 0.4.0? Bitcoin-Qt doesn't delete the old wxBitcoin client...
+ 
+
+comment number: 4684761 
+body: Actually, 0.5.3.1 does not have a "Help/About" menu, only a "Help/About Bitcoin-Qt" menu...
+ 
+
+comment number: 4685478 
+body: I am using 0.5.3.1. I downloaded the Windows binary installer from the bitcoin website and upgraded my earlier version 0.5.1 which also reported 0.4.0-Beta. And yes there is a Help>About on the main menu on the main screen. Here is exactly what it says:
+
+Bitcoin version 0.4.0-beta
+Copyright c bitcoin Developers
+
+This is experimental software.
+
+Distributed under the MIT/X11 software license, see the accompanying file
+license.txt or http://www.opensource.org/licenses/mit-license.php.
+
+This product includes software developed by the OpenSSL Project for use in the
+OpenSSL Toolkit (http:/openssl.org) and cyptographic software written by
+Eric Young (eay@cryptsoft.com) and UPnP software written by Thomas Bernard.
+ 
+
+comment number: 4685508 
+body: If the menu entry is called "About", and not "About Bitcoin-Qt", you are most certainly running a 0.4.x version.
+
+Probably the old binary (bitcoin.exe) was not removed when you upgraded to a newer one (where the binary is called bitcoin-qt.exe), and you still have shortcuts to the old one?
+ 
+
+comment number: 4685661 
+body: sipa:
+
+You are right! The shortcut was wrong, pointing to bitcoin.exe. And there is a bitcion.exe still there in addition to the bitcoin-qt.exe. So does this still qualify as a bug? Since the installer did not correctly delete the old exe and update the shortcuts?? :-D
+ 
+
+comment number: 4685674 
+body: Is there any reason that I should not delete the old bitcoin.exe under c:\Program Files\bitcoin\?
+ 
+
+comment number: 4685702 
+body: Also, seems like the olde UI provided more useful information about connections/transaction/#BTC all on one page than the new UI does. :-|
+ 
+
+comment number: 4686284 
+body: I thought that bug was fixed, though now that I look at setup.nsi, it doesnt look like it... :(
+
+Is there any reason that I should not delete the old bitcoin.exe under c:\Program Files\bitcoin\? <-- no
+
+Also, seems like the olde UI provided more useful information about connections/transaction/#BTC all on one page than the new UI does. :-| <-- common complaint, but the old ui was written in an unsupported development version of wx, and since we had no wx programmers at the time (still dont), it was decided that moving to a much better supported toolkit was much more important than minor UI gripes.  Also, a new UI design is in the works, likely to be released as a part of 0.7, see http://188.138.99.157/stuff/qtvert17.png (still a WIP)
+ 
+
+comment number: 4695908 
+body: We need to teach the 0.6 setup.nsi to remove the old wx .exe and shortcuts.
+ 
+
+comment number: 4703123 
+body: @TheBlueMatt For the new GUI, is it possible to make the last bar in the "connection-quality" symbol green ... I did never understand, why it's more like yellow (and am no graphics artist ^^).
+ 
+
+comment number: 4766116 
+body: The 0.6rc5 setup.nsi removes the old wx .exe, and shortcuts are overwritten, so this is fixed.
+
+You can still shoot yourself in the foot if file permissions are wrong (e.g. install bitcoin as administrator, then install a new version without admin rights), but I think the answer to that is "Don't do that!"
+ 
+
+409. bug report number : ['957']
+comment number: 17378266 
+body: I also agree with this. The messages could be much more helpful.
+ 
+
+comment number: 268425220 
+body: @jerobarraco Commenting on years-old issues is pointless. 
+
+comment number: 268425929 
+body: @jerobarraco I still have no idea what you're trying to accomplish. 
+
+comment number: 268431023 
+body: Nobody needs to read it. The issue was fixed years ago. 
+
+comment number: 268436975 
+body: @jerobarraco Bitcoin Core hasn't produced the error mentioned here since version v0.9.0, released in march 2014. 
+
+comment number: 268467582 
+body: IF an age-old issue came back, you should open a new issue.
+
+> I know this is closed, but you can imagine that getting here was not free, it took me time. so, i think it's just fair that someone has to read this and think about it.
+
+You realize that this software is mostly a volunteer effort, and without that it wouldn't exist? Any second you waste of our time could have been spent on improving the software.
+We owe you nothing, not even reading your posts. And pissing off people with the first message is *not* the way to get your support in open source software - probably not in anything.
+
+@rest Please just ignore posts like this in the future.
+ 
+
+410. bug report number : ['955']
+comment number: 4585726 
+body: I should also note that I tried moving this wallet to 2 other Windows computers and still the same thing.
+
+You guys have seen this issue before
+
+https://github.com/bitcoin/bitcoin/issues/711
+
+Also I tried Pywallet.py to dump the keys, but I'm getting "wrong password" on all the passwords tried
+ 
+
+comment number: 4586347 
+body: Which bitcoin version?
+ 
+
+comment number: 4586819 
+body: was using 0.4.0,  I updated to 0.5.3.1-beta and I'm still getting the crash.
+ 
+
+comment number: 4600671 
+body: What about 0.6 RC4, does this work? Are there any special characters in the password?
+ 
+
+comment number: 4600768 
+body: Thanks for the quick replies everyone.  
+
+I'll give 0.6 RC4 a go.   There are no special characters in the password.   The password is 7 alpha numeric characters,  the first 5 characters are letters with the first letter being uppercase and the last two characters are just numbers.  
+ 
+
+comment number: 4600899 
+body: Same problem with 0.6 RC4
+ 
+
+comment number: 4601014 
+body: Too bad, is it the same error in the debug.log as before?
+ 
+
+comment number: 4601630 
+body: Yes same error in debug.log,
+ 
+
+comment number: 4615712 
+body: Can someone explain to  me what's happening here?
+
+bool SetSecret(const CSecret& vchSecret, bool fCompressed = false)
+    {
+        EC_KEY_free(pkey);
+        pkey = EC_KEY_new_by_curve_name(NID_secp256k1);
+        if (pkey == NULL)
+            throw key_error("CKey::SetSecret() : EC_KEY_new_by_curve_name failed");
+        if (vchSecret.size() != 32)
+            throw key_error("CKey::SetSecret() : secret must be 32 bytes");
+        BIGNUM *bn = BN_bin2bn(&vchSecret[0],32,BN_new());
+        if (bn == NULL)
+            throw key_error("CKey::SetSecret() : BN_bin2bn failed");
+        if (!EC_KEY_regenerate_key(pkey,bn))
+        {
+            BN_clear_free(bn);
+            throw key_error("CKey::SetSecret() : EC_KEY_regenerate_key failed");
+        }
+        BN_clear_free(bn);
+        fSet = true;
+        if (fCompressed || fCompressedPubKey)
+            SetCompressedPubKey();
+        return true;
+    }
+ 
+
+comment number: 4616311 
+body: That function initializes the EC_KEY object embedded in a CKey to have a given (32-byte) secret (CSecret). In your case that function is called with an empty CSecret, which shouldn't happen.
+ 
+
+comment number: 4619521 
+body: Is secret based on my password or a public key?
+ 
+
+comment number: 4630950 
+body: I wish I understood this a bit more.  Sorry for all the simple questions, but I'm really curious about how this class works and where the corruption happened.
+
+I used Fairdell HxCmp to do a byte comparison of   2 known good encrypted wallets and  then I compared a good encrypted wallet to my bad encrypted wallet.
+
+Start at offset 4200,   the bad wallet is all 00 00 00    the good wallet has data at this location.  The 2 good wallets have data at this location as can be seen in Image #1 of the photo Album located below.  
+
+Data starts to re-appear again at offset 6000.   I'm not sure if any of this helps to make sense of this.
+
+The Photo Album can be found here.   http://imgur.com/a/DhC8Z#0
+ 
+
+comment number: 4696012 
+body: Consensus is this is a "we don't know how it happened but somehow the bits on your disk are not what they should be" problem that we can't reproduce.
+
+I moved the priority from high to medium, and removed the 0.6.0 milestone from this issue, but I think the only fix for problems like these will be a much better scheme for backing up and restoring wallets.
+ 
+
+411. bug report number : ['952']
+comment number: 5483568 
+body: Working on this one now...
+ 
+
+412. bug report number : ['945']
+comment number: 4554290 
+body: Thanks for noticing. There isn't supposed to be HTML there in the first place, QT creator must have added it.
+ 
+
+comment number: 4554330 
+body: No problem, even small glitches are worth to get discovered and fixed, to produce a "perfect" product :). Some other parts of the code contain HTML-tags for writing bold or to do a line break, is this supported and can be used in translations for text layout?
+
+Example: https://github.com/bitcoin/bitcoin/blob/master/src/qt/locale/bitcoin_en.ts#L180
+ 
+
+comment number: 4554484 
+body: Yes, it's fine to have &lt;b> or &lt;i> etc, but there should be no html/body headers, or font changes to fonts only present on one Linux distribution :)
+
+The only problem with fixing this is that all translations have to be changed too.
+ 
+
+comment number: 4554682 
+body: There are 32 language files, so yes it's a bit work. But what would be the cleanest way to do this, update main file (english), do an lupdate, push to Transifex, let translators do their jobs? And how does the fixed string look like? I will update the german translation as soon as it's possible to do it ... perhaps I can help in fixing the other languages, too (not translation wise, but only to get rid of the HTML mess).
+
+I hope someone can finally do that magic "lupdate", so all strings can be translated (see issue: https://github.com/bitcoin/bitcoin/issues/940).
+ 
+
+comment number: 4554704 
+body: If we want translators to do it, we have to wait at least until after the final 0.6.0 release, otherwise "Wallet" will remain untranslated for a lot of languages in the coming release.
+
+I'd prefer changing them all at once (either manually or with a script), but I don't have any experience with the transifex syncing and don't want to mess it up. Transifex is leading so it should be changed there first, before it goes to git.
+ 
+
+comment number: 4554761 
+body: I guess tcatm (Nils Schneider) could help, as I don't know how to proceed from here, too. Any idea how to point him to this issue ;)?
+
+From the documentation:
+
+Source file
+src/qt/locale/bitcoin_en.ts is a treated in a special way. It is used as the source for all other translations. Whenever a string in the code is change this file must be updated to reflect those changes. Usually, this can be accomplished by running lupdate
+ 
+
+comment number: 4569968 
+body: Well I think best solution would be really to do this after 0.6, to have a sufficient time window for all translations to get updated.
+ 
+
+comment number: 4749902 
+body: Could someone set the milestone to 0.7 for this, as the word "Wallet" will need to get re-translated, which should be possible very early in the 0.7 development.
+
+And someone needs to fix it, by removing the HTML part completely ... I could do that, but I'm not sure, about the font settings for this specific translations. If it only needs to be "Wallet" without anything, I will open a commit.
+ 
+
+comment number: 4797550 
+body: I'd still prefer one person to update all the translations in this case. It is a pretty trivial (even programmatic) operation, which will be the same for every language. Indeed, just strip the HTML so it says "Wallet". Let's not bother the translators with it, who might also get it wrong.
+
+And yes this ACK for 0.7.
+ 
+
+comment number: 4797742 
+body: There is a font formatting used for "Wallet" (size 11 and it looks bold). This would add tags into overviewpage.ui instead of the HTML code. Is this okay or how is the default for setting that stuff for a label, if not in the designer.
+ 
+
+comment number: 5525708 
+body: As #945 got merged, we now need to update the en master file in our master branch.
+ 
+
+comment number: 5651019 
+body: Fixed and the new master file containing this change is in Transifex -> close!
+ 
+
+413. bug report number : ['944']
+comment number: 4553067 
+body: To usefully debug this issue, we need function names/line numbers from those addresses in [backtrace]. I think you find these out this using the addr2line command and the (debug) executable.
+ 
+
+comment number: 4554691 
+body: Function names/line numbers will help.  I can also try to reproduce this running under 'valgrind' -- can you tell me what operating system you're running on and send me the output of:
+
+```
+grep 'method=' ~/.bitcoin/debug.log | tail -500
+```
+
+... so we have an idea of what RPC calls might be triggering the bug?
+ 
+
+comment number: 4557093 
+body: Hi Gavin,
+
+I will do that, but it takes time to reproduce the error, I appears that it depends o the wallet being used.
+
+once I reproduce the error  I will send you the output of:
+
+grep 'method=' ~/.bitcoin/debug.log | tail -500
+
+Wladimir suggested using addr2line, and it is on my system, however I have never used it before, but I can give it a try.
+
+It was compiled on a debian 64 bit system version 6.0, the compile was done statically, since the goal was to use it on a Centos 64 bit version 5.5, the errors occurs when running on Centos, I have not tried to reproduced the error under debian, but I could try.
+The reason it was not compiled on Centos directly was that Centos is supplied  with an incomplete openssl that has missing code such as ecc, not only that even though boost, and openssl compile just fine under centos, too many errros in regards to those libraries are trigered at compile time, in centos the bigger problem is ssl, that is why it is compiled under debian statically.
+
+The bug only triggers with moderate or heavy use, it does not trigger under light use.
+
+As soon as I have the debug information that you need, I will send it to you.
+
+Thanks,
+
+Sergio Riveros
+
+> Date: Sat, 17 Mar 2012 08:28:04 -0700
+> From: reply@reply.github.com
+> To: sergiori@hotmail.com
+> Subject: Re: [bitcoin] bitcoin memory allocation bug, double linked list corrupted  (#944)
+> 
+> Function names/line numbers will help.  I can also try to reproduce this running under 'valgrind' -- can you tell me what operating system you're running on and send me the output of:
+> 
+> ```
+> grep 'method=' ~/.bitcoin/debug.log | tail -500
+> ```
+> 
+> ... so we have an idea of what RPC calls might be triggering the bug?
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/944#issuecomment-4554691
+ 
+
+comment number: 4594626 
+body: Gavin
+Here is the output you have respuested:
+[root@vpn3000 ~]# grep 'method=' ~/.bitcoin/debug.log | tail -500
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getinfo
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=listaddress
+ThreadRPCServer method=listaddress
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=help
+ThreadRPCServer method=listaccounts
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+ThreadRPCServer method=getgenerate
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getreceivedbyaddress
+ThreadRPCServer method=getbalance
+
+If I can be of any further help to troubleshoot this bug please let me know,
+I have a feeling that it relates somehow to the wallet, since with a clean new wallet this proble does not occur.
+
+Sincerely,
+
+Sergio Riveros
+
+> Date: Sat, 17 Mar 2012 08:28:04 -0700
+> From: reply@reply.github.com
+> To: sergiori@hotmail.com
+> Subject: Re: [bitcoin] bitcoin memory allocation bug, double linked list corrupted  (#944)
+> 
+> Function names/line numbers will help.  I can also try to reproduce this running under 'valgrind' -- can you tell me what operating system you're running on and send me the output of:
+> 
+> ```
+> grep 'method=' ~/.bitcoin/debug.log | tail -500
+> ```
+> 
+> ... so we have an idea of what RPC calls might be triggering the bug?
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/944#issuecomment-4554691
+ 
+
+comment number: 4594780 
+body: in regard to using addr2line, can you provide a few instructions on how to use it, and how to submit the binary of  bitcoind with debug enabled?
+ 
+
+comment number: 4596721 
+body: I've never used addr2line either but you can mail me the exact executable
+that caused the error  at laanwj at gmail.com and I'll give it a try.
+ 
+
+comment number: 4622966 
+body: Annotated stack trace using addr2line:
+
+```
+[0x53c568] /home/minero/bitcoinmar2012/bitcoin/src/bitcoinrpc.cpp:2360 
+           https://github.com/bitcoin/bitcoin/blob/v0.6.0rc3/src/bitcoinrpc.cpp#L2360
+[0x53c58f] /home/minero/bitcoinmar2012/bitcoin/src/bitcoinrpc.cpp:2365 
+           https://github.com/bitcoin/bitcoin/blob/v0.6.0rc3/src/bitcoinrpc.cpp#L2365
+[0x53e25e] /home/minero/bitcoinmar2012/bitcoin/src/bitcoinrpc.cpp:2487 
+           https://github.com/bitcoin/bitcoin/blob/v0.6.0rc3/src/bitcoinrpc.cpp#L2487
+[0x53b69a] /home/minero/bitcoinmar2012/bitcoin/src/bitcoinrpc.cpp:2248 
+           https://github.com/bitcoin/bitcoin/blob/v0.6.0rc3/src/bitcoinrpc.cpp#L2248
+[0x5e4e22] /home/minero/bitcoinmar2012/bitcoin/src/util.cpp:696 
+           https://github.com/bitcoin/bitcoin/blob/v0.6.0rc3/src/util.cpp#L696
+[0x85e9bb] std::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(char const*, unsigned long, std::allocator<char> const&)
+[0x51f4a3] /usr/include/c++/4.4/bits/basic_string.tcc:139
+[0x85ddf9] std::string::_Rep::_S_create(unsigned long, unsigned long, std::allocator<char> const&)
+[0x87ee6d] operator new(unsigned long)
+[0x8bb838] __malloc
+[0x8ba39f] events.c:0
+[0x8b6c12] events.c:0
+```
+
+Seems that it happens after Base64 decoding (called from HTTPAuthorized), when constructing the string from char array. Doesn't help us much, I'm afraid... some time before this allocation the heap got corrupted. This could be in Base64Decode itself, or before that...
+ 
+
+comment number: 18680247 
+body: Is this still an issue with more recent versions (0.8.2)?
+ 
+
+comment number: 32023218 
+body: Closing due to inactivity.
+ 
+
+414. bug report number : ['933']
+comment number: 31105754 
+body: (fixed by c682cdf two years ago...)
+ 
+
+415. bug report number : ['922']
+comment number: 4428725 
+body: ne of my recent bugfixes changes an internal timer from seconds to milliseconds. The time you report seems to be 1000 times shorter in the future than expected. I'll have a look at it tomorrow.
+ 
+
+416. bug report number : ['913']
+417. bug report number : ['889']
+comment number: 4162790 
+body: More research into what's going on:
+
+boost::interprocess is busy-waiting (at low priority), because it is emulating Posix functionality.
+See the comment is in boost/interprocess/detail/workaround.hpp  :
+     //Mac Os X >= Leopard defines _POSIX_THREAD_PROCESS_SHARED but does not seems to work.
+
+... or google for "osx _POSIX_THREAD_PROCESS_SHARED"
+
+I'm still thinking about the best way to workaround this; having Bitcoin-Qt use 100% cpu whenever running will trigger too many bug reports to release it the way it is.
+ 
+
+418. bug report number : ['881']
+comment number: 4097227 
+body: Check out https://bitcointalk.org/index.php?topic=11331.0
+ 
+
+comment number: 4204732 
+body: Were you using 0.6.0rc1? It had a bug that corrupted wallets when encrypting them. If so, nothing is lost. I can send you instructions to recover, if matt's way doesn't work out.
+ 
+
+comment number: 4211787 
+body: hi sipa, i tried his method but didnt help. because my wallet is encrypted it doesnt want to recover/repair it. when i was doing his method i could see my privatkeys and transactions and even my account public keys. his methode gave me an error something like error restoring wallet. do you have any other methods?
+thx in advance
+ 
+
+comment number: 4214361 
+body: First, this will only work if you used the encrypt wallet function of 0.6.0rc1.
+Second, make a backup.
+- Run: db4.8_dump -p wallet.dat >wallet.txt (to create a human readable wallet dump)
+- Open wallet.txt using your favorite text editor.
+- Search for lines starting with "\03key". There should only be a few of them.
+- Delete those \03key lines, as well as the 1 line that follows each.
+- Now search for lines starting with "\04pool". There should be +- 100.
+- Delete those \04pool lines, as well as the 1 line that follows each.
+- Import the purged dump again: db4.8_load -f wallet.txt wallet.dat.new
+- Replace wallet.dat with wallet.dat.new, and start bitcoin.
+ 
+
+comment number: 4218734 
+body: Hi sipa,
+
+I'm windows user and im at work right now, hence this delayed response ; )
+just installed Ubuntu and db4.8 utils.. 
+got the human readable wallet.dat 
+
+im just confused now as I have only one \03key!\03,, and its [junk tail] been found in three different places. One its own \03key!\03 line
+second in a paragraph with lots of other JUNKS, and third as you said in a \04ckey\04 line,
+
+ Ihave deleted the \03key\03 line and the \04ckey\04 line..
+the paragraph between those lines I have left it..
+
+from my Ubuntu I could not use db4.8_import command, so I used db4.8_load -f command.
+
+when I restored the wallet.dat and started the bitcoin. it crashed.. "c++ runtime failure.. " any idea?
+
+here is my wallet.txt junk..
+
+ \03key!\03\b7\\06\f7'\c5\c5\98\c3\8c\11\06z\1e\0e\c3\9d\b0\e4TO\be\ee
+
+[secret]
+
+\04ckeyA\04\b7\\06\f7'\c5\c5\98\c3\8c\11\06z\1e\0e\c3\9d\b0\e4TO\be\eeb4M\9b"\dcBE\87\f3K\b7v.nW\84r%\b3\f9^N\a4\e2f\e6G\af\1f\b4\11\1f
+ 0:6\d9\d5<\c7\f1\c9\8d<\d7\ea)\\da\fd\de}\f2.K9c\10\0d\b1@Fl\db\b9\80a\e2\f3\cc+\09VT\e0\1b\1e\e98\fa\94\
+ 
+
+comment number: 4219224 
+body: I edited the instructions above a bit, as I realized it wasn't entirely safe. Could you try again?
+
+PS: I've edited out a part of your paste above, as it contained a secret key.
+ 
+
+comment number: 4225437 
+body: :(((
+ive tried all of those you mentioned... somehow it doesn't want to load the wallet
+
+i have deleted the 03key.. but ont the secret key junk,
+than deleted 04keypool it was arnd 100 lines.. i deleted those aswell.
+
+still when i load the bitcoin it gives c++ distribution failed message.. 
+
+this seems suspicious for me.. 
+ \04mkey\01\00\00\00
+ 0\93n\16\da\03\b8:\e6Q\8c\fd\de\be\a8\d1\ecVxZ\17\9f\a8|\f4[\c9\9b\13\b5\11~\e1\84\ecC\9a;\e1>\ab\94\c0\15;\b1&\a4l\08\17\0d\a1\bd\1fFA\a4\00\00\0
+ \04name"16BPGYorn55FgRxKFqXT5qWoL
+ XGwqd7LfD9QKZKTS0v7c4C78LpwIU83nDdoWVsYnz4o7K+Jysym60+UFpvDXbPTiqrmKczZp5MmNI/koxn3UfWUc=
+ \04name"1AEpcgigxGn3z7HBAPaJkZQ9W
+ \07krishan
+ \04pool\01\00\00\00\00\00\00\00
+ `\ea\00\00x2@O\00\00\00\00!\02\d4b\04\a12Q\db\aaW\ec\13p\83\8eV\f5!j\eb?#\1c7\d4\c7d\eee[C\8d\f7
+ \04pool\02\00\00\00\00\00\00\00
+
+PS: when I give you the wallet.dat.. would you be able to recover it??
+ 
+
+comment number: 4225473 
+body: PS: i had two accounts/address on that wallet.. somehow I also had signed one of the address. can't remember how I did it. but the tool gave me an option to sign the address with my name.. so I did sign it with my name. than encrypted. than it has crashed..
+ 
+
+comment number: 4225492 
+body: I can try; pieter.wuille@gmail.com
+ 
+
+comment number: 4226738 
+body: sent it..
+ 
+
+comment number: 4227467 
+body: thank you very much SIPA.  your method working now ;) I forgot to use the correct version of bitcoin-tool ;) thank you so much... 
+ 
+
+419. bug report number : ['879']
+comment number: 4072494 
+body: Adding -rt should be done only for Linux, I suppose? It's strange that we'd have to link against it directly, as we don't use `shm_open`/`shm_unlink` directly, it is at most Boost using it.
+ 
+
+comment number: 4072524 
+body: When trying to understand the change I found a link:
+  http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
+that claims to explain it.
+
+Hope that helps!
+ 
+
+comment number: 4072631 
+body: The undefined symbol is referenced on line 374 of /usr/include/boost/interprocess/shared_memory_object.hpp,
+included by /usr/include/boost/interprocess/ipc/message_queue.hpp,
+included by bitcoin/src/qt/qtipcserver.cpp
+ 
+
+comment number: 4072793 
+body: Yes, that makes it fully clear. We must link to -lrt on Linux, as previously we were using it indirectly through some other lib and that's no longer allowed...
+ 
+
+comment number: 4493004 
+body: On Fedora You fix help too.
+ 
+
+comment number: 4493025 
+body: Is that some kind of a stack-based language?
+
+Does changing "LIBS += -lssl -lcrypto -ldb_cxx$$BDB_LIB_SUFFIX" to "LIBS += -lssl -lcrypto -ldb_cxx$$BDB_LIB_SUFFIX -lrt" in bitcoin-qt.pro fix it on Fedora?
+ 
+
+comment number: 4493085 
+body: Fixed now.
+ 
+
+420. bug report number : ['877']
+comment number: 4061347 
+body: Installing an older version of growl (1.2.2) seemed to fix this.
+
+http://growl.info/downloads
+ 
+
+comment number: 4064069 
+body: We probably shouldnt depend on growl to be installed though...
+ 
+
+comment number: 4145019 
+body: Could this have something to do with the USE_DBUS compilation option? I suspect that might make Bitcoin use Growl on the Mac to get Dbus-like functionality (for what, I'm not sure...).
+
+And I might have (accidentally) compiled the 0.5.2 release with USE_DBUS=1.
+ 
+
+comment number: 4204926 
+body: Well it doesn't depend on Growl - there is a trick in place which involves using AppleScript to call it and Bitcoin-Qt does check for Growl on startup.
+
+You can easily fix this error by choosing the plain Growl.app (the GrowlHelperApp has been included into it). I could probably find out the Growl version and fix the call script appropriately.
+ 
+
+comment number: 4222328 
+body: @p2k : I'd like to get this resolved before the final 0.6 release, or at least suggest a workaround in the release notes.  What do you mean by "choosing the plain Growl.app" ?  Choose where?
+ 
+
+comment number: 4256360 
+body: @gavinandresen He means that right before the app crashes, it pops up a dialog box (http://cl.ly/2c0O0m0m3A090V2J2Y0R)
+
+But it didn't work for me. I chose Growl.app but it still crashed.
+I haven't found a fix that isn't just "install the old version of Growl".
+ 
+
+comment number: 4451201 
+body: Ok, I finally got some time for this. Can you please keep your old version of Growl and check for backwards-compatibility? Can't downgrade Growl on my office Mac.
+
+https://github.com/p2k/bitcoin
+
+EDIT: I'm not sure how to make a proper pull request now. If I try, 3 commits are listed: my old one about macdeployqtplus, the merge commit of me, and the new one about the bugfix...
+ 
+
+comment number: 4600833 
+body: I cherry-picked p2k's commit after testing this on my 10.6.8 Mac first without and then with Growl 1.2.2.
+ 
+
+421. bug report number : ['875']
+422. bug report number : ['874']
+comment number: 4174593 
+body: I don't get this. It can only come from:
+
+```
+text = tr("%n second(s) ago","",secs);
+```
+
+However, this is a valid usage according to http://developer.qt.nokia.com/doc/qt-4.8/linguist-programmers.html .
+
+And I can't reproduce the problem either...
+
+Edit: Ah, this happens when secs is smaller than 0. Interesting.
+ 
+
+423. bug report number : ['835']
+comment number: 5129739 
+body: I expect this to be fixed with commit 98e61758744ed34e8b7f59b37edb6d09b33d5517.
+ 
+
+comment number: 5268957 
+body: verified, this is fixed
+ 
+
+comment number: 10930775 
+body: Someone just reported this again on 0.7.1 on IRC. Reopen?
+ 
+
+comment number: 18801879 
+body: I'm seeing this issue on 0.8.1 and 0.8.2 on the linux-64 client.  Please reopen.
+ 
+
+comment number: 18804835 
+body: @BoltBlit You did not set rescan=false when importing?
+ 
+
+comment number: 18804995 
+body: @sipa To clarify: I tried again w/ another key and rescan=true.  After import, the address shows up in the 'Addresses' pane, but not the 'Receive' pane.  After a restart, the address is no longer in the the 'Addresses' pane, but then does show up in the 'Receive' pane.  The behavior is kind of confusing.
+ 
+
+comment number: 22553088 
+body: If make import from debug console, then it moving from 'Addresses' to 'Receive' after repeating this action.
+In debug log it presents as NotifyAddressBookChanged with isMine=0 at first time, and as isMine=1 at second.
+ 
+
+comment number: 39520087 
+body: This issue can be closed. It is fixed with 0.9 because we assign address purposes now.
+
+The problem was we relied on isMine to determine whether to show as "sending" or "receiving".
+And when importing, it was not mine (yet). But after the next refresh of addresstablemodel is was mine. (See comment above by r000n)
+
+Also see #3831.
+ 
+
+424. bug report number : ['833']
+425. bug report number : ['832']
+comment number: 3953374 
+body: Is there a source for this? (I believe this is a ppa problem, not a bitcoin-release tars problem)
+ 
+
+comment number: 4005503 
+body: This is fixed.
+ 
+
+426. bug report number : ['830']
+comment number: 3935256 
+body: Closed and Open again, wait until the CPU USAGE fall to 0%, debug.log :
+
+Bitcoin version 0.6.0-娴嬭瘯
+Default data directory C:\Users\yecn\AppData\Roaming\Bitcoin
+Loading addresses...
+dbenv.open strLogDir=C:\Users\yecn\AppData\Roaming\Bitcoin/database strErrorFile=C:\Users\yecn\AppData\Roaming\Bitcoin/db.log
+Loaded 91598 addresses
+ addresses              1150ms
+Loading block index...
+LoadBlockIndex(): hashBestChain=0000000000000ad1f4e9  height=166584
+ block index            7585ms
+Loading wallet...
+nFileVersion = 60000
+fGenerateBitcoins = 0
+nTransactionFee = 0
+fMinimizeToTray = 1
+fMinimizeOnClose = 1
+fUseProxy = 0
+addrProxy = 127.0.0.1:9050
+fUseUPnP = 1
+ wallet                  547ms
+Done loading
+mapBlockIndex.size() = 166633
+nBestHeight = 166584
+setKeyPool.size() = 100
+mapWallet.size() = 0
+mapAddressBook.size() = 1
+Bound to port 8333
+addrLocalHost = 10.223.76.16:8333
+ThreadDNSAddressSeed started
+Loading addresses from DNS seeds (could take a while)
+ThreadMapPort started
+ThreadSocketHandler started
+ThreadOpenConnections started
+ThreadIRCSeed exiting
+ThreadOpenAddedConnections started
+ThreadOpenAddedConnections exiting
+ThreadMessageHandler started
+trying connection 24.30.51.118:8333 lastseen=-0.1hrs lasttry=-369198.8hrs
+connected 24.30.51.118:8333
+trying connection 85.229.140.166:8333 lastseen=-0.1hrs lasttry=-369198.8hrs
+No valid UPnP IGDs found
+connected 85.229.140.166:8333
+Added time data, samples 2, offset -2 (+0 minutes)
+version message: version 31900, blocks=166599
+trying connection 69.125.151.0:8333 lastseen=-0.1hrs lasttry=-369198.8hrs
+Added time data, samples 3, offset -9 (+0 minutes)
+version message: version 32100, blocks=166599
+connected 69.125.151.0:8333
+trying connection 86.192.238.56:8333 lastseen=-0.1hrs lasttry=-369198.8hrs
+AddAddress(58.165.113.139:8333)
+Added time data, samples 4, offset -2 (+0 minutes)
+version message: version 50200, blocks=166599
+connected 86.192.238.56:8333
+connection timeout
+ERROR: GetMyExternalIP() : connection to 91.198.22.70:80 failed
+trying connection 173.175.48.5:8333 lastseen=-0.1hrs lasttry=-369198.8hrs
+connected 173.175.48.5:8333
+Added time data, samples 5, offset +0 (+0 minutes)
+nTimeOffset = -2  (+0 minutes)
+version message: version 32400, blocks=166599
+GetMyExternalIP() received [] 0:0:0:0:0:0:0:0:0
+AddAddress(41.122.221.10:8333)
+AddAddress(58.171.232.223:8333)
+AddAddress(81.225.3.141:8333)
+AddAddress(81.249.13.188:8333)
+AddAddress(92.25.59.100:8333)
+AddAddress(93.34.215.62:8333)
+AddAddress(123.98.135.5:8333)
+AddAddress(130.234.170.214:8333)
+AddAddress(178.210.7.120:8333)
+AddAddress(196.211.239.10:8333)
+trying connection 86.21.114.104:8333 lastseen=-0.1hrs lasttry=-369198.8hrs
+connected 86.21.114.104:8333
+Added time data, samples 6, offset -32 (+0 minutes)
+version message: version 50200, blocks=166598
+AddAddress(2.92.221.148:8333)
+AddAddress(2.95.78.117:8333)
+AddAddress(41.107.96.156:8333)
+AddAddress(46.151.45.50:8333)
+AddAddress(46.182.52.219:8333)
+AddAddress(60.242.0.197:8333)
+AddAddress(75.17.94.159:8333)
+AddAddress(75.57.12.247:8333)
+AddAddress(77.10.113.206:8333)
+AddAddress(77.243.16.238:8333)
+AddAddress(78.48.171.232:8333)
+AddAddress(83.11.156.99:8333)
+AddAddress(83.237.26.212:8333)
+AddAddress(86.50.133.70:8333)
+AddAddress(87.78.239.28:8333)
+AddAddress(90.63.248.241:8333)
+AddAddress(91.65.76.28:8333)
+AddAddress(92.227.19.17:8333)
+AddAddress(93.133.89.124:8333)
+AddAddress(94.191.144.195:8333)
+AddAddress(95.25.77.248:8333)
+AddAddress(95.153.67.199:8333)
+AddAddress(108.13.157.30:8333)
+AddAddress(109.161.91.219:8333)
+AddAddress(109.184.133.45:8333)
+AddAddress(109.236.133.227:8333)
+AddAddress(116.7.87.219:8333)
+AddAddress(123.118.125.219:8333)
+AddAddress(130.71.213.193:8333)
+AddAddress(141.136.89.42:8333)
+AddAddress(155.41.35.100:8333)
+AddAddress(171.243.80.228:8333)
+AddAddress(174.97.129.53:8333)
+AddAddress(178.122.80.89:8333)
+AddAddress(178.177.231.107:8333)
+AddAddress(188.18.130.205:8333)
+AddAddress(193.64.22.192:8333)
+AddAddress(194.197.132.105:8333)
+AddAddress(206.205.121.222:8333)
+AddAddress(213.88.99.41:8333)
+AddAddress(213.221.55.130:8333)
+AddAddress(218.144.103.198:8333)
+trying connection 178.33.52.222:8333 lastseen=-2.1hrs lasttry=-369198.8hrs
+AddAddress(27.2.65.41:8333)
+AddAddress(31.207.147.214:8333)
+AddAddress(46.5.228.190:8333)
+connected 178.33.52.222:8333
+AddAddress(46.167.65.28:8333)
+AddAddress(77.185.219.249:8333)
+AddAddress(79.117.32.149:8333)
+AddAddress(82.103.205.37:8333)
+AddAddress(87.163.81.145:8333)
+AddAddress(92.78.179.192:8333)
+AddAddress(124.189.12.198:8333)
+AddAddress(98.244.142.22:8333)
+AddAddress(99.7.148.123:8333)
+AddAddress(109.165.38.124:8333)
+AddAddress(120.61.141.56:8333)
+AddAddress(173.255.175.160:8333)
+AddAddress(176.0.246.228:8333)
+AddAddress(176.222.221.6:8333)
+AddAddress(178.92.198.227:8333)
+AddAddress(184.53.217.187:8333)
+trying connection 86.147.31.208:8333 lastseen=-2.1hrs lasttry=-369198.8hrs
+connected 86.147.31.208:8333
+AddAddress(93.133.38.29:8333)
+AddAddress(98.224.102.125:8333)
+AddAddress(110.22.116.244:8333)
+AddAddress(120.140.158.228:8333)
+AddAddress(173.218.134.44:8333)
+AddAddress(194.38.165.2:8333)
+AddAddress(188.123.241.146:8333)
+AddAddress(189.227.243.141:8333)
+AddAddress(190.31.14.183:8333)
+AddAddress(194.144.36.239:8333)
+AddAddress(201.253.71.54:8333)
+AddAddress(207.38.236.20:8333)
+askfor block 0000000000000b203b3d   0
+askfor block 000000000000056a303d   0
+askfor block 00000000000001b4e34f   0
+askfor block 00000000000000104eb1   0
+askfor block 0000000000000169c427   0
+askfor block 0000000000000a6f80fc   0
+askfor block 0000000000000b40cd9a   0
+askfor block 000000000000031dadc8   0
+askfor block 0000000000000618f069   0
+askfor block 0000000000000bc83f95   0
+askfor block 00000000000008c4bf67   0
+askfor block 00000000000003973e8a   0
+askfor block 00000000000000c39b9e   0
+askfor block 0000000000000af6e45b   0
+sending getdata: block 0000000000000b203b3d
+sending getdata: block 000000000000056a303d
+sending getdata: block 00000000000001b4e34f
+sending getdata: block 00000000000000104eb1
+sending getdata: block 0000000000000169c427
+sending getdata: block 0000000000000a6f80fc
+sending getdata: block 0000000000000b40cd9a
+sending getdata: block 000000000000031dadc8
+sending getdata: block 0000000000000618f069
+sending getdata: block 0000000000000bc83f95
+sending getdata: block 00000000000008c4bf67
+sending getdata: block 00000000000003973e8a
+sending getdata: block 00000000000000c39b9e
+sending getdata: block 0000000000000af6e45b
+Added time data, samples 7, offset -3 (+0 minutes)
+nTimeOffset = -2  (+0 minutes)
+version message: version 40000, blocks=166599
+Added time data, samples 8, offset -2 (+0 minutes)
+version message: version 50200, blocks=166599
+Added time data, samples 9, offset -1 (+0 minutes)
+nTimeOffset = -2  (+0 minutes)
+version message: version 32400, blocks=166599
+AddAddress(49.72.236.213:8333)
+AddAddress(58.111.91.140:8333)
+AddAddress(61.247.13.208:8333)
+AddAddress(91.115.87.68:8333)
+AddAddress(95.133.121.221:8333)
+AddAddress(95.134.94.71:8333)
+AddAddress(182.53.94.255:8333)
+AddAddress(182.206.5.134:8333)
+AddAddress(188.174.113.18:8333)
+AddAddress(213.80.202.233:8333)
+received block 0000000000000b203b3d
+REORGANIZE
+GetMyExternalIP() received [118.212.184.76] 118.212.184.76:0
+GetMyExternalIP() returned 118.212.184.76
+66 addresses found from DNS seeds
+ThreadDNSAddressSeed exiting
+SetBestChain: new best=0000000000000b203b3d  height=166586  work=235466028747145825032
+ProcessBlock: ACCEPTED
+AddAddress(206.116.214.251:8333)
+received block 000000000000056a303d
+SetBestChain: new best=000000000000056a303d  height=166587  work=235471954378195214816
+ProcessBlock: ACCEPTED
+received block 00000000000001b4e34f
+SetBestChain: new best=00000000000001b4e34f  height=166588  work=235477880009244604600
+ProcessBlock: ACCEPTED
+received block 00000000000000104eb1
+SetBestChain: new best=00000000000000104eb1  height=166589  work=235483805640293994384
+ProcessBlock: ACCEPTED
+askfor tx 1bc201709597cda08f46   0
+sending getdata: tx 1bc201709597cda08f46
+AddAddress(66.55.144.148:8333)
+AddAddress(109.188.255.142:8333)
+AddAddress(24.251.210.246:8333)
+AddAddress(71.212.99.232:8333)
+AddAddress(81.23.116.198:8333)
+AddAddress(86.33.47.81:8333)
+AddAddress(95.57.175.174:8333)
+AddAddress(174.51.109.13:8333)
+AddAddress(178.88.220.153:8333)
+askfor tx 1bc201709597cda08f46   1329115697000000
+received block 0000000000000169c427
+SetBestChain: new best=0000000000000169c427  height=166590  work=235489731271343384168
+ProcessBlock: ACCEPTED
+received block 0000000000000a6f80fc
+SetBestChain: new best=0000000000000a6f80fc  height=166591  work=235495656902392773952
+ProcessBlock: ACCEPTED
+received block 0000000000000b40cd9a
+SetBestChain: new best=0000000000000b40cd9a  height=166592  work=235501582533442163736
+ProcessBlock: ACCEPTED
+received block 000000000000031dadc8
+SetBestChain: new best=000000000000031dadc8  height=166593  work=235507508164491553520
+ProcessBlock: ACCEPTED
+askfor tx 1bc201709597cda08f46   1329115817000000
+askfor tx f202b2be9d00583600e4   0
+sending getdata: tx f202b2be9d00583600e4
+askfor tx 1bc201709597cda08f46   1329115937000000
+askfor tx f202b2be9d00583600e4   1329115706000000
+askfor tx 1bc201709597cda08f46   1329116057000000
+askfor tx f202b2be9d00583600e4   1329115826000000
+ERROR: FetchInputs() : 1bc2017095 mapTransactions prev not found 177be82d59
+ERROR: AcceptToMemoryPool() : FetchInputs failed 1bc2017095
+storing orphan tx 1bc2017095
+askfor tx f202b2be9d00583600e4   1329115946000000
+askfor tx f202b2be9d00583600e4   1329116066000000
+askfor tx f202b2be9d00583600e4   1329116186000000
+received block 0000000000000618f069
+SetBestChain: new best=0000000000000618f069  height=166594  work=235513433795540943304
+ProcessBlock: ACCEPTED
+received block 0000000000000bc83f95
+SetBestChain: new best=0000000000000bc83f95  height=166595  work=235519359426590333088
+ProcessBlock: ACCEPTED
+received block 00000000000008c4bf67
+SetBestChain: new best=00000000000008c4bf67  height=166596  work=235525285057639722872
+ProcessBlock: ACCEPTED
+ERROR: FetchInputs() : f202b2be9d mapTransactions prev not found f16f534275
+ERROR: AcceptToMemoryPool() : FetchInputs failed f202b2be9d
+storing orphan tx f202b2be9d
+received block 00000000000003973e8a
+SetBestChain: new best=00000000000003973e8a  height=166597  work=235531210688689112656
+ProcessBlock: ACCEPTED
+received block 00000000000000c39b9e
+SetBestChain: new best=00000000000000c39b9e  height=166598  work=235537136319738502440
+ProcessBlock: ACCEPTED
+received block 0000000000000af6e45b
+SetBestChain: new best=0000000000000af6e45b  height=166599  work=235543061950787892224
+ProcessBlock: ACCEPTED
+askfor tx 05fcf1eb9cea4960b184   0
+sending getdata: tx 05fcf1eb9cea4960b184
+askfor tx 05fcf1eb9cea4960b184   1329115722000000
+askfor tx 05fcf1eb9cea4960b184   1329115842000000
+askfor tx 05fcf1eb9cea4960b184   1329115962000000
+askfor tx 05fcf1eb9cea4960b184   1329116082000000
+askfor tx 05fcf1eb9cea4960b184   1329116202000000
+askfor tx 05fcf1eb9cea4960b184   1329116322000000
+AcceptToMemoryPoolUnchecked(): size 0
+AcceptToMemoryPool(): accepted 05fcf1eb9c
+02/13/12 06:48:44 Flushing wallet.dat
+Flushed wallet.dat 148ms
+askfor tx fd7fb9ee1b7e838b16e8   0
+sending getdata: tx fd7fb9ee1b7e838b16e8
+AcceptToMemoryPoolUnchecked(): size 1
+AcceptToMemoryPool(): accepted fd7fb9ee1b
+askfor tx 121dc79e0fbaaf6e1589   0
+sending getdata: tx 121dc79e0fbaaf6e1589
+askfor tx 121dc79e0fbaaf6e1589   1329115741000000
+AcceptToMemoryPoolUnchecked(): size 2
+AcceptToMemoryPool(): accepted 121dc79e0f
+askfor tx c726c1ee1028bf398b7e   0
+sending getdata: tx c726c1ee1028bf398b7e
+askfor tx c726c1ee1028bf398b7e   1329115797000000
+AcceptToMemoryPoolUnchecked(): size 3
+AcceptToMemoryPool(): accepted c726c1ee10
+received getdata for: block 0000000000000af6e45b
+AddAddress(24.92.159.94:8333)
+askfor block 00000000000002443e9c   0
+sending getdata: block 00000000000002443e9c
+askfor block 00000000000002443e9c   1329115809000000
+askfor block 00000000000002443e9c   1329115929000000
+askfor block 00000000000002443e9c   1329116049000000
+askfor block 00000000000002443e9c   1329116169000000
+received block 00000000000002443e9c
+SetBestChain: new best=00000000000002443e9c  height=166600  work=235548987581837282008
+ProcessBlock: ACCEPTED
+02/13/12 06:50:14 Flushing wallet.dat
+Flushed wallet.dat 177ms
+askfor tx 637fb3c0466f59dc4c1d   0
+sending getdata: tx 637fb3c0466f59dc4c1d
+askfor tx 637fb3c0466f59dc4c1d   1329115816000000
+AcceptToMemoryPoolUnchecked(): size 1
+AcceptToMemoryPool(): accepted 637fb3c046
+askfor tx c0ab42b9f6e6cc278f59   0
+sending getdata: tx c0ab42b9f6e6cc278f59
+askfor tx c0ab42b9f6e6cc278f59   1329115820000000
+AcceptToMemoryPoolUnchecked(): size 2
+AcceptToMemoryPool(): accepted c0ab42b9f6
+askfor tx 4cef4db911a7ebac83da   0
+sending getdata: tx 4cef4db911a7ebac83da
+askfor tx 4cef4db911a7ebac83da   1329115845000000
+AcceptToMemoryPoolUnchecked(): size 3
+AcceptToMemoryPool(): accepted 4cef4db911
+askfor tx bd930e89ca29f32c1707   0
+sending getdata: tx bd930e89ca29f32c1707
+askfor tx 1d7cd1d0f5e57a1b293c   0
+sending getdata: tx 1d7cd1d0f5e57a1b293c
+AcceptToMemoryPoolUnchecked(): size 4
+AcceptToMemoryPool(): accepted bd930e89ca
+AcceptToMemoryPoolUnchecked(): size 5
+AcceptToMemoryPool(): accepted 1d7cd1d0f5
+askfor tx d666d48cf70b710bd6e4   0
+sending getdata: tx d666d48cf70b710bd6e4
+AcceptToMemoryPoolUnchecked(): size 6
+AcceptToMemoryPool(): accepted d666d48cf7
+askfor tx f6f49f5f767511061d8c   0
+sending getdata: tx f6f49f5f767511061d8c
+AcceptToMemoryPoolUnchecked(): size 7
+AcceptToMemoryPool(): accepted f6f49f5f76
+askfor tx 750767e66b4a9bdc1b61   0
+sending getdata: tx 750767e66b4a9bdc1b61
+askfor tx 750767e66b4a9bdc1b61   1329115880000000
+AcceptToMemoryPoolUnchecked(): size 8
+AcceptToMemoryPool(): accepted 750767e66b
+askfor tx 7a27bb42fa60529261ac   0
+sending getdata: tx 7a27bb42fa60529261ac
+askfor tx 7a27bb42fa60529261ac   1329115911000000
+AcceptToMemoryPoolUnchecked(): size 9
+AcceptToMemoryPool(): accepted 7a27bb42fa
+askfor tx ff10fb5a5b28161b9943   0
+sending getdata: tx ff10fb5a5b28161b9943
+askfor tx ff10fb5a5b28161b9943   1329115915000000
+askfor tx ff10fb5a5b28161b9943   1329116035000000
+AcceptToMemoryPoolUnchecked(): size 10
+AcceptToMemoryPool(): accepted ff10fb5a5b
+askfor tx b4b069c81bd8877cae67   0
+sending getdata: tx b4b069c81bd8877cae67
+askfor tx b4b069c81bd8877cae67   1329115928000000
+askfor tx b4b069c81bd8877cae67   1329116048000000
+AcceptToMemoryPoolUnchecked(): size 11
+AcceptToMemoryPool(): accepted b4b069c81b
+askfor tx fd32dc262bd00f40ca9b   0
+sending getdata: tx fd32dc262bd00f40ca9b
+AcceptToMemoryPoolUnchecked(): size 12
+AcceptToMemoryPool(): accepted fd32dc262b
+askfor tx 5b748803ff57427691fc   0
+sending getdata: tx 5b748803ff57427691fc
+AcceptToMemoryPoolUnchecked(): size 13
+AcceptToMemoryPool(): accepted 5b748803ff
+askfor tx 1256dccde4ae44835388   0
+sending getdata: tx 1256dccde4ae44835388
+askfor tx 1256dccde4ae44835388   1329115968000000
+AcceptToMemoryPoolUnchecked(): size 14
+AcceptToMemoryPool(): accepted 1256dccde4
+askfor tx cb926c5d3df419bc8500   0
+sending getdata: tx cb926c5d3df419bc8500
+askfor tx cb926c5d3df419bc8500   1329115971000000
+askfor tx cb926c5d3df419bc8500   1329116091000000
+askfor tx cb926c5d3df419bc8500   1329116211000000
+AcceptToMemoryPoolUnchecked(): size 15
+AcceptToMemoryPool(): accepted cb926c5d3d
+askfor tx 1a1f267af7e06c5e51b7   0
+sending getdata: tx 1a1f267af7e06c5e51b7
+askfor tx 1a1f267af7e06c5e51b7   1329115975000000
+AcceptToMemoryPoolUnchecked(): size 16
+AcceptToMemoryPool(): accepted 1a1f267af7
+askfor tx 385b73d504d948757f4c   0
+sending getdata: tx 385b73d504d948757f4c
+askfor tx 385b73d504d948757f4c   1329115989000000
+askfor tx 385b73d504d948757f4c   1329116109000000
+askfor tx 385b73d504d948757f4c   1329116229000000
+askfor tx 385b73d504d948757f4c   1329116349000000
+askfor tx 385b73d504d948757f4c   1329116469000000
+askfor tx 385b73d504d948757f4c   1329116589000000
+AcceptToMemoryPoolUnchecked(): size 17
+AcceptToMemoryPool(): accepted 385b73d504
+ 
+
+comment number: 3935578 
+body: Switch to 0.5.2, it's all good, then switch back to 0.6.0 rc1,  still stuck.
+
+here's  0.6.0 rc1   debug.log:
+
+Bitcoin version 0.6.0-娴嬭瘯
+Default data directory C:\Users\yecn\AppData\Roaming\Bitcoin
+Loading addresses...
+dbenv.open strLogDir=C:\Users\yecn\AppData\Roaming\Bitcoin/database strErrorFile=C:\Users\yecn\AppData\Roaming\Bitcoin/db.log
+Loaded 91021 addresses
+ addresses             30500ms
+Loading block index...
+LoadBlockIndex(): hashBestChain=000000000000072c74ff  height=166607
+ block index           81848ms
+Loading wallet...
+nFileVersion = 60000
+fGenerateBitcoins = 0
+nTransactionFee = 0
+fMinimizeToTray = 1
+fMinimizeOnClose = 1
+fUseProxy = 0
+addrProxy = 50c3:0:e1:f505:100:0:0:0:0
+fUseUPnP = 1
+ wallet                  318ms
+Rescanning last 38 blocks (from block 166569)...
+AddToWallet ac559c5341  new
+ rescan                  229ms
+Done loading
+mapBlockIndex.size() = 166655
+nBestHeight = 166607
+setKeyPool.size() = 100
+mapWallet.size() = 437
+mapAddressBook.size() = 21
+Bound to port 8333
+02/13/12 07:33:34 Flushing wallet.dat
+Flushed wallet.dat 270ms
+addrLocalHost = 10.223.76.16:8333
+ThreadDNSAddressSeed started
+ThreadOpenAddedConnections started
+ThreadOpenAddedConnections exiting
+ThreadMessageHandler started
+ThreadIRCSeed exiting
+Loading addresses from DNS seeds (could take a while)
+ThreadMapPort started
+ThreadSocketHandler started
+ThreadOpenConnections started
+trying connection 85.229.140.166:8333 lastseen=-0.1hrs lasttry=-369199.6hrs
+GetMyExternalIP() received [118.212.184.76] 118.212.184.76:0
+GetMyExternalIP() returned 118.212.184.76
+connected 85.229.140.166:8333
+trying connection 69.125.151.0:8333 lastseen=-0.1hrs lasttry=-369199.6hrs
+connected 69.125.151.0:8333
+No valid UPnP IGDs found
+Added time data, samples 2, offset -2 (+0 minutes)
+version message: version 50200, blocks=166607
+trying connection 86.192.238.56:8333 lastseen=-0.1hrs lasttry=-369199.6hrs
+Added time data, samples 3, offset -7 (+0 minutes)
+version message: version 32100, blocks=166607
+connected 86.192.238.56:8333
+Added time data, samples 4, offset +0 (+0 minutes)
+version message: version 32400, blocks=166607
+trying connection 75.132.138.46:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+connected 75.132.138.46:8333
+trying connection 98.216.106.144:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+AddAddress(79.22.200.160:8333)
+AddAddress(83.8.77.81:8333)
+AddAddress(85.156.88.9:8333)
+AddAddress(178.210.5.219:8333)
+AddAddress(217.70.128.152:8333)
+connected 98.216.106.144:8333
+AddAddress(88.117.77.86:8333)
+AddAddress(93.83.17.114:8333)
+trying connection 173.175.48.5:8333 lastseen=-0.1hrs lasttry=-369199.6hrs
+AddAddress(70.162.92.47:8333)
+AddAddress(76.20.62.8:8333)
+AddAddress(96.249.153.132:8333)
+AddAddress(121.114.46.162:8333)
+connected 173.175.48.5:8333
+trying connection 137.226.148.40:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+AddAddress(122.82.107.205:8333)
+Added time data, samples 5, offset -32 (+0 minutes)
+nTimeOffset = -2  (+0 minutes)
+version message: version 50200, blocks=166607
+connected 137.226.148.40:8333
+trying connection 81.86.115.129:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+connected 81.86.115.129:8333
+AddAddress(178.46.89.151:8333)
+66 addresses found from DNS seeds
+ThreadDNSAddressSeed exiting
+Added time data, samples 6, offset +0 (+0 minutes)
+version message: version 32400, blocks=166607
+AddAddress(58.160.176.73:8333)
+AddAddress(58.168.213.221:8333)
+AddAddress(61.214.68.173:8333)
+AddAddress(62.78.54.18:8333)
+AddAddress(66.185.200.207:8333)
+AddAddress(69.89.105.69:8333)
+AddAddress(70.112.44.182:8333)
+AddAddress(71.239.160.211:8333)
+AddAddress(83.11.132.121:8333)
+AddAddress(84.130.192.61:8333)
+AddAddress(87.176.252.32:8333)
+AddAddress(94.228.232.250:8333)
+AddAddress(98.220.76.248:8333)
+AddAddress(116.15.52.251:8333)
+AddAddress(124.79.160.254:8333)
+AddAddress(128.73.235.130:8333)
+AddAddress(143.238.50.37:8333)
+AddAddress(174.61.147.119:8333)
+AddAddress(174.101.234.15:8333)
+AddAddress(176.65.41.222:8333)
+AddAddress(178.79.8.254:8333)
+AddAddress(190.173.80.226:8333)
+AddAddress(193.171.58.57:8333)
+askfor tx 3fd375482611c7874cbb   0
+sending getdata: tx 3fd375482611c7874cbb
+AcceptToMemoryPoolUnchecked(): size 0
+AcceptToMemoryPool(): accepted 3fd3754826
+askfor tx a9d74f4f0acb0848bd3c   0
+sending getdata: tx a9d74f4f0acb0848bd3c
+AcceptToMemoryPoolUnchecked(): size 1
+AcceptToMemoryPool(): accepted a9d74f4f0a
+
+---
+
+and this is the 0.5.2 debug.log:
+
+Bitcoin version 0.5.2-娴嬭瘯
+Default data directory C:\Users\yecn\AppData\Roaming\Bitcoin
+Loading addresses...
+dbenv.open strLogDir=C:\Users\yecn\AppData\Roaming\Bitcoin/database strErrorFile=C:\Users\yecn\AppData\Roaming\Bitcoin/db.log
+Loaded 91057 addresses
+ addresses              1405ms
+Loading block index...
+LoadBlockIndex(): hashBestChain=000000000000072c74ff  height=166607
+ block index            7634ms
+Loading wallet...
+nFileVersion = 60000
+fGenerateBitcoins = 0
+nTransactionFee = 0
+fMinimizeToTray = 1
+fMinimizeOnClose = 1
+fUseProxy = 0
+addrProxy = 127.0.0.1:9050
+fUseUPnP = 1
+ wallet                  390ms
+Rescanning last 38 blocks (from block 166569)...
+AddToWallet ac559c5341  
+ rescan                   58ms
+Done loading
+mapBlockIndex.size() = 166655
+nBestHeight = 166607
+setKeyPool.size() = 100
+mapWallet.size() = 437
+mapAddressBook.size() = 21
+Bound to port 8333
+addrLocalHost = 10.223.76.16:8333
+ThreadDNSAddressSeed started
+Loading addresses from DNS seeds (could take a while)
+ThreadIRCSeed started
+ThreadOpenConnections started
+ThreadMapPort started
+ThreadSocketHandler started
+ThreadMessageHandler started
+trying connection 69.125.151.0:8333 lastseen=-0.1hrs lasttry=-369199.6hrs
+connected 69.125.151.0:8333
+IRC :giraffe.heliacal.net NOTICE AUTH :**\* Looking up your hostname...
+trying connection 178.33.52.222:8333 lastseen=-0.1hrs lasttry=-369199.6hrs
+Added time data, samples 2, offset -1 (+0 minutes)
+version message: version 50200, blocks=166608
+IRC :giraffe.heliacal.net NOTICE AUTH :**\* Couldn't look up your hostname
+IRC SENDING: NICK x999960318
+
+IRC SENDING: USER x999960318 8 \* : x999960318
+
+No valid UPnP IGDs found
+IRC :giraffe.heliacal.net 001 x999960318 :Welcome to the LFNet Internet Relay Chat Network x999960318
+IRC :giraffe.heliacal.net 002 x999960318 :Your host is giraffe.heliacal.net[92.243.23.21/6667], running version hybrid-7.2.3
+IRC :giraffe.heliacal.net 003 x999960318 :This server was created Jun 28 2011 at 14:33:06
+IRC :giraffe.heliacal.net 004 x999960318 giraffe.heliacal.net hybrid-7.2.3 CDGabcdfgiklnorsuwxyz biklmnopstveI bkloveI
+askfor block 00000000000005c4a4d4   0
+sending getdata: block 00000000000005c4a4d4
+IRC SENDING: USERHOST x999960318
+
+IRC :giraffe.heliacal.net 302 x999960318 :x999960318=+x999960318@118.212.184.76 
+GetIPFromIRC() got userhost 118.212.184.76
+GetIPFromIRC() returned 118.212.184.76
+IRC SENDING: NICK u7gDXbxdyjNK7QA
+
+IRC SENDING: JOIN #bitcoin21
+
+IRC SENDING: WHO #bitcoin21
+
+IRC got join
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+AddAddress(178.128.133.74:8333)
+IRC got new address: 178.128.133.74:8333
+IRC got who
+IRC got who
+AddAddress(180.172.41.20:8333)
+IRC got new address: 180.172.41.20:8333
+IRC got who
+IRC got who
+AddAddress(176.34.35.13:8333)
+IRC got new address: 176.34.35.13:8333
+IRC got who
+IRC got who
+connected 178.33.52.222:8333
+IRC got who
+AddAddress(68.15.182.85:8333)
+IRC got new address: 68.15.182.85:8333
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+trying connection 24.30.51.118:8333 lastseen=-0.1hrs lasttry=-369199.6hrs
+IRC got who
+IRC got who
+IRC got who
+IRC got who
+Added time data, samples 3, offset -1 (+0 minutes)
+version message: version 50200, blocks=166607
+IRC got who
+IRC got who
+IRC got who
+IRC decode failed
+IRC got who
+IRC got who
+AddAddress(189.172.142.66:8333)
+IRC got new address: 189.172.142.66:8333
+IRC got who
+IRC got who
+received block 00000000000005c4a4d4
+connected 24.30.51.118:8333
+trying connection 86.21.114.104:8333 lastseen=-0.6hrs lasttry=-369199.6hrs
+connected 86.21.114.104:8333
+trying connection 124.170.103.128:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+connected 124.170.103.128:8333
+trying connection 75.132.138.46:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+connected 75.132.138.46:8333
+AddAddress(173.72.137.104:8333)
+SetBestChain: new best=00000000000005c4a4d4  height=166608  work=235596392630232400280
+ProcessBlock: ACCEPTED
+Added time data, samples 4, offset -2 (+0 minutes)
+version message: version 31900, blocks=166608
+Added time data, samples 5, offset -3 (+0 minutes)
+-3  -2  -1  -1  +0  |  nTimeOffset = -1  (+0 minutes)
+version message: version 40000, blocks=166608
+trying connection 85.18.20.23:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+connected 85.18.20.23:8333
+02/13/12 07:35:52 Flushing wallet.dat
+Flushed wallet.dat 206ms
+socket recv error 10054
+disconnecting node 85.18.20.23:8333
+trying connection 174.56.47.182:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+askfor tx 5e4081303265e6b4f73c   0
+sending getdata: tx 5e4081303265e6b4f73c
+connected 174.56.47.182:8333
+AcceptToMemoryPool(): accepted 5e40813032
+Added time data, samples 6, offset -1 (+0 minutes)
+version message: version 50100, blocks=166608
+trying connection 79.179.193.112:8333 lastseen=-0.9hrs lasttry=-369199.6hrs
+connected 79.179.193.112:8333
+AddAddress(78.54.144.25:8333)
+AddAddress(95.79.182.244:8333)
+askfor tx b3736a2caacd6693fb75   0
+sending getdata: tx b3736a2caacd6693fb75
+AcceptToMemoryPool(): accepted b3736a2caa
+66 addresses found from DNS seeds
+ThreadDNSAddressSeed exiting
+AddAddress(79.184.34.3:8333)
+AddAddress(95.25.237.50:8333)
+AddAddress(99.224.52.109:8333)
+AddAddress(113.109.127.141:8333)
+AddAddress(117.14.112.251:8333)
+AddAddress(69.150.20.209:8333)
+AddAddress(79.199.74.235:8333)
+AddAddress(94.15.105.169:8333)
+AddAddress(184.22.156.68:8333)
+AddAddress(222.153.12.232:8333)
+IRC got join
+ 
+
+comment number: 3997121 
+body: Someone reported the same issue:
+
+kwukduck
+Sr. Member
+
+Re: Version 0.6 release candidate 1
+Today at 08:23:41 AM
+
+Yesterday my pc crashed for no aparent reason (just  went like what seemed to be standby, then after 10 seconds rebooted). When i started bitcoin client it took about 2-3 minutes to load before the gui popped up.
+After the gui shows it just freezes, can't click anything, task manager claims it's not responding, also RPC doesnt reply to commands.
+
+I did a chkdsk but all seems fine there...
+
+Also, all seems good when reverting back to 0.5.2.
+
+Can't really explain it or reproduce the crash exactly, all i know is that 0.6rc1 now freezes whenever i start it. Used to work just fine before.
+ 
+
+comment number: 4243678 
+body: I have got the same problem here, so count me in :).
+ 
+
+comment number: 4248806 
+body: did you try this.. rename your %appdata%\BitCoin > bitCoin_Original
+start BitCoin tool ( yes fresh with new wallet.dat)
+once it started, terminate bitcoin tool,
+copy the old wallet.dat to the newly created bitcoin. check the result..
+
+if you stil have the same error something bad with wallet.dat might want to take your wallet.dat under the loop.
+ 
+
+comment number: 4253425 
+body: I created a new data folder, but had the "old" wallet.dat in from the beginning ... that did not fix it. I don't want to re-download the whole blockchain again to try your idea, so which file needs to be in the new data folder to skip that step?
+ 
+
+comment number: 4256810 
+body: @krishKM Even an empty data folder instantly freezes the GUI, so currently not fixable for me ... waiting for RC2.
+ 
+
+comment number: 4257759 
+body: so you deleted everyrhing inc. wallet.dat and it freezes? 1. are u using any of development software from microsoft? (visual studio)1. did u uninstall any software recently?3.what os?  Sent from Samsung Mobile
+ 
+
+comment number: 4258356 
+body: The folder was empty, nothing in it and yes the GUI freezes, but background threads seem to work, because there were the normal files created and for example the blockchain download was working, because the folder grew in size. I don't use any MS development software, but there are lot's of C++ runtimes installed, that come from different products, tools and which is quite normal. I don't recall, which or if I recently removed any software, sorry. OS is Win7 x64 SP1.
+ 
+
+comment number: 4259163 
+body: aha... can u please reinstall c++ 2008 runtime and check?
+ 
+
+comment number: 4260111 
+body: Uninstalled every C++ 2008 runtime I had on my system and now have only 9.0.30729 + 9.0.30729.6161 (which is a security update) C++ 2008 x86 runtime installed. Did not help, GUI freezes.
+ 
+
+comment number: 4261050 
+body: do you actually see _NOT RESPONDING_ MESSAGE on the gui title bar?
+you said its working in background. check your activex settings. 
+best idea to test ur local activex setting, creating new user and install bitcointool and check
+ 
+
+comment number: 4261893 
+body: Right, it shows "not responding" and stays in this state and that's what I called GUI freeze.
+What has Bitcoin to do with ActiveX?
+ 
+
+comment number: 4282529 
+body: Same problem with RC2, so I started an in depth investigation and used Sysinternals Procmon.exe for this. I wanted to know which files or registry keys the client processes and one folder came to my attention.
+
+C:\ProgramData\boost_interprocess\Select LastBootUpTime from Win32_OperatingSystem
+
+This one contained 2 files, 1 which consisted of 32 "random" characters and looks like a hash and a BitcoinURL file of size 0. The files were still there after "killing" the client!
+
+I'm working in IT, so call it luck or experience ... I deleted the whole C:\ProgramData\boost_interprocess folder, restarted the client, removed the database logs from the datadir and now everything works again :)! After I shutdown 0.6 RC2 these files disappear, so perhaps the former bluescreen with 0.6 RC1 made these files persistent, which freezes GUI after a Client re-start, because these 2 files can not be written to. I'm not sure, if 0.5.2 had this files, too ... so perhaps that's why 0.5.2 always worked!
+
+Perhaps others should try this and perhaps this one is solved. But can any developer shed some light in here, what these folder or files have to do with the BC client?
+ 
+
+comment number: 4553105 
+body: I think boost_interprocess was hanging due to stale files (I'm not sure what IPC mechanism it uses on windows). It is used to pass URLs to an already-running bitcoin-qt.exe, and did not exist yet on 0.5.0.
+ 
+
+comment number: 4572094 
+body: Is there any error checking code in the client, which could inform a user about the stale files and give a short how-to to fix the issue? That would remove the need to add code, which deletes files on Windows.
+
+The problem still persists, as I observed it once more after a bluescreen with RC4.
+ 
+
+comment number: 4624703 
+body: Closing, dup of #956
+ 
+
+427. bug report number : ['824']
+comment number: 35893984 
+body: So in principle we should be calling read (which has the "return all or error" semantic), not read_some.
+
+I wonder if it's possible to come up with a test that causes this to fail.
+ 
+
+comment number: 151462964 
+body: No longer an issue with libevent http
+ 
+
+428. bug report number : ['820']
+comment number: 3919532 
+body: I believe P2pool uses RPC to communicate with the client?
+
+We'd really need a transcript of the RPC commands that are sent to find out which one causes the crash.
+ 
+
+comment number: 3920639 
+body: Yes, p2pool uses jsonrpc to communicate with the client.  Perhaps I can find a way to trace the rpc commands.  Bitcoin-qt and p2pool are running on the same machine.
+ 
+
+comment number: 3920820 
+body: Related might be #640 and/or #639
+ 
+
+comment number: 3957551 
+body: This still happens with bitcoin-qt.exe v0.6.0 rc1 on Windows 7 64bit
+ 
+
+comment number: 3957717 
+body: Today, I happened to be on IRC and another person's bitcoin-qt crashed nearly simultaneously with mine... don't know if it was coincidental or not...  Later, his crashed, but mine didn't.
+ 
+
+comment number: 3965562 
+body: I have this debug log from right before bitcoin-qt win32 crashed: http://im.forre.st/pb/33189662.txt It suggests some kind of weird threading issue, because the RPC exception (thrown for unknown reasons) appears in the ProcessMessage thread.
+ 
+
+comment number: 3969338 
+body: Has anyone ever seen this bug on a non-Windows system?
+ 
+
+comment number: 3969516 
+body: No, not from what Linux p2pool users are saying
+ 
+
+comment number: 4008993 
+body: Here is a debug-able bitcoin-qt build of b7c25e0c1346256be12310264ea5cc4ce7794118 (current git head):
+http://dl.dropbox.com/u/29653426/bitcoin-qt.zip
+ 
+
+comment number: 4015443 
+body: I'm not sure what the "debug-able" bitcoin-qt build will do or how to use it... If you need me to recreate the problem and try to gather doc, let me know,,, otherwise, I'll assume someone else is doing it.  Meanwhile, I switched to running bitcoind instead of bitcoin-qt.    
+ 
+
+comment number: 4092392 
+body: This very well could be related to #640, but I have some doubt about #639. Using the latest debug version provided by @TheBlueMatt, I was able to get a backtrace that suggests line 1662 in bitcoinrpc.cpp:
+
+throw JSONRPCError(-15, "Error: running with an unencrypted wallet, but walletlock was called.");
+ 
+
+comment number: 4550751 
+body: This should be fixed in 0.6.0rc4 and 0.5.3.1
+ 
+
+429. bug report number : ['819']
+comment number: 3913038 
+body: Most window managers have an "X" at the left or right side of the titlebar.
+ 
+
+comment number: 3913108 
+body: I know, right?
+
+  http://i39.tinypic.com/20fxl3m.png
+
+I don't know if some special effort was made to not have an 'X' on this window, but either way I don't see it.
+ 
+
+comment number: 3913123 
+body: Odd, it's there for me...
+ 
+
+comment number: 3913133 
+body: Does the Sign Message dialog have this same problem?
+ 
+
+comment number: 3913171 
+body: Yes, it does.
+
+I'm using Cinnamon version 1.2 -- http://cinnamon.linuxmint.com/
+
+I notice now that Alt-F4 dismisses the window for me.  But would still prefer to have a way of doing it with the mouse.
+ 
+
+comment number: 3919536 
+body: It should be a normal window dismissable with the 'x' in the corner. 
+
+I am spooked why the window has no window manager chrome in your case.
+ 
+
+comment number: 4894885 
+body: I can't reproduce this, and haven't heard any other complaints about it.
+
+This makes it likely that the problem lies with your window manager (and its interaction with Qt), not bitcoin.
+ 
+
+comment number: 4896090 
+body: Perhaps we could / should at the possibility to close all windows except the main one, via Esc? Would that be hard to implement?
+ 
+
+comment number: 4896236 
+body: I don't think that'd be hard. I wouldn't be surprised if Qdialog had
+send-close-event-on-esc behavior built in that can be enabled.
+
+Otherwise, easiest way would ne to make our own QDialog subclass that has
+this.
+ 
+
+comment number: 4896386 
+body: Look at this and search for Escape Key: http://qt-project.org/doc/qt-4.8/QDialog.html
+It should work already ... at least on Windows it does :), I verified that with the current official 0.6 and my own version.
+ 
+
+comment number: 4897049 
+body: It's probably a bug in cinnamon, yes.  It's a very young desktop environment, I think it started as a response to GNOME 3 taking away the panels that GNOME 2 users were used to using.  I switched to XFCE4 now, and the close icon appears as it should.
+
+I suggest closing this as "not a bitcoin bug".
+ 
+
+comment number: 4910376 
+body: You opened this and you can close it :).
+ 
+
+comment number: 4918502 
+body: OK then, I guess I will.
+ 
+
+430. bug report number : ['815']
+comment number: 3895522 
+body: Thats not possible afaict, see OptionsModel::setData in qt/optionsmodel.cpp.
+In case MapPortUPnP:, there is no modification of successful, meaning it should always return true.  Maybe Im missing some part of the way Qt works though.
+ 
+
+comment number: 3899322 
+body: I'm not using any command line args or conf file, I tried it on a different PC and it still wont let me disable UPnP.  Everytime I restart the application the UPnP is ticked again.
+
+I also tried with a brand new empty wallet file and its behaving the same way.
+
+I also got a few "Application has crashed blah blah C++" errors while shutting down and starting up the app, expected in a RC release I spose.
+
+I'm using windows 7.
+ 
+
+comment number: 3899427 
+body: Oh, on reboot, well thats a completely different story.
+ 
+
+comment number: 3920238 
+body: I can reproduce this.
+ 
+
+comment number: 4002905 
+body: I introduced this when I modified the code to let command-line options override wallet settings.
+
+I'll fix...
+ 
+
+431. bug report number : ['814']
+comment number: 3888552 
+body: Probably caused by the network stack refactor, it shows everything (even IPv4 addresses) as IPv6 now?
+ 
+
+comment number: 3899281 
+body: I just tried running v0.6rc1 on a PC that WAS using a proxy and it replaced my valid proxy address details with the IPv6 looking address.
+ 
+
+comment number: 3919823 
+body: The UI gets the string representation of the proxy address in this way:
+
+```
+return QVariant(QString::fromStdString(addrProxy.ToStringIP()));
+```
+
+... which returns either a IPv4 address or IPv6 address string, based on the return value of isIPv4(). An address is identified as IPv4 if it starts with `0000:0000:0000:0000:0000:FFFF` (IPv4 Mapped address). I see nothing wrong in the logic here.
+
+This does not explain how the garbage value ended up in the proxy option in the wallet, though. And I'm unable to reproduce this. Could there be a backward compatibility issue in the serialized representation of addresses? @sipa?
+
+Some experimentation did uncover another problem: the input field takes only IPv4 addresses
+
+Edit: He is _not_ using the proxy. Theoretically, the setting should still be at the default (127.0.0.1:9050), or at least what he left it at last time.
+ 
+
+comment number: 4043535 
+body: Not sure how this is possible. Does the problem still exist?
+ 
+
+comment number: 4051675 
+body: I just tried deleting my wallet.dat and let v0.6rc1 create a new wallet and the proxy address was ok (127.0.0.1:9050).  However when I copied back my original v0.5.2 wallet and reran v0.6rc1 the proxy address was garbage again.
+
+My wallet file is the same wallet file that was generated by the v0.3.2 client a year ago.
+ 
+
+comment number: 4144894 
+body: This is definitely an issue, I just tested by:
+- Ran bitcoin 0.4 on a testnet-in-a-box datadir, set the Use Proxy and Proxy address to 127.0.0.2
+- Re-ran with git HEAD bitcoin 0.6, I get:  "409c:0:e1:f505:100:0:0:0"  as the proxy address.
+ 
+
+432. bug report number : ['809']
+comment number: 3875134 
+body: Did not find a way to attach a tag. This issue is with 0.6.0rc1.
+ 
+
+comment number: 3968479 
+body: This is a Berkeley DB version mismatch between the last and current version of bitcoin.
+
+Recovery is:
+  make sure bitcoin is not running
+  cd into your .bitcoin directory
+  rm -rf db\* database\* .lock *.pid
+ 
+
+comment number: 3980863 
+body: Thanks, that worked.
+ 
+
+comment number: 3990187 
+body: There was no bdb version change between 0.6 and 0.5.X.  This is probably just simply a corrupted database.
+ 
+
+comment number: 3991533 
+body: I don't believe so. Because bitcoin-qt could still read the old database. And also, then testnet and prodnet databases must have been corrupted at the same time.
+ 
+
+comment number: 3991682 
+body: Unless 0.6 rc1 was built using some non-gitian method, bdb is still the same version that it was 6 months ago (IIRC it was changed in version 0.4).  See https://github.com/bitcoin/bitcoin/blame/master/contrib/gitian-descriptors/gitian.yml
+ 
+
+comment number: 3991753 
+body: When upgrading from 0.4 to 0.5 and then to 0.5.1, I did not encounter this problem. It's the 0.5.1 to 0.6 RC1 update that reveiled it. As I said, I tested going back to 0.5.1.
+ 
+
+comment number: 3991811 
+body: No users should not have seen a problem going from 0.4 to 0.5.X because of the upgrade (it just means that you cant go back without manually deleting the logs).  Your issue is a simple case of log corruption, it happens all the time.
+ 
+
+comment number: 3991909 
+body: But then again, why is 0.6 RC1 sensitive about a corrupted log and 0.5.1 is not? If the log is corrupt, it should not be readable with any of the two bitcoin-qt versions.
+ 
+
+comment number: 3991957 
+body: I agree with Goonie, given the number of people who've run into this issue (including myself with both the testnet and mainnet Faucets) I suspect SOMETHING has changed.
+ 
+
+comment number: 3992016 
+body: Then its a legitimate bug and is being caused by something internal to bitcoin...
+ 
+
+comment number: 4606241 
+body: I'm going to use this comment to keep track of my investigations into this bug.  I'm running different versions of Bitcoin in a virtual machine, and seeing what version of BDB they write.
+
+Command to dump out the BDB version:
+
+```
+od -j12 -N8 -tx4 ~/.bitcoin/testnet/database/log.000*
+```
+
+gives:
+
+```
+0000014 00040988 0000000f
+# 0x040988 is the bdb magic number
+# 0x0f is the version
+```
+
+Results (last hex value on first line is the version):
+
+Bitcoin 0.3.24 : 0x0e     (db4.7)
+Bitcoin 0.4.0 :   0x0f      (db4.8)
+Bitcoin 0.5.3 : 0x0f
+Bitcoin 0.6.0rc1 : 0x0f
+Bitcoin 0.6.0rc4 : 0x0f
+
+BUT: If I compile and link on Ubuntu 11.10 64-bit VM:
+ : 0x10
+On my mac:
+ : 0x10
+... both of which are also bdb 4.8.  I'm confused; are there two versions of 4.8 with incompatible log file formats?
+ 
+
+comment number: 5015717 
+body: My original issue has been fixed in bitcoin-qt 0.6.0 (final).
+
+(I did not manually migrate/fix any databases)
+ 
+
+comment number: 5015855 
+body: Just out of curiosity, are you using the bitcoin PPA, too? If so, any upgrade that comes from the PPA will work but any downloads from sourceforge won't because of the version issue Gavin pointed out above.
+That would also mean that the issue isn't fixed at all, it just never was in bitcoin but rather in the incompatible BDB v4.8 versions.
+ 
+
+comment number: 5016075 
+body: @ancow Ah, that's true. I am using the Ubuntu PPA version.
+ 
+
+comment number: 5016865 
+body: If that's fixed you can close the issue :).
+ 
+
+comment number: 5017823 
+body: It's not fixed; it will happen with all non-PPA versions as soon as the PPA version is installed. IOW, it'll happen again for the next RC release.
+It just isn't really a bug in bitcoin...
+ 
+
+comment number: 5423849 
+body: Is this perhaps the same issue? http://bitcoin.stackexchange.com/questions/3533/error-loading-wallet-dat-wallet-corrupted
+
+Bitcoin 0.4.1 is able to work with everything in my `~/.bitcoin` dir. 0.5.4rc3 and 0.6.0 do _not_ work (both report `Error loading wallet.dat: Wallet corrupted`). Is there some way to safely "upgrade" my wallet (and other stuff in `~/.bitcoin`)? I figured this would happen automatically when upgrading bitcoin.
+ 
+
+comment number: 8619231 
+body: Bitcoin (0.6.3 on Ubuntu 12.04) should be able to deal with this error nicely and offer proper suggestions to the user.
+
+After removing database and .lock I get the foll0wing error:
+
+```
+$ bitcoin-qt 
+
+
+************************
+EXCEPTION: 11DbException       
+Db::open: Invalid argument       
+bitcoin in Runaway exception       
+
+bitcoin-qt: /usr/include/boost/thread/pthread/mutex.hpp:50: void boost::mutex::lock(): Assertion `!pthread_mutex_lock(&m)' failed.
+Aborted (core dumped)
+```
+
+What is the workaround for that?
+ 
+
+comment number: 27690166 
+body: Issue hasn't been touched for a year and BDB has been replaced apart from the wallet. Though LevelDB has its own, new issues, we can close this one.
+ 
+
+433. bug report number : ['797']
+comment number: 4248918 
+body: its because, bitcoin is unable to save the registry entry on your registry.. try with administrator rights.. should work.. 
+ 
+
+comment number: 4263487 
+body: Bitcoin doesnt use the registry to store the startup setting, it should be storing a lnk to bitcoin-qt.exe in your user's startup folder.
+Can you try with 0.6rc2?
+ 
+
+comment number: 7058359 
+body: I think this is pretty obsolete and can be closed!
+ 
+
+434. bug report number : ['794']
+comment number: 3791086 
+body: Does #766 fix it?
+ 
+
+comment number: 3791194 
+body: Haven't tried #766.  Test setup is:
+
+3 testnet-in-a-box nodes, with node 1 sending fuzzed transactions to 2.
+Node 3 is listening in and CPU mining.
+
+valgrind doesn't complain about uninitialized vars (you have to compile openssl and bdb specially to make valgrind not trip on them), and getmininginfo returns reasonable info at first.
+
+But it is reproducible, pooledtx goes wacky after a while.
+ 
+
+comment number: 3791285 
+body: My best guess is a missing-lock condition reading the variable from getmininginfo while the other thread is updating it. Does it go back to normal after the misread?
+ 
+
+comment number: 3791384 
+body: hashespersec should be zero, unless the internal reference miner is running.
+ 
+
+comment number: 3791743 
+body: I guess generate=true, but are all the blocks downloaded?
+ 
+
+comment number: 3885544 
+body: In the dup I just closed I noticed that the pooledtx went crazy around the same time as a new block was found.
+ 
+
+comment number: 3886177 
+body: The 'crazy' number 18446744073709551613 is in fact just -3 printed as an unsigned 64 bit int.
+
+The bug is caused by CTransaction::RemoveFromMemoryPool() doing --nPooledTx for every transaction in the newly found block whether or not it was in our memory pool or not.
+
+CBlock::SetBestChain does this:
+        // Delete redundant memory transactions
+        BOOST_FOREACH(CTransaction& tx, vtx)
+            tx.RemoveFromMemoryPool();
+
+and CTransaction::RemoveFromMemoryPool() doesn't check whether we have each transaction or not - it erase()s it anyway, and decrements the counter.
+ 
+
+comment number: 6032353 
+body: How often does it happen that it tried to remove a transaction that wasn't in the memory pool?
+ 
+
+comment number: 6032372 
+body: It doesn't.  My change comment was sloppy.
+ 
+
+comment number: 6032393 
+body: oh... what would have been the unsloppy comment?
+ 
+
+comment number: 6032608 
+body: "Only _attempt to_ remove transactions from memory pool when [...]" would be better.
+
+When a new block is found, the code was attempting to remove each of the transactions in the block from the memory pool of pending transactions.  This would quietly succeed, doing nothing, for transactions which weren't in the memory pool, but it was decrementing the pool size counter even if it didn't remove the transaction, leading to the pool size counter wrapping around to a huge value.
+
+So my change checks to see if each transaction is in the memory pool before attempting to remove it from the pool.
+ 
+
+comment number: 6032751 
+body: ah, thanks. now I understand. I guess this could be a location in the code where I could make a patch that restricts relaying blocks that are not including free transactions. I think it would be good to give this option to full node operators who aren't mining. So far various patches have been included that help raise mining fees. Such a patch would help to encourage miners to include free txs thereby lowering mining fees. I believe it should be down to the node operators to decide/vote on mining fees rather than the developers. I suspect that the value of bitcoin could be affected by such a change. Perhaps the more mining fees go up, the higher the value of a bitcoin increases too? If so, that would explain a motivation for the developers (who probably own substantial bitcoins) to see the mining fees increase.
+ 
+
+comment number: 6032857 
+body: This isn't the place to discuss the issue.
+
+I would suggest making a thread in the development board here: https://bitcointalk.org/index.php?board=6.0 to discuss it.
+
+[ But I doubt reducing mining fees from their currently very low level would have any impact on the value of bitcoins. A concern is that unless transaction fees increase to match the falling rewards for mining, many miners will stop mining, leaving the network more vulnerable to attack. ]
+ 
+
+435. bug report number : ['788']
+comment number: 3716431 
+body: Do you use any combination of the "minimize to taskbar" or "close to taskbar" options? If so, can you try without?
+ 
+
+comment number: 3716498 
+body: Yes, the problem exists if
+- both options are enabled
+- only "minimize to taskbar" is enabeld
+
+Any other combination does not trigger the issue
+ 
+
+comment number: 3716574 
+body: So we can conclude the issue is with "minimize to taskbar". 
+
+I've noticed before that in some cases, its behavior is problematic, due to the tight feedback loop between minimization and hiding/showing the window. See also #692.
+ 
+
+comment number: 3920843 
+body: Can you help test #826 and see if it fixes the issue?
+ 
+
+comment number: 4074044 
+body: I can live without the setting, since I have no taskbar when using xmonad :)
+But I have tested the latest build and if I enable "Minimize to tray" and close the windows I am unable to open the window again by clicking on the bc icon in the tray. But once again, I am happy without the option and bitcoin-qt runs fine atm under xmonad
+ 
+
+comment number: 4074091 
+body: If you want, please help testing #853. It should solve that problem...
+
+(though I'm not sure about how it will behave in xmonad. It is surprisingly difficult to get this to work for all OSes and window managers)
+ 
+
+436. bug report number : ['754']
+comment number: 3440818 
+body: https://bitcointalk.org/index.php?topic=54527.0
+ 
+
+comment number: 3474505 
+body: thanks for the link, there're at least 2 more threads dedicated to this since version 0.5 but you posted the newest one. I'm just not able to write the patch. I'm willing to test (p.ex. delete my testnet blockchain and download it again to see if the times are ok) and I opened an issue (as Gavin suggested as preferred method of reporting things). https://bitcointalk.org/index.php?topic=52008
+
+Opensource in the 1990s: "this is broken, here's a patch to fix it". 
+In the 2000s: "this is broken, you should fix it"
+ 
+
+comment number: 8847152 
+body: @luke-jr I suppose this can be solved with the new "smart times"?
+ 
+
+comment number: 8847202 
+body: Not really. An offline client can never know more than the time it was accepted into the block.
+ 
+
+comment number: 8847355 
+body: Then I suppose the most we can do is show all the times (ie, block time, first seen, etc) in the transaction details.
+ 
+
+437. bug report number : ['749']
+comment number: 3554563 
+body: Still broken as of 0.5.2
+ 
+
+comment number: 4159160 
+body: Cannot reproduce on OSX 10.6.8.
+
+There was a report of Bitcoin-Qt not working with some version of Growl, are you using the Growl desktop notifier?
+ 
+
+comment number: 4159259 
+body: On 24 February 2012 16:55, Gavin Andresen <
+reply@reply.github.com
+
+> wrote:
+> 
+> There was a report of Bitcoin-Qt not working with some version of Growl,
+> are you using the Growl desktop notifier?
+
+Yes, version 1.2.2
+ 
+
+comment number: 4173623 
+body: I've tried to shut down growl, but it didn't work anyway.
+ 
+
+comment number: 4565881 
+body: Is this still broken for you with 0.6rc4 ?
+ 
+
+comment number: 4894925 
+body:    07/01/12 17.59.25 [0x0-0x59059].com.yourcompany.Bitcoin-Qt[480] Break on THE_..._EXEC() to debug.
+
+Can you try this and see where it ends up?
+ 
+
+comment number: 4897018 
+body: Compiling an updated version from git, I'll let you know.
+ 
+
+comment number: 4897584 
+body: Trying to build I got a lengthy error at linking stage --> #1027
+ 
+
+comment number: 5148013 
+body: Does this still happen? 
+
+Did you manage to debug it?
+ 
+
+comment number: 5292025 
+body: Right, sorry.
+I'll build it and test it and let you know.
+Or is there a precompiled binary ready to be tested?
+ 
+
+comment number: 5293000 
+body: 0.6.0 final is already released.
+ 
+
+comment number: 5335602 
+body: Yeah, I confirm it works (though I guess you already knew that). Sorry for the late response!
+ 
+
+comment number: 5335651 
+body: You are able to close this ticket, and as it now works :) ...
+ 
+
+438. bug report number : ['747']
+comment number: 42775096 
+body: I thought I would take a look at some old bugs - this one being 2 years old now.
+
+To test this, I need to make a valid transaction with >20,000 sigops (MAX_BLOCK_SIGOPS).  Anyone got any pointers on how I could do that?
+ 
+
+comment number: 42775300 
+body: OP_CHECKMULTISIG can count as up to 20 sigops.
+ 
+
+comment number: 42775560 
+body: See #4150 by the way.
+ 
+
+comment number: 42775893 
+body: The code in that thread does appear to fix this exact issue.  The only difference is that it introduces a tighter limit of MAX_BLOCK_SIGOPS / 5 per tx.  If that one gets merged, I guess this should be closed off.
+ 
+
+comment number: 42777369 
+body: @ashleyholman You can test it with this: https://github.com/petertodd/tx-flood-attack The default settings make >20,000 sigops transactions.
+
+Be warned that my test program will likely take all your Bitcoins, cause your wife to leave you, and shoot your dog. (though your resulting country music career may be successful)
+ 
+
+comment number: 56797633 
+body: #4150 was merged, closing
+ 
+
+439. bug report number : ['742']
+comment number: 3355424 
+body: Ah, what do you mean with "1KB"? 1024 B? In this case, the correct unit is "1 KiB":
+
+http://en.wikipedia.org/wiki/Kibibyte
+
+Ciao!
+ 
+
+comment number: 3454456 
+body: No, it's per 1000. So kB would be right.
+
+However, remember that you need to change the message (at least the &lt;source> one) in _all_ the translations if you change English.
+ 
+
+comment number: 3634220 
+body: Despite SI, "KB" has traditionally been defined as 1024 bytes.
+ 
+
+comment number: 3817019 
+body: @tcatm do you know of an efficient way to update this in transifex, in one go?
+ 
+
+comment number: 3817120 
+body: I think you can tx pull, sed 's/KB/kB/', diff and tx push (tx is the tool to work with transifex).
+ 
+
+comment number: 3817142 
+body: Pay attention, there are 2 errors to be fixed:
+1) KB → kB
+2) the blank to be added between the number and the unit (e.g. "1 kB")
+ 
+
+comment number: 3920557 
+body: Fixed
+ 
+
+440. bug report number : ['725']
+comment number: 3263824 
+body: The bitcoin protocol only exchanges peer addresses as IPs, isn't it?
+
+Does it ever connect to a hostname instead of an IP? (only for seeding maybe?) If so, it indeed should do this directly through SOCKS, and not by first looking up the name using DNS, as this exposes the host name to anyone listening for DNS requests.
+
+Edit: DNS lookups _should_ be only used when `-dns` is passed (which sets `fAllowDNS`). In practice, it always does DNS lookups for showmyip.com etc when determining the external IP address, and when lookup up the IRC server (!) irc.lfnet.org.
+ 
+
+comment number: 3426157 
+body: This is half real half bogus, — the warning is generated because of the assumption that if the socks port is seeing IP addresses the client did its own DNS requests which have leaked out.  (e.g. lots of apps can be configured to use a proxy but still end up using the libc resolver and then deanonymizing data leaks out via DNS, tor can't see the leak but it can see connections to IPs instead of names)
+For the most part we don't use DNS— the exceptions being the stuff mentioned above and DNSSeed which can't be usefully done using tor's integrated dns (see the other issue I opened on dnsseed+tor). 
+We should make sure to use dns via tor for the things where we do dns and disable showmyip when using tor (dnsseed is now disabled already)
+Unfortunately that warning will remain, but after those things are fixed the warning will be completely bogus and I don't think there is anything we can do about that. :(
+ 
+
+441. bug report number : ['711']
+comment number: 3194035 
+body: Does this happen on a specific passphrase, or no matter what you enter?
+
+What platform?
+ 
+
+comment number: 3195590 
+body: I am on the MAC OSX 10.7.2 LION
+
+The passphrase seem to work if I create a new bitcoin folder in version 0.4/0.5
+
+Problem is the original dat file was created since early client 0.3
+
+Durning one of the migration to each version I was having a bug when I get a new transaction, the client would automatically generate a new bitcoin address by it's own (I believe it was client 0.4 before I input passphrase). This was fixed after I input passphrase.
+
+I still have the files from 0.4 after I input the passphrase, this seems to be the point where everything started.  I get the EXCEPTION error still when i load up the files.
+ 
+
+comment number: 3195691 
+body: Hmm, it seems you have one (or more) private key(s) that are somehow corrupted.  I would recommend moving any and all coins in the wallet to a fresh wallet.  If you can provide more info on when/how corruption might have happened and on exactly which versions, it would be appreciated.
+ 
+
+comment number: 3196409 
+body: My wallet file is encrypted is there anyway to decrypt the file so I can move out all my bitcoins?  I can't use the client since every time I enter in the right passphrase the client crashes.
+ 
+
+comment number: 3196436 
+body: Ah, well now thats a problem...do you not have a wallet file backup?
+ 
+
+comment number: 3196484 
+body: I've looked a bit at the source, and it seems this error is thrown when your wallet contains an invalid secret key. It discovers this only after you enter the passphrase as the secret keys are encrypted.
+
+As BlueMatt says, this is probably a result of wallet corruption. Fixing this issue will require a special-purpose script, or (easier) restoring a backup...
+ 
+
+comment number: 3196595 
+body: I really wish I had a backup pre-passphrase wallet.dat file.  It didn't dawn on me till I tried to use some of the coins.  I really want to recover those coins since it took me like 7 months of work on a slow machine.
+ 
+
+comment number: 3196653 
+body: I'll see if I can write a branch to work around that error sometime in the next couple days if I have time
+ 
+
+comment number: 3196739 
+body: I appreciate all the help I can get.  I did a google search for my error and it seems like there was one other instance of the same error.
+
+I would donate to the cause, but I would need to wait till I can get some BT on my new wallet file.
+ 
+
+comment number: 3196759 
+body: Heh, well I havent looked at that particular code in a while, but (IIRC) it shouldnt be too hard to just ignore the error and keep loading the wallet to avoid the client crashing so you can get some of your coins back...
+ 
+
+comment number: 3262423 
+body: I think "ignoring the error" isn't good enough.  If my wallet is corrupt, then I really want to know about it; maybe my hard disk is going bad and it is time to buy a new machine.
+
+But just throwing an uncaught exception as bitcoin does now is definitely the WRONG thing to do. Lets brainstorm a little on the best way to fix it:
+
+First, it seems to me telling the user should be told that their wallet file is corrupted.
+Then maybe: give the user a choice: exit Bitcoin (they can restore from a good backup), or try to recover.
+
+I'd like to see a "Try to Recover" that took a "first, do no harm" approach and did something like:
+- Closed/renamed the existing wallet.dat
+- Rewrote a new wallet.dat, skipping all 'tx' records and any un-serializable or un-decryptable records
+- Re-scanned to recreate transaction history
+- Gave the user a report on whether or not any keys could not be recovered
+
+... although maybe all that would be better implemented as a separate tool or "re-run bitcoin with the -fixwallet switch."
+
+For a quick-and-dirty fix for yellowcoin, maybe a pair of new command-line args:   -fixwallet=fixedwallet.dat -walletpassphrase=foo  ... that did a read/unencrypt/re-encrypt/write and skipped anything that didn't unserialize or decrypt properly...
+
+And "we" should generate some nicely corrupted testnet-in-a-box wallets to make sure it works...  (bitcointools should be handy for that).
+ 
+
+comment number: 3262532 
+body: Yes, switching from "fatal errors" to "ignore errors" is not a good thing. I think BlueMatt was only proposing to do that as a fixup for yellowcoin's specific case.
+
+The first step for proper error handling would be to restore the dialog box when a fatal exception occurs, instead of silently exiting to the console (so catch uncaught exceptions, maybe log them somewhere as well).
+
+A full recovery function would be even better, but is also more work (and very hard to test).
+ 
+
+comment number: 3265494 
+body: @laanwj exactly, I was proposing writing a patch specific to this case, not modifying bitcoin to ignore errors in general.
+ 
+
+comment number: 3266500 
+body: I like the idea of the -fixwallet switch.  Sometime things happen and you never know if you had backed up a corrupt file when the program itself works fine with it.  If I ever get my coins out of the wallet I can send you guys the corrupt wallet.dat file so you can check out what's going on with it.
+
+btw is there a general BTC address I can send some coins to support all the help?
+
+Thanks!!
+ 
+
+comment number: 3266537 
+body: Try building off master + this commit:
+https://github.com/TheBlueMatt/bitcoin/commit/06dee4caf1410181b2f6097b5b3311300659c185
+it is absolutely not for use, but if you have coins on the right keys, you might be able to send them to a new wallet (no guarantees it wont crash on send).
+Sorry, I dont have an osx box to build a binary for you.
+ 
+
+comment number: 3266540 
+body: There is no address for supporting all the developers, though most of them have addresses in their forum sigs (gavin asks that people donate to the faucet instead, which is always a good idea to help new people try bitcoin - freebitcoins.appspot.com )
+ 
+
+comment number: 3266558 
+body: i am using mac osx...how do I compile the file with the added code???  I quit programming since college lol
+
+(edit)
+I can switch to windows if anything....
+I assume I copy the QT folder from the branch and compile the main.cpp file with the added code?
+ 
+
+comment number: 3266580 
+body: If you are setup to build on osx (doc/build-osx.txt might help if you arent) you can grab a zip of that revision at https://github.com/TheBlueMatt/bitcoin/zipball/06dee4caf1410181b2f6097b5b3311300659c185 which you can build from, otherwise you'll have to find someone to build for you (maybe gavin would be willing to when hes back around after the holidays)
+ 
+
+comment number: 3266587 
+body: Thank's i'll give it a try... After many years I end up programming again haha
+ 
+
+comment number: 3266599 
+body: If its easier, I can whip up a windows or linux build, I just dont have a mac conveniently available atm...
+ 
+
+comment number: 3266610 
+body: if you can do windows that'll be great!!  Otherwise i will have to wait for xcode for the mac to finish downloading.  1.7gig download is going to take a while.
+ 
+
+comment number: 3266630 
+body: When the build at http://jenkins.bluematt.me/job/Bitcoin-Testing-Build/16/console is done, you should be able to grab the modified bitcoin-qt.exe at http://jenkins.bluematt.me/job/Bitcoin-Testing-Build/ws/
+ 
+
+comment number: 3266668 
+body: Oh, and dont dare sending any amount less than the full wallet balance while using this modified version, it might mean your coins go to an address which people actively watch and swipe coins form when they appear (privkey 00000....)
+ 
+
+comment number: 3266762 
+body: ok so I tried running the program with the modified exe.  I tried entering the password and it's telling me it's wrong.  I am sure I used the same one that crashes the program before.
+
+Also notice the file size is different from the release version.  About 273kb smaller then original build.... is that normal??  I would think the file would be bigger since you added a few lines.
+ 
+
+comment number: 3266783 
+body: Oops, missed that, new version uploaded, just wait for its build.
+Filesize: meh, its being built with a different set of libs on a different machine filesize is gonna change, the build is fine.
+ 
+
+comment number: 3266789 
+body: http://jenkins.bluematt.me/job/Bitcoin-Testing-Build/17/console
+ 
+
+comment number: 3266918 
+body: ok so now it sort of works.  New error: Transaction creation failed
+
+Happens after i hit the sent button.
+ 
+
+comment number: 3266942 
+body: Thought so, maybe try (after backing up the wallet) stripping transactions see https://bitcointalk.org/index.php?topic=11331.0 and opening bitcoin (the modified version) with -rescan.
+ 
+
+comment number: 3270061 
+body: Oh, actually that rescan wont work...well Im not sure how it could be easily done...might be easier to at least check how corrupted the wallet is first, Ill whip something up after a couple days...
+ 
+
+comment number: 3272082 
+body: Hey thanks again!  I went a head and mess around with the revision fixwallet.py you posted on the last site you directed me to.
+
+With the unmodified version of bitcointools i can see pubkey ..... encrypted ....prikey.....
+With the modified version I get [Skipping item of type ckey](the ones with the --notxes and additional switches)
+
+This makes me think that I would need to first remove the decryption from the wallet file in order to send out my coins.  The unmodified version of the bitcointools seem to see the wallet just fine.  I think it's just the matter of using the password I have and decrypt it back to a non-passphrase state.
+
+Worse case scenario, i'll just have to send you my wallet file.
+ 
+
+442. bug report number : ['703']
+comment number: 6219984 
+body: Can you check with current 0.6.2 and close th issue if this is fixed.
+ 
+
+comment number: 6220117 
+body: 0.6.2: not fixed
+ 
+
+comment number: 6220207 
+body: Tried it with 0.6.2 and you are right, same behaviour here.
+
+My own build (using Qt 4.8.1) does not suffer from this. So it could be a Qt bug or it's fixed in current master.
+ 
+
+comment number: 6510383 
+body: Still present with 0.6.3.RC1.
+ 
+
+comment number: 8800123 
+body: Still present with 0.7 (Qt 4.7.4 based)!
+@laanwj What is your opinion on switching to Qt 4.8.2 (which is what the pull tester is using)?
+ 
+
+comment number: 8800192 
+body: No problem with that.
+ 
+
+comment number: 9068132 
+body: @Vort Can you please test, if switching to Qt 4.8.2 fixed this problem for you?
+
+You can download a bitcoin-qt.exe based on Qt 4.8.2 here:
+http://jenkins.bluematt.me/pull-tester/26809acbf9d62480375dd8c1875e8bd7faa1d75e/bitcoin/
+
+It was build by our pull tester bot, you can try with a new wallet, if you don't want to use your live wallet :).
+ 
+
+comment number: 9102169 
+body: bitcoin-qt.exe 7a4d5e122c6a3a0ed37b55a007272352
+Works fine!
+ 
+
+comment number: 9102196 
+body: @Vort Thanks for reporting back, you can then close the issue :).
+ 
+
+443. bug report number : ['702']
+comment number: 3177688 
+body: The message is printed to stderr. Does windows allow console output for UI programs at all? 
+
+It has always been my experience that windows UI programs detach from the terminal as soon as they're executed, and that they show a window with the help message.
+
+Maybe we should to that too.
+ 
+
+comment number: 3178102 
+body: hmm...
+
+> bitcoin-qt.exe --help 2> help.txt
+
+works well
+
+but I think window with help text is needed anyway
+ 
+
+comment number: 3178961 
+body: Windows UI programs dont choose to detach from the console, but the console detaches them if it sees the UI flag set in the PE binary.  bitcoin-wx di show the --help output in a dialog window, so the basic code in AppInit2 (IIRC) should be able to easily support it.
+ 
+
+comment number: 4024574 
+body: Fixed in pull request #857
+ 
+

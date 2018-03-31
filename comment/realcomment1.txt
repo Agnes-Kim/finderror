@@ -1,0 +1,2942 @@
+0. bug report number : ['12366']
+comment number: 363539411 
+body: ok, renamed the variable and added a commit to remove WaitExit() 
+
+comment number: 363539750 
+body: I can confirm that I'm not able to reproduce the error when running with commit f94665466ed50e868c98b1a1c708ad5767727bb6. 
+
+comment number: 363644138 
+body: utACK f94665466ed50e868c98b1a1c708ad5767727bb6. This is easier to read as well. 
+
+comment number: 363923140 
+body: Nice cleanup!
+utACK https://github.com/bitcoin/bitcoin/pull/12366/commits/11e01515fe0fbc7823d4111ad6e016a02c485a78 
+
+comment number: 364030538 
+body: > Nice cleanup!
+
+FWIW I wrote HTTPWorkQueue with the idea that it could likely be replaced with a 1-liner after c++11, I think there's scope for more code removal. Out of scope for a 0.16.0 fix ofc. 
+
+1. bug report number : ['11745']
+comment number: 346134352 
+body: This looks like a bug. 
+
+comment number: 347825912 
+body: Fixed by #11747 
+
+2. bug report number : ['11327']
+comment number: 329553668 
+body: Indeed, more of a bug in the detection code than anything given they're all duplicate locks, though maybe better to take #10286 than fix it, since I know some folks want to start pushing towards not using recursive locks. 
+
+comment number: 359993106 
+body: Presumably fixed by #11126 
+
+3. bug report number : ['11262']
+comment number: 327762237 
+body: Looks to be related to https://github.com/bitcoin/bitcoin/issues/9683 and https://github.com/bitcoin/bitcoin/issues/9883, because they're also a segfault in QTableView::setSortingEnabled() from libQt5Widgets 
+
+comment number: 327850255 
+body: @mputter: I guess you don't get the segfault with https://bitcoin.org/bin/bitcoin-core-0.15.0/test.rc3/?
+Would you mind compile it with Qt5.7 and test again? 
+
+comment number: 328270029 
+body: I had, too, segfault with 0.15.0-rc3 in Qt5Widgets (Qt 5.9.1 on OpenSUSE Tumbleweed), though in `QAbstractButton::setChecked`. GDB pointed to line 131 of sendcoinsdialog.cpp. I was able to prevent the crashes by adding `ui->groupCustomFee->setId(ui->checkBoxMinimumFee, 1);` between lines 130 and 131 in file sendcoinsdialog.cpp, though I am not sure what it would do. To make it funny even more, it was also enough to update OpenSUSE's build of libQt5Widgets from 5.9.1-2.1 to 5.9.1-5.1 via the package manager. That, too, made the previously faulty binaries miraculously work again. 
+
+comment number: 328270743 
+body: @albandil that sounds like a different issue (only related by the fact they both cause segfaults), would you mind opening another Issue for it? 
+
+comment number: 329594950 
+body: Probably fixed by #11332 
+
+comment number: 330814559 
+body: I compiled v0.15.0.1 and bitcoin-qt is starting smoothly without issues. No segmentation fault. Consider it solved. 
+
+4. bug report number : ['11114']
+comment number: 324573769 
+body: Reason that this is priority low is that there is no sensible reason to add a script to itself.
+
+It would be good to avoid this potential pitfall, though, either by compile time / runtime assertion to make it impossible or by making it work as expected (and adding it to the tests). 
+
+comment number: 324922544 
+body: Nice find @guidovranken. Keep on fuzzing! 
+
+comment number: 328478239 
+body: Out of scope but have you checked other cases where this can happen? There are some `T& operator+=(const T&)` around and other operators too. 
+
+comment number: 328502527 
+body: @promag 
+
+```
+$ git grep -A5 -E '&.*operator\+=.*&' | grep -3 insert
+--
+src/script/script.h:    CScript& operator+=(const CScript& b)
+src/script/script.h-    {
+src/script/script.h-        insert(end(), b.begin(), b.end());
+src/script/script.h-        return *this;
+src/script/script.h-    }
+src/script/script.h-
+--
+src/streams.h:    CDataStream& operator+=(const CDataStream& b)
+src/streams.h-    {
+src/streams.h-        vch.insert(vch.end(), b.begin(), b.end());
+src/streams.h-        return *this;
+src/streams.h-    }
+src/streams.h-
+``` 
+
+comment number: 334920847 
+body: Fixed in #11114. 
+
+5. bug report number : ['11106']
+6. bug report number : ['11041']
+comment number: 322155803 
+body: Concept ACK 
+
+comment number: 322210067 
+body: This may make #10692 a bit simpler, though I'm not sure it matters what order they come in. 
+
+comment number: 322503789 
+body: Fixed bug and rebased. 
+
+comment number: 324052747 
+body: @laanwj I believe it's ready. 
+
+comment number: 324069155 
+body: Concept ACK 
+
+comment number: 324939734 
+body: Rebased and fixed @MeshCollider comment. 
+
+comment number: 341482401 
+body: Thanks @ryanofsky, I have to rebase and then I'll take into account your comment above. 
+
+comment number: 349811860 
+body: This needs rebase. I can do it and adapt the new code if there is interest in merging it quick.
+
+Maybe it should also make `BlockMap mapBlockIndex` static?
+
+cc @MarcoFalke @laanwj 
+
+comment number: 351089901 
+body: Concept ACK. Would like to see this rebased sooner rather than later. 
+
+comment number: 351429645 
+body: Forgot to tackle @ryanofsky [comment](https://github.com/bitcoin/bitcoin/pull/11041#discussion_r148586107) above.. 
+
+comment number: 351488544 
+body: travis failure:
+
+```
+Assertion failed: lock cs_main not held in ./validation.h:433; locks held:
+
+``` 
+
+comment number: 351685379 
+body: > I think it would be preferable to use const CBlockIndex* where it's possible
+
+Agree.
+
+> There are some cs_main locking changes; can you please explain them? Were locks missing there before, making this a bugfix as well as refactor?
+
+Yes, for instance `FindForkInGlobalIndex`.
+
+I'll check if adding annotations helps identifying more missing locks. I'll update accordingly. 
+
+comment number: 351750863 
+body: re: const CBlockIndex (and associated things): see #10692. 
+
+comment number: 357714509 
+body: > Again, please do not use LookupBlockIndex here (and a few other places).
+
+As requested, last commit reverts changes to `CChainState`. Please review. 
+
+comment number: 363243529 
+body: Thanks @ryanofsky. 
+
+comment number: 370899472 
+body: Rebased.
+
+@kallewoof why drop `const` qualifier? 
+
+comment number: 370903133 
+body: @promag Sorry, I only meant "move the `*`" 
+
+comment number: 370906413 
+body: @kallewoof no problem, done. 
+
+comment number: 370907962 
+body: utACK 92fabcd 
+
+comment number: 372468972 
+body: utACK 92fabcd443322dcfdf2b3477515fae79e8647d86. No changes since last review except rebase and squash.
+ 
+
+7. bug report number : ['11027']
+comment number: 321798704 
+body: ACK 
+
+comment number: 321810304 
+body: utACK e029c6e, as this is a bug fix. Though, could this potentially break client when `-rpcserialversion=0`? I am thinking about how different json implementations handle duplicate keys in a dict, where each key points to a different value. 
+
+comment number: 321892253 
+body: @MarcoFalke Hmm. That might be a problem since `RPCSerializationFlags` are not passed to `EncodeHexTx` in `TxToUniv`. 
+
+comment number: 321893521 
+body: > That might be a problem since `RPCSerializationFlags` are not passed to `EncodeHexTx` in `TxToUniv`.
+
+That seems to be a bug on its own. 
+
+comment number: 321894569 
+body: Another thing is that not everything that uses `TxToUniv` needs to have hex output, e.g. `decoderawtransaction` 
+
+comment number: 321897893 
+body: I added a commit which passes the `RPCSerializationFlags` to `TxToUniv` and a boolean for whether to give `hex` output or not. 
+
+comment number: 321944342 
+body: > That seems to be a bug on its own.
+
+I don't think so?
+
+According to the doc, `-rpcserialversion` sets the serialization of raw transaction or block hex returned in        **non-verbose** mode. 
+
+comment number: 321945098 
+body: @MarcoFalke I interpret that as talking about when verbose mode means that you wouldn't get the hex back, e.g. in `getblock`. If we are returning hex, then I think we should be consistent and all hex should follow whatever the `RPCSerializationFlags` are. 
+
+comment number: 323138033 
+body: Strictly speaking, I don't think this is invalid JSON, although client behaviour is undefined if object names are not unique (https://tools.ietf.org/html/rfc7159#section-4). But yes, this is a regression in 0.15 and should be treated as a bug fix.
+
+Perhaps we should add JSON object checking to rpcserver.cpp (in `JSONRPCExecOne()`) and/or authproxy.py (in `__call__()`) to verify the validity of our returned JSON. 
+
+comment number: 323141796 
+body: Concept ACK
+
+> Another thing is that not everything that uses TxToUniv needs to have hex output, e.g. decoderawtransaction
+I added a commit which passes ... a boolean for whether to give hex output or not.
+
+I don't think you should complicate the interface to `TxToUniv` to specify which fields to return. Either filter them out at the caller, or just return the hex in `decoderawtransaction`. Is there any harm in returning the hex in that RPC? 
+
+comment number: 323146751 
+body: Swapped the arguments.
+
+>  Either filter them out at the caller
+
+I looked at that but I couldn't find anything in Univalue for removing things from it.
+
+> or just return the hex in `decoderawtransaction`. Is there any harm in returning the hex in that RPC?
+
+Since you are already providing it the hex, it's not useful to be giving the hex back out to the user. 
+
+comment number: 323188236 
+body: utACK e029c6e
+
+> There are only 2 more calls to TxToUniv so I wonder if it pays to have default arguments.
+
++1
+ 
+
+comment number: 323215814 
+body: Wild option 🙄:
+```
+void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry);
+void TxToUnivWithHex(const CTransaction& tx, const uint256& hashBlock, int serialize_flags, UniValue& entry);
+``` 
+
+comment number: 323659189 
+body: > Since you are already providing it the hex, it's not useful to be giving the hex back out to the user.
+
+I was also really surprised to see the hex being echoed back in `decoderawtransaction` output. That's just a waste of bandwidth especially for large transactions.
+
+>  Either filter them out at the caller
+
+No, don't do this. univalue objects aren't meant to be written to/processed after initial generation. The library is not optimized for that. If you need any kind of editing use an intermedaite data structure (which makes no sense from 'XXXToJSON` functions). Specifying which fields to include looks like exactly the right way here. 
+
+8. bug report number : ['10924']
+comment number: 318530592 
+body: A short update (thanks @NicolasDorier): there is no CTxDestination for native witness outputs, which means any `importaddress` is unable to mark the importer scriptPubKey as anything but change. This leads to inconsistent `gettransaction`/`listtransactions` output.
+
+There are 2 solutions here:
+* make `importaddress` fail to import addresses with no `CTxDestination` (or warn at least)
+* Add BIP173 support
+ 
+
+comment number: 318532106 
+body: Actually, (1) is already warned about in the `importaddress` RPC help text. 
+
+comment number: 318686019 
+body: my attempt to fix the issue, https://github.com/bitcoin/bitcoin/pull/10947 it would need to have bech32 support though. 
+
+comment number: 319999718 
+body: Should #10947 be tagged for 0.15, or should this be untagged? 
+
+comment number: 320172753 
+body: Should not be tagged for 0.15. I think the best is to wait next version, non obvious code change. 
+
+comment number: 320178741 
+body: Cleared milestone 0.15. 
+
+comment number: 334375085 
+body: Closing as this was solved by #11167  
+
+9. bug report number : ['10919']
+comment number: 318425461 
+body: utACK 818bb29
+
+Similar to #10758, I think its hard to reason about all the possible edge cases here, but this is a step in the right direction and I think on balance better code than not having it.
+
+ 
+
+comment number: 319496065 
+body: Rebased and addressed some of the comments from @sdaftuar at #10758. 
+
+comment number: 320048151 
+body: I'm not sure of the first commit:
+efac91e65 `Always wait for threadGroup to exit in bitcoind shutdown`
+
+but utACK for the rest. 
+
+comment number: 320585493 
+body: utACK e7539f8 
+
+10. bug report number : ['10885']
+comment number: 317010599 
+body: #10604 has been merged. Suggest ~you rebase on master and~ add something like the following to multiwallet.py as a functional test:
+
+```
+@@ -15,7 +15,8 @@ class MultiWalletTest(BitcoinTestFramework):
+         super().__init__()
+         self.setup_clean_chain = True
+         self.num_nodes = 1
+-        self.extra_args = [['-wallet=w1', '-wallet=w2', '-wallet=w3']]
++        # bitcoind should ignore duplicate wallets in config
++        self.extra_args = [['-wallet=w1', '-wallet=w2', '-wallet=w3', '-wallet=w2']]
+ 
+     def run_test(self):
+         w1 = self.nodes[0] / "wallet/w1"
+@@ -41,7 +42,7 @@ class MultiWalletTest(BitcoinTestFramework):
+         w3_name = w3.getwalletinfo()['walletname']
+         assert_equal(w3_name, "w3")
+ 
+-        assert_equal({"w1", "w2", "w3"}, {w1_name, w2_name, w3_name})
++        assert_equal(self.nodes[0].listwallets(), ["w1", "w2", "w3"])
+ 
+         w1.generate(101)
+         assert_equal(w1.getbalance(), 100)
+``` 
+
+comment number: 317021474 
+body: @jnewbery thanks for the tip, it's in 7605a8d. @instagibbs added the missing comment in 8cf06d7. 
+
+comment number: 317028552 
+body: Looks good @promag . I've added one nitty comment. utACK either way. 
+
+comment number: 317121885 
+body: @jnewbery added missing comment to `GetArgs` too. 
+
+comment number: 317143484 
+body: please correct me if I'm wrong. As far as I can tell, since this only prevents specifying the same *filename* multiple times, it still doesn't prevent you from loading the same *file* twice. You just have to use different names/paths to refer to it:
+
+``--wallet=w1 --wallet=../wallets/w1`` (assuming we're in a directory called ``wallets``)
+
+One could also use hard- or soft links to give a single wallet multiple names. 
+
+comment number: 317163450 
+body: @arvidn I'll test. Thanks! 
+
+comment number: 317342746 
+body: I'm updating to take into account @arvidn review. 
+
+comment number: 317576490 
+body: After @arvidn observation, I took a different approach. In order to correctly detect duplicate wallets I'm using `boost:filesystem::equivalent` in `bool CWallet::Verify()`. This means that if a wallet is duplicate then an initialization error is raised.
+
+@jnewbery removed the functional test because the app now quits with an error, AFAIK we don't test these? 
+
+comment number: 317577087 
+body: @arvidn there is already a `-wallet` validation to prevent relative paths. However the initial approach failed with symlinks. Thanks for the feedback. 
+
+comment number: 317612149 
+body: utACK b1b4e8ac1687fac1dd275b7bab2c45eb879be30d 
+
+comment number: 317883603 
+body: This approach seems pretty fragile, but maybe it's the simplest safeguard we can implement right now. I'd think ideally bitcoin would try to acquire an exclusive write lock on a wallet database file while opening it, and just not open files that can't be locked. 
+
+comment number: 317962248 
+body: > This approach seems pretty fragile, but maybe it's the simplest safeguard we can implement right now. I'd think ideally bitcoin would try to acquire an exclusive write lock on a wallet database file while opening it, and just not open files that can't be locked.
+
+Right, ideally it's something that would be handled at the database layer, in the same way it's avoided that multiple applications open the wallet at once. It's unfortunate that BerkeleyDB itself doesn't provide protection against opening a database multiple times.
+
+Anyhow it's better to have some check in place, so concept ACK.
+ 
+
+comment number: 317966522 
+body: At this point there's no file opening, it's a configuration error. Like you said it's a runtime error. Both make sense for me. 
+
+comment number: 317981438 
+body: > the app now quits with an error, AFAIK we don't test these?
+
+We have a way of testing this: if you're expecting bitcoind to fail on startup, take a look at `assert_start_raises_init_error()`. If you're expecting bitcoind to startup successfully and then exit, look at the new test in #10882 : https://github.com/bitcoin/bitcoin/pull/10882/commits/ec59b2eaaccd4d42d98345e9719265f102494e46#diff-8d6207d4df9ed2a74441a199714a612aR92 
+
+comment number: 318038067 
+body: @jnewbery thanks, will add the missing tests.
+
+The current approach is to raise an error when a wallet absolute path:
+ - exists and it's not a regular file or a symlink, or (@sipa FYI)
+ - does not exists and it's a duplicate (@TheBlueMatt FYI). 
+
+comment number: 318221540 
+body: @jnewbery tests added, thank you.
+
+Splitted in two commits: the first tests for duplicate arguments while the second tests for invalid files (must be regular file and not a symlink). 
+
+comment number: 318478956 
+body: utACK. Would be nice to print the wallet which generated the error as @jnewbery suggested, but ready for merge either way. 
+
+comment number: 318522035 
+body: Yep - as Matt says, ready for merge with or without the error message improvement. Can always be added later. 
+
+comment number: 318614115 
+body: Suggested change to error messages here: https://github.com/jnewbery/bitcoin/tree/pr10885 . Feel free to cherry-pick or squash in. Or else I can open a PR after this is merged. 
+
+comment number: 318616640 
+body: Thanks @jnewbery, if you don't mind I'll squash.
+
+EDIT: Actually since you fixed the other error messages I'll leave it as is. 
+
+comment number: 329715523 
+body: I know it's a bit late for this, but on upgrading to v0.15, this is a bit of a showstopper for me.
+
+I have the wallet.dat file as a symlink to another partition. The reasons for this are not entirely crazy:
+
+- The other partition is block encrypted and I have encryption at rest.
+- The other partition is on a SSD which has great I/O, but is limited in space.
+
+Checking for the wallet being a symlink stops me from being able to do this, and I can't specify the full path on the -wallet command line argument as that only supports files in the datadir, not full paths.
+
+I don't think there's a neat solution to my problem, but I've discussed a few on #bitcoin-dev anyway.
+
+1. "You could put everything on the SSD" - it uses up too much space.
+2. "You could use wallet encryption" - yes, but it can't then be on the SSD. Being on the SSD is great as there's quite a bit of I/O on the wallet and this speeds things up considerably.
+3. "You could move the datadir to the SSD and symlink everything else out of there (especially blocks, chainstate and debug.log)" - yes, but yuck. That just feels a bit wrong, since I want to just move the one file.
+
+I will live with option 3 if I need to, but was wondering if the symlink check is a bit of an overkill safety check here. Is it really likely the user will specify a -wallet argument for the real wallet, and another for a symlink to that real wallet? 
+
+comment number: 329717802 
+body: @bittylicious I understand this sounds like an unnecessary measure, but perhaps it is a bit more complicated than you realize. Effectively, the wallet is not just a single file, but a whole directory. Bitcoin Core will clean up all other files before shutdown, but in case of a crash, other files in the directory are needed for recovery. Symlinks may break these assumptions - making it look like a wallet file could be shared across datadirs, for example.
+
+I think the correct approach for the issue you have is an ability to specify a wallet datadir, separate from the node's datadir. 
+
+comment number: 329720057 
+body: @sipa Thanks for the response. I appreciate what you're saying and there's a reliance between the wallet and other files in the datadir.
+
+I think what I'm saying is that if you're messing around with symlinks, you're probably technical enough to know what you're doing, so having artificial restrictions like the symlink check probably won't result in much real safety. Having to find a workaround in this case is probably more risky.
+
+Re: wallet datadir, I'm not sure how that could work given dependencies between that and the regular datadir, or do you mean that it would essentially work as a flag to say "I really do know what I'm doing"? 
+
+comment number: 329720971 
+body: There are no dependencies between the wallet and the rest of the datadir, in either direction. 
+
+comment number: 329723208 
+body: Sorry, I meant wallet.dat dependencies (those that make up the full wallet during runtime). 
+
+comment number: 329725990 
+body: Having discussed this a bit more on #bitcoin-dev I see what you're saying - the wallet should really be in its own directory as a BDB database expects this, hence the suggestion for a -walletdir argument. 
+
+11. bug report number : ['10832']
+comment number: 315522556 
+body: > utACK although you could refactor braces onto same line as if-statements in baseInitialize (or is it better not to mix refactor with changes?)
+
+Could do that, but I'd prefer to not increase the scope of this to code style enforcement (of existing code). I just want to fix this issue. 
+
+comment number: 315541590 
+body: utACK d4c027dd4acb77d2c5ee38ae883110abc3796d52, thanks. (modulo not sure I know enough about the Qt init process to say this is definitely right). 
+
+comment number: 315747871 
+body: Squashed ceec6cb 26fa3fc d4c027d → dba485d65168794d8be39bd5e8de8777e7085434. 
+
+12. bug report number : ['10818']
+comment number: 315208268 
+body: This seems right to me and it solved the problem, but I'm not confident enough in understanding startup/shutdown to actually give it an ACK.
+
+Thanks!
+ 
+
+comment number: 315228236 
+body: utACK https://github.com/bitcoin/bitcoin/commit/73b6b4e7c0a450bb88074a7d59a9237b4703302b 
+
+comment number: 315300046 
+body: utACK 73b6b4e7c0a450bb88074a7d59a9237b4703302b 
+
+comment number: 315431213 
+body: utACK 73b6b4e7c0a450bb88074a7d59a9237b4703302b 
+
+comment number: 315483601 
+body: Why not just make AppInitSanityCheck actually take the lock instead of just probing? It seems strange to call the entire shutdown sequence instead when literally none of it is needed when we already have a framework for skipping it (ala if AppinitSanityCheck fails, except for GUI, which really should be fixed in GUI, not by adding a boolean). 
+
+comment number: 315491817 
+body: @TheBlueMatt I'm confused how that would help here. 
+
+comment number: 315492849 
+body: My point is that this is (effecitlvely) not a problem in bitcoind. The issue in bitcoin-qt is that it calls Shutdown() where it should not (and bitcoind does not). If we want to separately fix the race that is also present in bitcoind, we should stop doing this strange LockDataDirectory(true)...one function return/call later...LockDataDirectory(false) thing. 
+
+comment number: 315518308 
+body: >  when we already have a framework for skipping it (ala if AppinitSanityCheck fails, except for GUI, which really should be fixed in GUI, not by adding a boolean).
+
+The point, which I explain in https://github.com/bitcoin/bitcoin/issues/10815#issuecomment-315170581, is that that mechanism *ALSO* doesn't work for bitcoind.
+
+> If we want to separately fix the race that is also present in bitcoind, we should stop doing this strange LockDataDirectory(true)...one function return/call later...LockDataDirectory(false) thing.
+
+The point of that 'strange sequence' is to be able to give a proper error in the case of `-daemon`.
+If you take the data directory lock before forking, bad things happen. If you only take it after the fork, it's impossible to print an error to the standard output as that has been detached. That's why the probing is done.
+
+Do you mean calling LockDataDirectory in a separate initialization step after daemonizing? That could work, though as it is already so easy to introduce bugs like this I thought it was more robust to add a flag. 
+
+comment number: 315520298 
+body: Closign in favor of #10832 
+
+13. bug report number : ['10758']
+comment number: 313552143 
+body: Note that the two generic "Error initializing block database" strings really should be changed, but as we are already in string freeze for 0.15, they will have to stay as-is for now :(. 
+
+comment number: 313563496 
+body: More explicitly fixed the bug that I accidentally fixed by being more explicit - RewindBlockIndex MUST be called even if we start with -reindex-chainstate. 
+
+comment number: 314181608 
+body: This needs an 0.15 tag as it fixes some bugs. 
+
+comment number: 315571715 
+body: Rebased and added a fix for the issue @sipa pointed out at https://github.com/bitcoin/bitcoin/pull/10770#issuecomment-315558931 
+
+comment number: 315576849 
+body: @TheBlueMatt When starting with `-reindex`, and then restart before completing without `-reindex`, it seems to start over from scratch. 
+
+comment number: 315669990 
+body: ACK 
+
+@TheBlueMatt I retract my comment, everything seems to be working like before.
+ 
+
+comment number: 315828971 
+body: I'd like to see this in 0.15 as it at least turns an assert into an error message, in case your chainstate is out of sync with the block chain. 
+
+comment number: 315829317 
+body: This (or some subset of it) absolutely has to land for 15, it fixes several regressions currently on master, but its a bugfix, so doesn't need to land today (but isnt small, so should go sooner rather than later). 
+
+comment number: 316470855 
+body: I haven't finished reviewing, but this also fixes a crash when using an invalid -wallet argument. For example: ```./bitcoind -wallet='with spaces'```, which crashes for me on master. 
+
+comment number: 316791726 
+body: utACK c93db42
+
+Strongly advocate for merging this in the near term.
+Although I have not gone through testing all sequences, I think this logic is far clearer and more straight forward than the existing logic and there are known bugs in the existing startup sequence.
+With all the other changes to databases recently (rewinding, replaying, reindexing), I think it makes sense to have as much testing as possible with this new code rather than waste our time potentially finding more bugs with the old logic.
+ 
+
+comment number: 317041663 
+body: In current master running `bitcoind -regtest '-wallet=foo%.dat'` gives:
+```
+./src/bitcoind -regtest '-wallet=foo%.dat'
+Error: Invalid characters in -wallet filename
+Segmentation fault (core dumped)
+```
+With this branch gives
+```
+Error: Invalid characters in -wallet filename
+bitcoind: scheduler.cpp:200: void SingleThreadedSchedulerClient::EmptyQueue(): Assertion `!m_pscheduler->AreThreadsServicingQueue()' failed.
+Aborted (core dumped)
+```
+Reporting this here because of c93db42. 
+
+comment number: 317270239 
+body: Hmm, I went ahead and added the fix for @promag's race here, feel free to tell me it should be in a different PR. (@theuni note that it was a race, which may explain why you didnt see it). 
+
+comment number: 317285962 
+body: @sipa hmm, re: restarting-mid-reindex: your original comment that it was broken was more correct than your later retraction. Fixed and cleaned that stuff up more with more comments :). 
+
+comment number: 317288962 
+body: @TheBlueMatt if it's not related with your refactor then IMO a new PR would be best. 
+
+comment number: 317521420 
+body: OK, removed the top two commits so this is just what it was that got ACKs. The two commits from the top are in #10919, which should likely also be taken for 15. 
+
+comment number: 317603655 
+body: reutACK c93db429f909e75fbeacd2419fb8434350e3b674 
+
+comment number: 318333958 
+body: utACK apart from error message nits 
+
+comment number: 318456619 
+body: Fixed error printings in LoadGenesisBlock. 
+
+comment number: 318540606 
+body: re-utACK c0025d0
+ 
+
+comment number: 319337111 
+body: I'm going to merge this now - sorry @sdaftuar, we should fix your minor nits later, but we have to make some progress with merging for 0.15 
+
+comment number: 319438265 
+body: @laanwj Agreed, I don't think those nits should have held this up. 
+
+14. bug report number : ['10410']
+comment number: 302269329 
+body: utACK 2a8e35a11d4bd4828631654fc7b8b8fe8f0a2460 
+
+comment number: 302336108 
+body: Good catch. Makes the code more readable too, nice!
+
+utACK https://github.com/bitcoin/bitcoin/commit/2a8e35a11d4bd4828631654fc7b8b8fe8f0a2460 
+
+comment number: 302336682 
+body: Adding "needs backport" tag as this is a clear bugfix. 
+
+comment number: 302343183 
+body: @sipa, @laanwj, thanks for reviewing. I also have similar bugfix for `importmulti` in https://github.com/bitcoin/bitcoin/pull/10403 if you want to take a look. 
+
+comment number: 302360062 
+body: oops Guess I should have gone and looked for other cases that needed the earliest at least. Concept ACK. 
+
+15. bug report number : ['10293']
+comment number: 298105531 
+body: `tx.vout.insert(tx.vout.begin() + nChangePosInOut, wtx.tx->vout[nChangePosInOut]);`
+
+This is being hit with `nChangePosInOut` == 1 and `wtx.tx->vout.size()` == 1. So OOB access. Looking into what it should be doing... 
+
+comment number: 298107428 
+body: `nChangePosInOut` never gets "unset" in the case of an exact match. It should be set to `-1` in that case. 
+
+comment number: 298120804 
+body: That was fast!  Thanks instagibbs! 
+
+16. bug report number : ['10247']
+comment number: 296161253 
+body: Please use something like http://bitcoin.stackexchange.com for future user questions. This is the development issue tracker.
+
+It looks like that your fee estimation spits out a relatively high value.
+Try to upgrade to 0.14.0.
+Maybe play with `txconfirmtarget=<your desired target in blocks>`. 
+
+comment number: 296184800 
+body: I think this question have its place here, it might have been a bug. 
+
+comment number: 296216405 
+body: You should definitely upgrade to 0.14.0, but it is still possible although rare for such a result to happen.
+
+Do you know what your transaction confirm target was set to?  The default in 0.12 was changed to 2, but if you are running the GUI, then the GUI setting from a previous version may have persisted.  
+
+This kind of result is much more likely with a target of 1 than with a target of 2.
+Personally I would recommend increasing your transaction confirm target to at least 6 blocks.
+ 
+
+comment number: 296261338 
+body: I use ubuntu server only , and install from tarball binary(not compiler by my self) , and I send 5 transactions same time at 3 node(different VM) , same config same amount same version , nodeA x 3 , nodeB x 1 , nodeC x 1 , and it only happen in nodeA
+
+    1.fail 73b8a20980eca8706a083e0bc511af8a8a93e408228411fafe5f05487a4d191d 2,100.84_ sat/B
+    2.okay f343524000eaedcbc61d68367facea6d268941ba8d464075048c2a2bf056f649   188.295 sat/B
+    3.fail 37f98737fe28f1f29840926edeb9cb3a85eb9496070048eb98f2523d612c3cfb 5,209.456 sat/B
+
+hmm ...... anyway I'll upgrade my node , and add confirm target(maybe 4) , and maybe rebuild the nodeA
+
+& thanx @morcos recommand : ) , first post is my all config file , so I think it's default value ... 
+
+comment number: 296305730 
+body: Those are really very high values, so I am a bit curious how that could have happened.
+Had your node not been running very long?
+
+But this is a good reminder that we should record more debugging information by default in the log when a transaction automatically uses fee estimation.
+
+ 
+
+comment number: 296357045 
+body: > But this is a good reminder that we should record more debugging information by default in the log when a transaction automatically uses fee estimation.
+
+Having fee estimation more auditable would be a great idea. 
+
+comment number: 296892874 
+body: hmm @morcos it's my production node , it run over 2 month ... but I write my code to make & send rawtransaction to clear dust (very low fee) , but this time is some emergency things must immediately to send , so I send it from terminal
+
+so it possible the fee calculate weight include another older transaction like manual to send rawtransaction ? even no relation with another non-used vouts ? & just I say , picked vouts all over 50 comfirms 
+
+comment number: 297029817 
+body: @laanwj just closed #4082 (because it is now fixed) and I don't know why I didn't think of that before, but it seems possible that was the cause of this problem and not an error in fee estimation.  Especially given that there was a normal transaction in between.
+
+ 
+
+comment number: 298209746 
+body: `bitcoin-cli sendtoaddress 1846VsYbYJmqLteuMLdZAYxoVDsjWZyMRz 20`
+
+I would like to point out:
+
+1. the only output is exactly 20 BTC (the amount entered in the command)
+2. 3 of the lowest value inputs could have been omitted and the transaction would have still been in the 3000 sat/byte range... However, those low value inputs were not low enough to be considered unusable imo. 
+
+comment number: 298233960 
+body: just to note: A user on IRC last night reported extremely high fees(2,000+ sat/byte) a couple times using `sendmany` on 0.14.1 even though `settxfee` was set. 
+
+comment number: 298236482 
+body: Did they set subtract_fee_from_amount=True? That is still an open issue:
+https://github.com/bitcoin/bitcoin/blob/80c3a734298e824f9321c4efdd446086a3baad89/src/wallet/wallet.cpp#L2627
+
+On Sun, Apr 30, 2017 at 3:58 PM, Gregory Sanders <notifications@github.com>
+wrote:
+
+> just to note: A user on IRC last night reported extremely high fees(2,000+
+> sat/byte) a couple times using sendmany on 0.14.1 even though settxfee
+> was set.
+>
+> —
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly, view it on GitHub
+> <https://github.com/bitcoin/bitcoin/issues/10247#issuecomment-298233960>,
+> or mute the thread
+> <https://github.com/notifications/unsubscribe-auth/AGGmv8l7hG66vIpifetrAsuNdM32kxtlks5r1JOcgaJpZM4ND3PA>
+> .
+>
+ 
+
+comment number: 298249900 
+body: @MarcoFalke  I did not set subtract_fee_from_amount. I'm just simply using sendmany to multiple addresses. 
+It created a few transactions with 2000+ sat/byte, used settxfee specifically and txconfirmtarget=4. It usually creates transaction correctly with change and the correct fee, so in my case the same behavior as the OP.
+
+It appears to me as it ate the rest of the change for the fee in all cases. My inputs vary widely in size, there are usually a few inputs less than 0.05 for it to choose from when building it, usually from existing change. 80% of the time it usually comes up with an input set that is within ~0.01 of the output sum plus fee. 
+
+Additionally, occasionally sendtoaddress would send with a fee a bit higher than I expected, decided to try sendmany to reduce fees and combine individual sends into a single transaction.
+
+Using this in a production environment, not expecting bitcoin core to have issues like this. 
+
+comment number: 298743001 
+body: @MarcoFalke It may be the line two lines down: https://github.com/bitcoin/bitcoin/blob/80c3a734298e824f9321c4efdd446086a3baad89/src/wallet/wallet.cpp#L2630
+
+Since he has no change in his transactions with such a high fee. 
+
+comment number: 298963083 
+body: @JokerCatz If you run `bitcoin-cli listunspent | grep amount | wc -l` what do you get? This used to be a really common issue when you had lots of unspent, but I haven't noticed it running the latest version 
+
+comment number: 299086576 
+body: I have 4 full node : [777 , 454 , 390 , 225] 
+
+comment number: 299247400 
+body: As mentioned on IRC https://botbot.me/freenode/bitcoin-core-dev/2017-05-04/?msg=85156140&page=2 , I think its still possible for the old coin selection problem to rear it's head.  I'm not sure exactly how rare it is, but should be significantly less common than it used to be.
+#10333 could be one way to avoid this, i haven't reviewed it yet, but I'm hoping to get to a more complete rewrite of the coin selection algorithm. 
+
+comment number: 299249201 
+body: @JokerCatz  You have a lot of unspent on all your nodes, you really should upgrade them all ASAP. In total I've lost over a bitcoin in total due to the bug that was fixed (or at least, heavily mitigated), it'll probably be affecting you often when you send money 
+
+comment number: 299265116 
+body: Since this issue appears to be the "no change" situation, it's likely not mitigated yet. 
+
+comment number: 299399777 
+body: @RHavar my production normally use rawtransaction send and clear dust , so it not problem & thanx , I'll upgrade my all node next week , just it look like bug & report it 
+
+comment number: 312181469 
+body: Is there any update on this issue? 
+
+comment number: 312256674 
+body: @cncr04s #10333 should fix this particular case, and is targeted to 0.15. We'll see if it can get enough review. 
+
+comment number: 327753757 
+body: @JokerCatz Did you test with a 0.15 release candidate? It would be interesting to see if it fixes your problem. 
+
+comment number: 327867504 
+body: Hi , I'm so sorry , my project is fixed , use rawtransaction to send transaction & calculate fees... so I think I can't test this issue ... 
+
+comment number: 327875899 
+body: I think this can be closed 
+
+comment number: 327885758 
+body: I am also having this problem, I may be able to test the actual release
+though. I havent kept up on when that would be. I run live environment, so
+may be a while till I can get an answer. I do however see many other
+incoming transactions having the same fee overpayment issue from time to
+time.
+
+On Sep 7, 2017 1:00 PM, "Alex Morcos" <notifications@github.com> wrote:
+
+> I think this can be closed
+>
+> —
+> You are receiving this because you were mentioned.
+> Reply to this email directly, view it on GitHub
+> <https://github.com/bitcoin/bitcoin/issues/10247#issuecomment-327875899>,
+> or mute the thread
+> <https://github.com/notifications/unsubscribe-auth/ABaLWkuM5WJbnQc3XTG05BDI67n0KbUDks5sgC5TgaJpZM4ND3PA>
+> .
+>
+ 
+
+comment number: 327887541 
+body: @cncr04s 0.15/master should catch any of these types of vast overpayment errors. 
+
+comment number: 327891342 
+body: @cncr04s If you are running 0.14, then it should be very relatively rare to have overpayment issues, but they can still exist when you have a transaction without change.  That edge case should be fixed in 0.15.    If you have this problem on 0.14 node on a transaction with change, please provide us with us much information as you can.      
+
+comment number: 350539347 
+body: at least 0.15.1 is not doing overpayment, with ```txconfirmtarget=6``` it uses 20 sat/byte, and tx still unconfirmed after two days. 
+:expressionless:
+
+```
+Fee Calculation: Fee:4520 Bytes:226 Needed:4520 Tgt:0 (requested 6) Reason:"Fallback fee" Decay 0.00000: Estimation: (-1 - -1) -nan% 0.0/(0.0 0 mem 0.0 out) Fail: (-1 - -1) -nan% 0.0/(0.0 0 mem 0.0 out)
+```
+ 
+
+comment number: 350551118 
+body: @Safari77 did your mempool size is too small ? & is sync finished ? or offline signature ? , I tried use `estimatesmartfee` will use mempool to  fees , and you can use `estimatefee` / `estimatesmartfee` to calculate it first , but it per kb fees , so you need * 100000000 / 1024 will be per byte satoshi 
+
+comment number: 350553065 
+body: @Safari77 When it says that the reason is "Fallback Fee" that means fee estimation is not working.
+Seems likely that this was a new node and had received less than 4 or 5 blocks since syncing.  If using the GUI, there should be a red warning, but using bitcoin-cli we don't currently have any way of warning people that it's not possible to do fee estimation yet.  There is really no solution to this other than to get your fee estimate from other sources and manually set the fee. 
+
+17. bug report number : ['10153']
+comment number: 291773676 
+body: utACK faab624 
+
+18. bug report number : ['10141']
+19. bug report number : ['10129']
+comment number: 290738111 
+body: Is every 500 too frequent in 735d9b5 (given that it is now, as you point out, the most frequently scheduled task)? Should we also make that a second (independent of this fix)? 
+
+comment number: 290779848 
+body: Updated with @laanwj's suggestion, and added a comment.
+
+@JeremyRubin the 500msec matches the previous behavior, I'm unsure where that value came from. Any particular reason to suggest bumping it to a second, or just to reduce the overhead? 
+
+comment number: 290911373 
+body: utACK https://github.com/bitcoin/bitcoin/pull/10129/commits/e025246fe27f2d4bcdb6f4e9b5af9084dcc2e0a8 
+
+20. bug report number : ['10060']
+comment number: 288592596 
+body: Confirmed that Core does segfault when using the above command in the rpcconsole, and that it no longer happens with the PR'd fix. 
+
+comment number: 288631156 
+body: Concept ACK 
+
+comment number: 289030271 
+body: Thanks for pointing this out.
+Hmm... is there a reason to allow newlines in the command-line?
+I don't think so.
+Maybe this fix is more robust:
+```diff
+diff --git a/src/qt/rpcconsole.cpp b/src/qt/rpcconsole.cpp
+index 7a0d0b3..c2f6434 100644
+--- a/src/qt/rpcconsole.cpp
++++ b/src/qt/rpcconsole.cpp
+@@ -190,6 +190,7 @@ bool RPCConsole::RPCParseCommandLine(std::string &strResult, const std::string &
+     };
+ 
+     std::string strCommandTerminated = strCommand;
++    std::replace(strCommandTerminated.begin(),strCommandTerminated.end(),'\n',' ');
+     if (strCommandTerminated.back() != '\n')
+         strCommandTerminated += "\n";
+     for (chpos = 0; chpos < strCommandTerminated.size(); ++chpos)
+``` 
+
+comment number: 289050144 
+body: @jonasschnelli The segfault bug happens with more than just a newline in the command. It also happens if an end parenthesis `)` is also in the command without a start parenthesis `(` before it. 
+
+comment number: 289137425 
+body: utACK, with nit. 
+
+comment number: 289379849 
+body: Thanks @achow101 for clarification.
+Tested ACK 4df76e270caa9d828179cae1c7a8918d6f91ec21 
+
+comment number: 289380108 
+body: Needs backport. 
+
+21. bug report number : ['10043']
+comment number: 288020544 
+body: I am quite surprised we even export private key in DER, I never had a need for it. Why is it used ? 
+
+comment number: 288023263 
+body: AFAIK the only place where we use DER private keys is when storing/retrieving from the wallet.dat BDB database. We should probably change that, but reading DER must be supported at least. 
+
+comment number: 288034518 
+body: Thanks for the fix!
+How does this affect users of the wallet or RPC? Does this need backports? 
+
+comment number: 288037084 
+body: > How does this affect users of the wallet or RPC? Does this need backports?
+
+I'm not entirely sure. I haven't analysed the full ramification.
+It looks like, that we only use the DER encoding during serialisation to and deserialisation from the database. Internally it should be treated correctly. Walletdump, etc. should be correct.
+
+At the moment, I'm not sure what happens if you import an uncompressed WIF priv key. Or what happened when we introduced the bug with already existing uncompressed DER encoded keys in the wallet. 
+
+comment number: 290093434 
+body: (as was discussed in the last meeting)
+
+This has no effect, we never read it. It's just idiocy in the format that a public key is saved inside the private key at all. I think it should just always set compressed here.  We use the public key outside of the private key for everything interesting. 
+
+comment number: 292533103 
+body: OK so this is not really a bug, just a peculiarity of our data format.
+I think then that we should close this and keep things as-is (and later on, switch to a better storage format) 
+
+comment number: 292536853 
+body: > OK so this is not really a bug, just a peculiarity of our data format.
+I think then that we should close this and keep things as-is (and later on, switch to a better storage format)
+
+Yes. Agree. We could optimise this out maybe together with the new, non backward compatible HD internal/external database format. 
+
+comment number: 292536863 
+body: Closing 
+
+22. bug report number : ['10039']
+comment number: 287832181 
+body: Going to test this. Thanks!
+ 
+
+comment number: 287877606 
+body: Compiles OK on Debian Jessie and openSUSE (gcc 4.8.5, 5.3.1 and 6.2.1).
+
+ACK https://github.com/bitcoin/bitcoin/pull/10039/commits/b5bec4e330fc7201d989663b4dbc6a1e620dd0f9 
+
+comment number: 289248763 
+body: This change breaks compiling on debian 8.7 with qt4 ( 4:4.8.6+git64-g5dc8b2b+dfsg-3+deb8u1 ).
+
+I suspect one version works in qt4 and the other in qt5. 
+
+comment number: 289327111 
+body: @ryanofsky ping 
+
+comment number: 289364295 
+body: Maybe it's time to think about dropping support to compile against Qt4? We already dropped support during runtime... 
+
+comment number: 289371694 
+body: > Maybe it's time to think about dropping support to compile against Qt4? We already dropped support during runtime...
+
+The issue for discussion that is #8263 
+
+23. bug report number : ['10034']
+comment number: 287603075 
+body: Can you write down some steps to reproduce... a little test told me if working correct. But maybe I'm wrong.
+
+Started `./src/bitcoind  -printtoconsole --regtest --paytxfee=100`
+Sent with SFA: `./src/bitcoin-cli --regtest sendtoaddress n3NkSZqoPMCQN5FENxUBw4qVATbytH6FDK 1 "" "" true`
+List tx tells me:
+```
+  "details": [
+    {
+      "account": "",
+      "address": "n3NkSZqoPMCQN5FENxUBw4qVATbytH6FDK",
+      "category": "send",
+      "amount": -0.90000000,
+      "label": "",
+      "vout": 1,
+      "fee": -0.10000000,
+      "abandoned": false
+    }
+``` 
+
+comment number: 287603320 
+body: Hi Jonas,
+
+I have a bash script pay.sh that just calls:
+
+#!/bin/bash
+bitcoin-cli sendtoaddress $1 $2 "" "" true
+
+I then call this like ./pay.sh {address} {amount}
+
+My current info is:
+
+~/.bitcoin$ bitcoin-cli getinfo
+{
+  "version": 140000,
+  "protocolversion": 70015,
+  "walletversion": 130000,
+  "balance": X.XXXXXXXX,
+  "blocks": 457937,
+  "timeoffset": 0,
+  "connections": XX,
+  "proxy": "",
+  "difficulty": 475705205061.6292,
+  "testnet": false,
+  "keypoololdest": 1489899731,
+  "keypoolsize": 100,
+  "paytxfee": 0.0016XXXX,
+  "relayfee": 0.00005000,
+  "errors": ""
+}
+
+I routinely empty this wallet. I also have a CRON running on the hour that adjusts fees to target 5 block confirmation:
+
+#!/bin/bash
+FEE="$(bitcoin-cli estimatefee 5)"
+bitcoin-cli settxfee $FEE
+
+However, when I call pay.sh for the first time after receiving a deposit, it doesn't seem to respect the value of paytxfee (and has been paying 0.004 BTC/KB). I noticed that if I call the sendtoaddress command without referencing subtractfeefromamount, and then call my pay.sh script, the subtractfeefromamount will then reference the correctly defined paytxfee. Very odd to say the least.
+
+I am happy to provide txids privately if you'd like which will demonstrate the behavior above.
+
+Thank you for taking a look.
+ 
+
+comment number: 287603598 
+body: If this only and always happens the fist time you send, there might be a bug in your code to set fees. Otherwise, this is might be an instance of the known issue: https://github.com/bitcoin/bitcoin/blob/baae3149d63909c527e7b28c52c9124957ce8206/src/wallet/wallet.cpp#L2567 
+
+comment number: 318459517 
+body: @cryptogenesis sorry for the delay, but i'm going to take another look at this.
+If you'd be willing to point me to a few txid's, i'm not sure if it will help or not
+
+morcos at chaincode.com
+
+Thanks
+ 
+
+comment number: 318491999 
+body: @cryptogenesis I opened #10942 to fix a (hopefully very rare) edge case that was not yet fixed.  But I'm not sure that's the cause of your issue.
+
+You are sure that the estimatefee call wasn't sometimes causing you to settxfee to a higher feerate?
+
+I looked through the code and didn't see anything obviously wrong, but am willing to look more if you have more information (I realize its quite old now).
+ 
+
+comment number: 319945949 
+body: Most likely fixed in #10942 by @morcos! 
+
+24. bug report number : ['10001']
+comment number: 286728018 
+body: debug log from another server:
+
+```
+2017-03-15 12:12:30 connect() to [2001:0:34af:cdd1:414:187b:b2dd:20ab]:8333 failed: Network is unreachable (101)
+2017-03-15 12:13:36 connect() to [2001:0:9d38:78cf:3c1f:3759:a844:c08]:8333 failed: Network is unreachable (101)
+2017-03-15 12:13:48 socket recv error Connection reset by peer (104)
+2017-03-15 12:14:06 tor: Thread interrupt
+2017-03-15 12:14:06 torcontrol thread exit
+2017-03-15 12:14:06 opencon thread exit
+2017-03-15 12:14:06 scheduler thread interrupt
+2017-03-15 12:14:06 Shutdown: In progress...
+2017-03-15 12:14:06 net thread exit
+2017-03-15 12:14:06 msghand thread exit
+
+------------------------------------
+
+$ strace -p 21360
+Process 21360 attached
+futex(0x7f6a9ddea9d0, FUTEX_WAIT, 19190, NULL
+``` 
+
+comment number: 286823233 
+body: #9950 was another issue where 0.14 hung on shutdown. That was caused by having >=8 addnodes in the bitcoin.conf file. Do you have that? Are you able to paste your bitcoin.conf here? 
+
+comment number: 286941122 
+body: @jnewbery yeah, I put about **20 nodes** in the bitcoin.conf file. 
+
+```
+rpcallowip=172.17.0.0/16
+rpcallowip=192.168.0.0/16
+rpcallowip=10.0.0.0/8
+
+ # we use ZMQ to get notification when new block is coming
+zmqpubrawblock=tcp://0.0.0.0:8331
+zmqpubrawtx=tcp://0.0.0.0:8331
+zmqpubhashtx=tcp://0.0.0.0:8331
+zmqpubhashblock=tcp://0.0.0.0:8331
+
+ # use 2G memory for utxo, depends on your machine's memory
+ dbcache=1000
+
+ # use 1MB block when call GBT
+ blockmaxsize=1000000
+
+ ####################################
+
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+ addnode=xx.xx.xx.xx
+```
+ 
+
+comment number: 286955164 
+body: @jnewbery 
+temporary fix: https://github.com/btccom/btcpool/commit/656dd3dbd09ccc5e679b4ce13fe5e79adf470073
+
+using patch: https://github.com/bitcoin/bitcoin/pull/9953
+
+```
+ RUN cd ~/source \
+   && tar zxf v0.14.0.tar.gz && cd bitcoin-0.14.0 \
++  && wget https://patch-diff.githubusercontent.com/raw/bitcoin/bitcoin/pull/9953.patch -O 9953.patch \
++  && patch -p1 < 9953.patch \
+   && ./autogen.sh \
+   && ./configure --disable-wallet --disable-tests \
+```
+
+Right now, restart node works fine. I will put it on pool.btc.com production env. 
+
+comment number: 286960485 
+body: Do note that, as per the 0.14 release notes, there is now an 8-addnode limit - after the first 8 the rest are ignored (this was previously true as well, but indirectly because they were simply used as nodes to consider for the 8 general outbound connections).
+
+Matt
+
+On March 15, 2017 5:31:56 AM PDT, kevin <notifications@github.com> wrote:
+>### Describe the issue
+>
+>bitcoind-v0.14.0 can't shutdown.
+>
+>### Can you reliably reproduce the issue?
+>
+>Yes. Always happen.
+>
+>#### If so, please list the steps to reproduce below:
+>1. build bitcoind with docker:
+>https://github.com/btccom/btcpool/tree/master/docker/bitcoind/v0.14.0
+>2. get into docker, than shutdown node with rpc call `bitcoin-cli stop`
+>3. bitcoind process will hang up.
+>
+>### Expected behaviour
+>
+>
+>### Actual behaviour
+>
+>debug.log:
+>
+>```
+>2017-03-15 11:49:28 CreateNewBlock(): total size: 998181 block weight:
+>3992724 txs: 1516 fees: 94050467 sigops 14524
+>2017-03-15 11:49:38 CreateNewBlock(): total size: 998191 block weight:
+>3992764 txs: 1533 fees: 96320496 sigops 14772
+>2017-03-15 11:49:44 tor: Thread interrupt
+>2017-03-15 11:49:44 torcontrol thread exit
+>2017-03-15 11:49:44 opencon thread exit
+>2017-03-15 11:49:44 scheduler thread interrupt
+>2017-03-15 11:49:44 Shutdown: In progress...
+>2017-03-15 11:49:44 net thread exit
+>2017-03-15 11:49:44 msghand thread exit
+>```
+>
+>```
+>$ strace -p `pgrep bitcoind`
+>Process 31913 attached
+>futex(0x7fd03d5899d0, FUTEX_WAIT, 61, NULL^CProcess 31913 detached
+>```
+>
+>
+>### What version of bitcoin-core are you using?
+>
+>tag v0.14.0
+>
+>### Machine specs:
+>- OS: ubuntu 14.04 LTS, 64Bits
+>- CPU: Intel
+>- RAM: 8G+
+>- Disk size: 200G+
+>- Disk Type (HD/SDD): SSD
+>
+>
+>-- 
+>You are receiving this because you are subscribed to this thread.
+>Reply to this email directly or view it on GitHub:
+>https://github.com/bitcoin/bitcoin/issues/10001
+ 
+
+comment number: 286962084 
+body: @TheBlueMatt why there is an 8-addnode limit? Eight is far from enough for a pool's node. At least I need to connect with mine own nodes, it's surely more that 8. 
+
+comment number: 286965295 
+body: Heh, I figured I should mention it :)
+
+There has always been an 8 addnode limit, because addnodes used to be simply extra nodes to consider when making the 8 outbound convections, now they're split out and there is a separate limit of 8. This limit was kept because there has historically been a lot of folks who just add addnodes to their bitcoin.conf without realizing the implication of potentially DoSing the network :/.
+
+If you want to override it, you can either patch the MAX_ADDNODE_CONNECTIONS constant higher or use the "addnode $NODE onetry" RPC command, which bypasses the limit for the given connection, but you'd have to run that in a loop.
+
+On March 15, 2017 10:31:17 PM PDT, kevin <notifications@github.com> wrote:
+>@TheBlueMatt why there is an 8-addnode limit? Eight is far from enough
+>for a pool's node. At least I need to connect with mine own nodes, it's
+>surely more that 8.
+>
+>-- 
+>You are receiving this because you were mentioned.
+>Reply to this email directly or view it on GitHub:
+>https://github.com/bitcoin/bitcoin/issues/10001#issuecomment-286962084
+ 
+
+comment number: 296423496 
+body: fixed in 0.14.1 
+
+25. bug report number : ['9988']
+comment number: 301525577 
+body: @achow101 Looks like nobody wants to read that URL. Can you please paste commands that can be used on the testnet right away and demonstrate the issue?
+ 
+
+comment number: 301535486 
+body: From the thread I linked to:
+
+Three addresses and their private and public keys:
+```
+cMpfNfuasJcrCv8RKMG35C8YtUVpaheFbNMwDuBXVvdcjaeYE7oh
+024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a
+mgMZZtLSX1cU9jhAdQWMqMyoPv4JncZqcU
+
+cVM5Kaoim2MKzT8MxVHHAu9BixJKTJgMhqape1eHgjHGhFPkf2mn
+03c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771
+mrdkuGp2wcXhcmtN7RwwUs7CYevJpYuLnV
+
+cU4mHYwU2X1oTWBfYBGYFN69oYdrpWnBMrWd4nCoeRPUzmRY89vM
+0256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b34
+mospdWZdHtym59yMwUUi8w4HcWQxd7sQsv
+```
+
+Create 2-of-3 multisig address:
+```
+createmultisig 2 '["024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a","03c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771","0256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b34"]'
+
+{
+  "address": "2N9nn3aMYzTjs2ccTRAvDUmdKykL9YjM2cj",
+  "redeemScript": "5221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453ae"
+}
+```
+
+Import address and fund it:
+```
+importaddress 2N9nn3aMYzTjs2ccTRAvDUmdKykL9YjM2cj "" false
+
+//sent 0.1btc to 2N9nn3aMYzTjs2ccTRAvDUmdKykL9YjM2cj
+
+listunspent
+[
+  {
+    "txid": "ff65917ac6cbe36d55893d9e1ce63cad1140c2ab38e9c7d099170b16d1a55d70",
+    "vout": 0,
+    "address": "2N9nn3aMYzTjs2ccTRAvDUmdKykL9YjM2cj",
+    "account": "",
+    "scriptPubKey": "a914b579aabfd350ed75ee056ff4d6d56718c74f55df87",
+    "amount": 0.10000000,
+    "confirmations": 1,
+    "spendable": false,
+    "solvable": false
+  }, 
+```
+
+Make unsigned spending tx:
+```
+createrawtransaction '[{"txid":"ff65917ac6cbe36d55893d9e1ce63cad1140c2ab38e9c7d099170b16d1a55d70","vout":0,"scriptPubKey":"a914b579aabfd350ed75ee056ff4d6d56718c74f55df87","redeemScript":"5221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453ae"}]' '{"mqZa1zbDg5RHVYbX6ea1QxPuuxAyuGVSoK":0.0999}'
+
+0100000001705da5d1160b1799d0c7e938abc24011ad3ce61c9e3d89556de3cbc67a9165ff0000000000ffffffff01706f9800000000001976a9146e2fe8ef5dcb05fd258e2f51d3f15ba3781cd96b88ac00000000
+```
+Attempt to sign with first privkey fails:
+```
+signrawtransaction '0100000001705da5d1160b1799d0c7e938abc24011ad3ce61c9e3d89556de3cbc67a9165ff0000000000ffffffff01706f9800000000001976a9146e2fe8ef5dcb05fd258e2f51d3f15ba3781cd96b88ac00000000' '[{"txid":"ff65917ac6cbe36d55893d9e1ce63cad1140c2ab38e9c7d099170b16d1a55d70","vout":0,"scriptPubKey":"a914b579aabfd350ed75ee056ff4d6d56718c74f55df87","redeemScript":"5221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453ae"}]' '["cMpfNfuasJcrCv8RKMG35C8YtUVpaheFbNMwDuBXVvdcjaeYE7oh"]'
+
+
+{
+  "hex": "0100000001705da5d1160b1799d0c7e938abc24011ad3ce61c9e3d89556de3cbc67a9165ff00000000b5004830450221009d4f252bc47a8ab7078c3f93929bd091da175ed115bbe4953a3704d1e8027e12022005ab1434847d64bc6551ce6044b970becad36fc0cf6380847c33b241a30fc085014c695221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453aeffffffff01706f9800000000001976a9146e2fe8ef5dcb05fd258e2f51d3f15ba3781cd96b88ac00000000",
+  "complete": false,
+  "errors": [
+    {
+      "txid": "ff65917ac6cbe36d55893d9e1ce63cad1140c2ab38e9c7d099170b16d1a55d70",
+      "vout": 0,
+      "scriptSig": "004830450221009d4f252bc47a8ab7078c3f93929bd091da175ed115bbe4953a3704d1e8027e12022005ab1434847d64bc6551ce6044b970becad36fc0cf6380847c33b241a30fc085014c695221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453ae",
+      "sequence": 4294967295,
+      "error": "Operation not valid with the current stack size"
+    }
+  ]
+}
+``` 
+
+comment number: 303854178 
+body: I've tested this and I can sign the returned partial transaction:
+
+```
+// Sign with the first key
+→ bitcoin-cli signrawtransaction '02000000011cde84bb4859cef89c748d85072511f45be4db9df4ae833951e2bf883e8c86850100000000ffffffff01706f98000
+00000001976a9146e2fe8ef5dcb05fd258e2f51d3f15ba3781cd96b88ac00000000' '[{"txid":"85868c3e88bfe2513983aef49ddbe45bf4112507858d749cf8ce5948bb84de1c","vout":1,"scriptPubKey":"a914b579aabfd350ed75ee056ff4d6d56718c74f55df87","redeemScript":"5221024c5965fb18701569ec09e8d2979c45e3d
+6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec028
+85300a1bb0a1159e289ae66af78b3453ae"}]' '["cMpfNfuasJcrCv8RKMG35C8YtUVpaheFbNMwDuBXVvdcjaeYE7oh"]'
+{
+  "hex": "02000000011cde84bb4859cef89c748d85072511f45be4db9df4ae833951e2bf883e8c868501000000b400473044022053bf59c161ada753cd4de4ecd86a7d4719a6d903f0ff0aa7a0e8f1d3a7eb46e50220511bf2308f9b708c8eef11c71ae4198c0b59fde19b559a27c03a43edc8d7e103014c695221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453aeffffffff01706f9800000000001976a9146e2fe8ef5dcb05fd258e2f51d3f15ba3781cd96b88ac00000000",
+  "complete": false,
+  "errors": [
+    {
+      "txid": "85868c3e88bfe2513983aef49ddbe45bf4112507858d749cf8ce5948bb84de1c",
+      "vout": 1,
+      "witness": [
+      ],
+      "scriptSig": "00473044022053bf59c161ada753cd4de4ecd86a7d4719a6d903f0ff0aa7a0e8f1d3a7eb46e50220511bf2308f9b708c8eef11c71ae4198c0b59fde19b559a27c03a43edc8d7e103014c695221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453ae",
+      "sequence": 4294967295,
+      "error": "Operation not valid with the current stack size"
+    }
+  ]
+}
+
+// An error is shown, but the returned hex *is* a valid partially signed tx.
+// Now sign with a second key
+
+→ bitcoin-cli signrawtransaction '02000000011cde84bb4859cef89c748d85072511f45be4db9df4ae833951e2bf883e8c868501000000b400473044022053bf59c161ada753cd4de4ecd86a7d4719a6d903f0ff0aa7a0e8f1d3a7eb46e50220511bf2308f9b708c8eef11c71ae4198c0b59fde19b559a27c03a43edc8d7e103014c695221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453aeffffffff01706f9800000000001976a9146e2fe8ef5dcb05fd258e2f51d3f15ba3781cd96b88ac00000000' '[{"txid":"85868c3e88bfe2513983aef49ddbe45bf4112507858d749cf8ce5948bb84de1c","vout":1,"scriptPubKey":"a914b579aabfd350e
+d75ee056ff4d6d56718c74f55df87","redeemScript":"5221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764
+829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453ae"}]' '["cVM5Kaoim2MKzT8MxVHHAu9BixJKTJgMhqape1eHgjHGhFPkf2mn"]'
+{
+  "hex": "02000000011cde84bb4859cef89c748d85072511f45be4db9df4ae833951e2bf883e8c868501000000fc00473044022053bf59c161ada753cd4de4ecd86a7d4719a6d903f0ff0aa7a0e8f1d3a7eb46e50220511bf2308f9b708c8eef11c71ae4198c0b59fde19b559a27c03a43edc8d7e10301473044022026ec2ccf9067b5ae0b3c7f108b0c79546de7187630eafba1a723a77437829a4202205404cbe251e3a165a47bc7555bf09cd5a81e7f0aa4e35cafc207be202aa834bf014c695221024c5965fb18701569ec09e8d2979c45e3d6e0c60ddb3c9d6af0692124d3890e8a2103c9084cf82f74f764829a7d3c842462e03f4bbaf59981cb3b98cd3974438e5771210256d87a1997bad87ebdd409a3437ecec02885300a1bb0a1159e289ae66af78b3453aeffffffff01706f9800000000001976a9146e2fe8ef5dcb05fd258e2f51d3f15ba3781cd96b88ac00000000",
+  "complete": true
+}
+
+// returned hex is a fully signed multisig tx
+```
+
+It's confusing that the first call to `signrawtransaction()` returns an error "Operation not valid with the current stack size", but I don't think that stops you from signing the partial transaction. 
+
+comment number: 303872382 
+body: > It's confusing that the first call to `signrawtransaction()` returns an error "Operation not valid with the current stack size", but I don't think that stops you from signing the partial transaction.
+
+Ah. I see. That it returns an error even when partially signed is still an issue though. That shouldn't happen. 
+
+26. bug report number : ['9980']
+comment number: 286274444 
+body: If it shouldn't happen,  maybe an `assert` is better? 
+
+comment number: 286284458 
+body: @TheBlueMatt what was the behavior before if the elements list was empty? 
+
+comment number: 286284800 
+body: wait no that's @sipa  
+
+comment number: 286285121 
+body: nvm it returned 0 so this maintains the original behavior 
+
+comment number: 287496029 
+body: Probably best to assert that vTxid has non-zero length, as that would represent generating a tree for an invalid block. 
+
+comment number: 289286967 
+body: Changed to what @dcousens and @TheBlueMatt suggested. I think that makes sense at the end of the day. Also, from what I can tell, that assert cannot be hit from the p2p code.  
+
+comment number: 289363639 
+body: I would have set `fBad`, so we don't risk later to reach a network reachable `assert(0)` by inadvertance. :) 
+
+comment number: 292212126 
+body: Looks good. Lightly tested ACK 51802ccc4561bd5a94499c665a333517f5eadd10
+
+if you're adding an assert, can you put some commenting in explaining the assumptions that you're testing (either around the assert or the function declaration).
+
+Also please remove the merge commits from this PR.
+
+EDIT: cool that this was found using your property-based testing. I've been meaning to review #8469 for a while. 
+
+comment number: 292401880 
+body: @jnewbery Addressed the concerns you had. 
+
+If you want to chat about 8469 don't be afraid to ping me on irc. I think it will allow us to streamline testing AND exhaustively test invariants better than we are now.  
+
+comment number: 292478342 
+body: why no just setting `fBad` and returning ? I really don't like having an assert, this code might be reached from the network one day for some reason (maybe unsuspecting new feature). Putting an assert here is a tragedy waiting to happen. 
+
+comment number: 292537995 
+body: @NicolasDorier - I had the same concerns as you, so I spent some time reading around the code to convince myself that this was ok. This code is only called from the CMerkleBlock constructor, which is only called from the gettxoutproof RPC or in response to a MSG_FILTERED_BLOCK getdata request. In both cases, we're constructing the Merkle Block from a block that's already in our mapBlockIndex. Therefore to hit this assert, we'd need there to be an invalid block in the mapBlockIndex, which would mean:
+
+- our internal data is corrupted; and
+- we've probably fallen pretty badly out of consensus
+
+in which case, asserting is appropriate.
+
+As for concerns about future code calling this without knowing about the assert - they'd have to be constructing a merkle block for a block that they hadn't already validated, which is a very bad idea! Just to make sure, Chris has now also added a comment above the assert to clarify assumptions.
+
+Hope that allays your concerns! 
+
+comment number: 314598537 
+body: utACK bbdd771e4c1a9ae405a266c0b158bf6825acef15, though it would be nice to add a comment to CMerkleBlock noting that the block containing transactions will be asserted-on. 
+
+comment number: 314801495 
+body: @TheBlueMatt Added the comment, is this ready for merge?
+
+EDIT: Also rebased 
+
+comment number: 315830898 
+body: utACK 8276e70de15c5c3a7525471ad619edd1237b424a 
+
+comment number: 315834649 
+body: utACK 8276e70de15c5c3a7525471ad619edd1237b424a 
+
+27. bug report number : ['9950']
+comment number: 285058353 
+body: Can you get a traceback of where it hangs? 
+
+comment number: 285079634 
+body: Sure, but without debug symbols compiled in I'm not sure how useful this is:
+
+Thread 3 (Thread 0x7faed8e28700 (LWP 15272)):
+#0  pthread_cond_wait@@GLIBC_2.3.2 () at ../nptl/sysdeps/unix/sysv/linux/x86_64/pthread_cond_wait.S:183
+#1  0x00007faf08195f18 in ?? ()
+#2  0x00007faf081d738b in ?? ()
+#3  0x00007faf081dcb3a in ?? ()
+#4  0x00007faf081db2cf in ?? ()
+#5  0x00007faf0870f090 in ?? ()
+#6  0x00007faf07ce1aa1 in start_thread (arg=0x7faed8e28700) at pthread_create.c:301
+#7  0x00007faf0738caad in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:115
+
+Thread 2 (Thread 0x7faecb3f1700 (LWP 15280)):
+#0  pthread_cond_wait@@GLIBC_2.3.2 () at ../nptl/sysdeps/unix/sysv/linux/x86_64/pthread_cond_wait.S:183
+#1  0x00007faf0845c74b in ?? ()
+#2  0x00007faf07ce1aa1 in start_thread (arg=0x7faecb3f1700) at pthread_create.c:301
+#3  0x00007faf0738caad in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:115
+
+Thread 1 (Thread 0x7faf0810d720 (LWP 15258)):
+#0  0x00007faf07ce22fd in pthread_join (threadid=140388939761408, thread_return=0x0) at pthread_join.c:89
+#1  0x00007faf0870efd7 in ?? ()
+#2  0x00007faf081d944e in ?? ()
+#3  0x00007faf081d94ea in ?? ()
+#4  0x00007faf0819b70a in ?? ()
+#5  0x00007faf08191923 in ?? ()
+#6  0x00007faf081852bf in ?? ()
+#7  0x00007faf072c2d1d in __libc_start_main (main=0x7faf08185290, argc=4, ubp_av=0x7ffcc59debe8, init=<value optimized out>, fini=<value optimized out>, rtld_fini=<value optimized out>, stack_end=0x7ffcc59debd8) at libc-start.c:226
+#8  0x00007faf08190bd7 in ?? ()
+
+ 
+
+comment number: 285083888 
+body: Note that I amended the original bug report, as pruning seems to have been a red herring. The non-pruning node also ran into the same hang when I tried shutting it down right now, so it seems contingent on having been running for a few minutes rather than the difference in configuration. 
+
+comment number: 285088823 
+body: Do you happen to have >= 8 addnode's set? 
+
+comment number: 285090413 
+body: (If so #9953 should fix your issue). 
+
+comment number: 285092621 
+body: > Sure, but without debug symbols compiled in I'm not sure how useful this is
+
+If these are the official binaries, then along with the bitcoind mapping start address (this may differ due to ASLR) and addr2line I can resolve the functions/line numbers. 
+
+comment number: 285112931 
+body: > Do you happen to have >= 8 addnode's set?
+
+Dropping below 8 addnodes does seem to have resolved this. Thanks for the fix. 
+
+comment number: 285892185 
+body: I've been having a shutdown hang on Windows with 0.14.0 where I'm not using the addnodes command. It could be a separate bug, given that Celean's problem was reportedly fixed by lowering the number of addnodes. Mine gets stuck at the "do not shutdown your computer" window for *hours upon hours*, where previous versions (except possibly 0.13.2) did not, with no noticeable CPU, hard drive, or memory activity, before it finally closes itself. 
+
+comment number: 286823658 
+body: @mmortal03 since you don't have >=8 addnodes in your bitcoin.conf, you must be hitting a different problem. Can you open a new github issue, provide the answers to the issue template and paste you bitcoin.conf and the tail of your debug log? 
+
+comment number: 287206709 
+body: Yep, will do. I compiled the master through #9953, and still see the issue, so it's not the same bug. I'm working on a way to reproduce the issue, and will create new issue once I narrow it down. 
+
+comment number: 287505198 
+body: @jnewbery , I've created a new issue for the issue I'm experiencing here: #10025 
+
+comment number: 287524093 
+body: Closing this one as #9953 fixed this specific issue and a new issue has been openened for @mmortal03 's problem 
+
+28. bug report number : ['9883']
+comment number: 283019508 
+body: Crashing in setSortingEnabled is strange. It's unfortunate that we don't know which these are:
+```
+#0  0x00007fd6b6fc7fb2 in ?? () from /usr/lib/libQt5Core.so.5
+#1  0x00007fd6b6fccdd9 in ?? () from /usr/lib/libQt5Core.so.5
+```
+Can you reproduce it? 
+
+comment number: 283019908 
+body: Have you specified any command line args? 
+
+comment number: 283054731 
+body: -checkpoints=0 -checkpoint=0 -txconfirmtarget=144 -connect=$LOCAL_IP -prune=10000 -assumevalid=0 
+
+comment number: 284178381 
+body: Given the lack of reliable reproduceability and that the code in question hasn't changed in a long time (though it is possible this is related to mempool saving), I think we can untag this for 0.14. If anyone else sees it in the wild or someone can actually reproduce we can do a quick 0.14.1. 
+
+comment number: 311286368 
+body: Did anyone ever manage to reproduce this? 
+
+comment number: 311515458 
+body: I dont believe so, I failed to be able to repro it again, closing for now. 
+
+comment number: 325172718 
+body: What version of Qt were you using when you see this?
+
+I see it regularly (see #9683 - lots of stack traces there) using Qt v5.3.2. 
+
+comment number: 325217617 
+body: I reproduced the crash in v0.15.0rc2, linking against Qt v5.7.1 with debug symbols:
+
+    Thread 1 (Thread 0x7febb7c4c900 (LWP 16119)):
+    #0  0x00007febb5fdb972 in QSortFilterProxyModelPrivate::build_source_to_proxy_mapping (proxy_to_source=..., source_to_proxy=..., this=this@entry=0x56484fdbb560)
+        at itemmodels/qsortfilterproxymodel.cpp:1008
+    #1  0x00007febb5fe0ca9 in QSortFilterProxyModelPrivate::sort (this=0x56484fdbc6e0) at itemmodels/qsortfilterproxymodel.cpp:447
+    #2  0x00007febb6c02737 in QTableView::setSortingEnabled (this=0x56484f1811c0, enable=enable@entry=true) at itemviews/qtableview.cpp:2556
+    #3  0x000056484c9ad879 in TransactionView::setModel (this=0x56484f1bb270, _model=_model@entry=0x56484fcb9390) at qt/transactionview.cpp:212
+    #4  0x000056484c94f9bf in WalletView::setWalletModel (this=this@entry=0x56484fb46000, _walletModel=0x56484fcb9390) at qt/walletview.cpp:121
+    #5  0x000056484c938d63 in WalletFrame::addWallet (this=0x56484f7f1ec0, name=..., walletModel=<optimized out>) at qt/walletframe.cpp:49
+    #6  0x000056484c8adba1 in BitcoinApplication::initializeResult (this=0x7ffcf837a060, success=<optimized out>) at qt/bitcoin.cpp:494
+    #7  0x00007febb6043499 in QObject::event (this=this@entry=0x7ffcf837a060, e=e@entry=0x7feb648502f0) at kernel/qobject.cpp:1263
+    ... 
+
+29. bug report number : ['9881']
+comment number: 282859920 
+body: These are line 164 and 165 of util.cpp in 0.14.0rc2:
+```
+        for (int i = 0; i < CRYPTO_num_locks(); i++)
+            delete ppmutexOpenSSL[i];
+```
+Don't see how this could fail, really :/ 
+
+comment number: 282876141 
+body: I've installed memtest86+ ("thorough real-mode memory tester") and will run it next time I reboot the machine. Again, this could be another "ghost" bug caused by a hardware error but I thought it best to report it anyway.
+
+Edit: memtest86+ found no memory errors, though it does hang after 2.5 minutes if I let it use all 4 cores in parallel while testing. No idea what that means. 
+
+comment number: 322017403 
+body: Going to close this for the same reason as #9814. If we ever get another report it can be reopened. 
+
+30. bug report number : ['9854']
+comment number: 282432193 
+body: Here's one approach: skip dealing with bad_alloc and terminate immediately: https://github.com/theuni/bitcoin/commit/28afe574567ba838d46959047282460dbab39b91
+
+Edit: I'm uneasy with all approaches that I've come up with, but bailing immediately seems like the least likely thing to cause issues. I believe in the case above, at least, this would have worked.
+
+Edit2: prevector calls malloc/realloc directly. So we'd either need to switch to new[] there, or call std::get_new_handler() directly. 
+
+comment number: 282439090 
+body: One possible way to explain this (from IRC):
+
+"10:39:08 Prune:" is the prune called by AcceptBlock's FlushStateToDisk call (seems obvious given the Pre-allocating blk just above)....now, that flush call hit fDoFullFlush triggering a pcoinsTip->Flush(). OK, so now in CCoinsViewDB::BatchWrite we iterate over the entries in mapCoins, allocating memory for each one in the leveldb batch, erasing *AS WE GO*...at some point it ran out of memory, throwing bad_alloc and leaving pcoinsTip in an inconsistent state, but std::bad_alloc is not an std::runtime_error so the catch at the end of FlushStateToDisk didnt catch it. OK, phew, so now we go to connect the next block and fail to connect its inputs (without allocating new disk space). I /think/ that explains your debug.log without hand waving about hardware errors 
+
+comment number: 283016366 
+body: Worked around by #9856 
+
+31. bug report number : ['9829']
+comment number: 282857724 
+body: Rebased ada5fab2d3882be526db9c85d0ce7ecaf1953de0 -> 306bd72157f089b962b9c537bbacf710a4158647 ([multiinc.1](https://github.com/ryanofsky/bitcoin/commits/pr/multiinc.1) -> [multiinc.2](https://github.com/ryanofsky/bitcoin/commits/pr/multiinc.2)) because of conflict with #9875. 
+
+comment number: 282891184 
+body: utACK 306bd72157f089b962b9c537bbacf710a4158647 
+
+comment number: 283030952 
+body: utACK 306bd72157f089b962b9c537bbacf710a4158647 
+
+32. bug report number : ['9816']
+comment number: 281297973 
+body: Confirmed.
+
+```
+Program received signal SIGSEGV, Segmentation fault.
+0x00000001001f3e16 in WalletFrame::addWallet (this=0x1020ed032 <QMenu::clear()+210>, name=..., 
+    walletModel=0x7fff5fbfecb0) at qt/walletframe.cpp:46
+46	    WalletView *walletView = new WalletView(platformStyle, this);
+(gdb) where
+#0  0x00000001001f3e16 in WalletFrame::addWallet (this=0x1020ed032 <QMenu::clear()+210>, name=..., 
+    walletModel=0x7fff5fbfecb0) at qt/walletframe.cpp:46
+```
+
+Confirmed also on master. `bitcoind` works OK.
+ 
+
+comment number: 281301897 
+body: @jonasschnelli Do you have an idea? 
+
+comment number: 281344207 
+body: I'll take a look at this. Thanks for the report. 
+
+33. bug report number : ['9777']
+comment number: 280374244 
+body: > I've set MAX_MAX_SIG_CACHE_SIZE absurdly high (16GB) for now, so setting maxsigcachesize to anything unreasonably large will still cause a bad_alloc for most users. Input welcomed on what a more reasonable MAX_MAX_SIG_CACHE_SIZE should be, or whether we should leave it out entirely.
+
+I'd say that is reasonable. We don't want bad_alloc for negative amounts (which you fixed), but if the user specifies a higher value than available memory then it's what you expect. Even better error handling would catch the bad_alloc and print a friendly error message, but that's overdoing it in this particular case. 
+
+comment number: 280415504 
+body: utACK e6374a0.
+
+I would say it'd also be fine to restrict to ~512MB (covers at least a full day of maximum sigop blocks) if you want to be more aggressive about it, but 16GB is fine too. 
+
+comment number: 280425324 
+body: utACK
+ 
+
+comment number: 280451398 
+body: utACK e6374a0
+ 
+
+comment number: 280456696 
+body: utACK e6374a0, perhaps some squashing can be done, at least the first 2 commits. Not a big deal though. 
+
+comment number: 280460755 
+body: ACK https://github.com/bitcoin/bitcoin/pull/9777/commits/e6374a03b9869362595acd5cc5e5b8994b244af1
+
+`-maxsigcachesize=0` does not result in a crash anymore. Max limit applies (=20000 results in 16384).
+
++1 for squashing.
+ 
+
+comment number: 280539982 
+body: > I believe the most common case of a large value though is misunderstanding the units (e.g. giving it a limit in bytes).
+
+Or using a pre-2016 bitcoin.conf when maxsigcachesize was measured in cache entries instead of MiB :( 
+
+comment number: 280545127 
+body: ouch. uh. that is an argument for throwing an error or renaming the argument rather than just claiming to an insane value. 
+
+comment number: 280581194 
+body: > ouch. uh. that is an argument for throwing an error or renaming the argument rather than just claiming to an insane value.
+
+Yes it also would have been perfectly valid to make `InitSignatureCache()` return an error status, and handle the error upstream by printing a message (hopefully a generalized "value out of range" one instead of adding a specific translation message) instead of clamping it here.
+
+However now that we have this, I don't see a point in redesigning it again and going through another review. As you say there are an infinite number of more pressing issues. 
+
+comment number: 280582566 
+body: squashed d72fe44fc1989575ff5de98c882c0010d1de26e7..e6374a03b9869362595acd5cc5e5b8994b244af1 into 55c403b8febe02555c52bac7028cd6b1f006fad1, merged via 8dee8221770893fbf0ec6c19ad385537984ba44f
+ 
+
+34. bug report number : ['9759']
+comment number: 279739811 
+body: @JeremyRubin 
+
+comment number: 279883480 
+body: 0.14 tag, probably, because its a regression (and hopefully easy fix). 
+
+comment number: 279914568 
+body: I guess You mean `if (nMaxCacheSize < MIN_SIG_CACHE_SIZE)` ?  
+
+comment number: 279957164 
+body: @jnewbery Seems like a simple fix. Create a PR? 
+
+comment number: 279973126 
+body: Seems fine! I think you could also just call `setup_bytes(max(0, nMaxCacheSize))` and it should work OK (if I recall correctly, a call to setup_bytes with argument 0 will construct a cache with only 2 elements). 
+
+comment number: 279974327 
+body: Woud also  be ok to call setup(0) inside cuckoocache constructor, if you want to not have that requirement.
+
+On a meta note, it's a little concerning that we check the cache when nMaxCacheSize is 0. If this is a common case, it may be worthwhile to otherwise disable trying to check the cache when it is 0. 
+
+comment number: 280051176 
+body: Are you going to PR the (trivial) fix or should I?
+
+I don't think this should hold up 0.14. Easiest workaround is to just not set `-maxsigcachesize` to zero. 
+
+comment number: 280078158 
+body: @laanwj I'll PR today 
+
+comment number: 280112579 
+body: I've confirmed that @JeremyRubin is correct and that `setup_bytes(0)` creates a cache with two elements. 
+
+`nMaxCacheSize` is unsigned, so can never be < 0. The fix is therefore just to remove the line:
+```c
+if (nMaxCacheSize <= 0) return;
+```
+(and add a comment). PR is here: https://github.com/bitcoin/bitcoin/pull/9770/files
+
+I've tested this with `-maxsigcachesize` set to zero and bitcoind no longer segfaults. 
+
+35. bug report number : ['9687']
+comment number: 277452016 
+body: Hmm, it may be that the race addressed by #9671 was more possible than I thought. Its hard to debug further from your debug.log, but you might try running with -debug or -debug=net based on current master to see if its still there (and have more info next time). 
+
+comment number: 279883666 
+body: Can you try to reproduce this on current master? Shouldn't be any (known) crashes or real races left, I believe. 
+
+comment number: 322017629 
+body: @dooglus Can you follow up here? If you can no-longer reproduce can you close this issue. 
+
+comment number: 322023849 
+body: The crash was quite rare. I think I only ever saw it twice. I could never reproduce it, it just happened very occasionally.
+
+I've not seen it since February.
+
+I guess I'll close it. 
+
+36. bug report number : ['9679']
+comment number: 277372531 
+body: Can this get an 0.14 tag, since its a simple bugfix. 
+
+comment number: 277402146 
+body: utACK 7b2d96b634f9fd283480caf3bece56138d0587e3 
+
+comment number: 277404887 
+body: utACK 7b2d96b634f9fd283480caf3bece56138d0587e3
+ 
+
+37. bug report number : ['9631']
+comment number: 275327139 
+body: Bug confirmed. Should not be over complicated to fix.
+
+<img width="1070" alt="bildschirmfoto 2017-01-26 um 08 51 36" src="https://cloud.githubusercontent.com/assets/178464/22323704/e23d669a-e3a4-11e6-999e-67f83379c931.png">
+ 
+
+38. bug report number : ['9511']
+comment number: 272031829 
+body: utACK 116419e58dddef8fe3ff9806a1d8ceebe64ae3e6 
+
+comment number: 272045730 
+body: utACK 116419e 
+
+comment number: 274187431 
+body: utACK 
+
+comment number: 274474311 
+body: utACK 116419e 
+
+39. bug report number : ['9491']
+comment number: 272300513 
+body: @gmaxwell I also found this surprising.  My first inclination was that we should change it, but then it means if you ever leave off a timestamp, you're stuck rescanning the whole chain.
+
+Perhaps with proper documentation we could have 3 states.
+rescan: false - no rescan
+no rescan option set - rescan starts at the minimum of only the provided timestamps (current behavior)
+rescan: true - rescan starts at genesis unless all timestamps are provided and then starts at the minimum of the timestamps.
+
+
+I only wish it could tell you what it was planning to rescan before it did it, so you could pull the plug on your computer if you got it wrong. 
+
+comment number: 273867521 
+body: One option is that if it concludes it should rescan everything, it could fail and force you to run with the rescan option set to true. 
+
+comment number: 274777711 
+body: So you must either provide all timestamps or provide rescan = true.   And a left off timestamp = genesis.   The sounds reasonable to me ,  but then I think we need the shorthand for now? 
+
+comment number: 274931851 
+body: I think it would be safer if the timestamp defaults to the beginning of time. I think it's a better situation to encourage people to use correct timestamps (and rescan=true), rather than have all keys default to 'now'. 
+
+comment number: 274961263 
+body: @gmaxwell that sounds good.
+So...
+
+rescan: false - no rescan
+no rescan option set - rescan starts at the minimum of the provided timestamps, but if one is missing throw an exception
+rescan: true - rescan starts at the minimum of the provided timestamps, or genesis if one or more is missing. 
+
+comment number: 274963835 
+body: @TheBlueMatt I believe the default for `rescan` should be true, and there should be no difference between not setting it and passing true.
+
+Rationale: rescanning using `-rescan` on the command line would result in unexpected behaviour otherwise. The only reasonable condition under which `-rescan` should skip a block is when all key birthdates are known to be later in time. 
+
+comment number: 274964216 
+body: Perhaps introducing a special value for 'timestamp' to explicitly indicate a key is new is a possibility (perhaps "now" or -1)? 
+
+comment number: 274972539 
+body: @sipa hmm? How would `-rescan` result in strange behavior if you threw, instead of doing any importing? Because it failed to do anything `-rescan` will only look at the things that were previously there, which is unchanged behavior. 
+
+comment number: 277052835 
+body: I think the simplest change for now is just making the timestamp mandatory. That requirement can later be relaxed in future versions if we agree on sensible defaults. 
+
+comment number: 277052843 
+body: `importmulti` can import private keys, which is itself a risk to funds loss for end users who don't know what they're doing. So IMO this isn't a blocker.
+
+But not having a default allows for setting a default later, so if we're unsure of what defaults ought to be, simply requiring the user to specify it seems like a good alternative. 
+
+comment number: 277053115 
+body: `[20:10:05]  <wumpus>	or have no default at all and require a time to be specified`
+
+I think we should make the field mandatory. IMO we can expect API are capable of providing a reasonable timestamp. If they set it to `0`, so be it. 
+
+comment number: 277053215 
+body: We need a clean way to specify "now". 
+
+comment number: 277053484 
+body: Is it possible to have the timestamp parameter be both an integer and a string? If so, we could just make it be a string "now" to specify "now" 
+
+comment number: 277053789 
+body: > We need a clean way to specify "now".
+
+Why would that be required?
+An imported key has very unlikely a generation timestamp of "now"? 
+
+comment number: 277054374 
+body: Maybe it should be "unused" instead of "now". From the point of the wallet, they should be treated identically. Jonas is right that "now" is very unlikely, but I think it is very likely that you're importing keys that are known to be unused. 
+
+comment number: 277054805 
+body: right.  Now means so far unused as far as I'm concerned. 
+
+comment number: 277370282 
+body: #9682 has an implementation of the suggested importmulti changes. 
+
+40. bug report number : ['9466']
+comment number: 270404216 
+body: This is fixed by #9404. 
+
+comment number: 270451704 
+body: @gmaxwell to be clear it's not completely fixed...  it's just much less likely to happen.   
+
+comment number: 270531582 
+body: Oh nice find! When I was going through my transactions, I noticed that occasionally it was paying absolutely ridiculous fee rates. I had assumed it was a problem with the fee estimation, but I'm guessing I was hit by this.  
+
+41. bug report number : ['9302']
+comment number: 265837943 
+body: utACK a0728ccebb155b09cc537c88275662e33c1ab675
+Would be nice if someone could write a test for this. 
+
+comment number: 265854226 
+body: utACK b3a7410
+
+I think this needs release notes documenting the change in behavior.
+
+For 0.14.0 (not backport) we should also consider how to pass on the information on whether the tx was accepted to the mempool and if not why not? 
+
+comment number: 265879696 
+body: utACK. Will test.
+
+@morcos  the listtransaction output tells you if the transaction is currently in the mempool, and we log the rejection. Is that covering a lot of your thinking?
+ 
+
+comment number: 265900122 
+body: utACK. It may make sense to move broadcasting outside of CommitTransaction entirely, but this is good enough for now (and backport). 
+
+comment number: 266017276 
+body: ACK b3a74100b86423c553ac327f3ea6fdbc2c50890a, wrote up a quick test to exercise the logic (EDIT: note that this test is no good to merge, as #9262 may require it to be rewritten):
+
+```
+diff --git a/qa/rpc-tests/wallet.py b/qa/rpc-tests/wallet.py
+index 3c0dc0f..6435f00 100755
+--- a/qa/rpc-tests/wallet.py
++++ b/qa/rpc-tests/wallet.py
+@@ -346,5 +346,18 @@ class WalletTest (BitcoinTestFramework):
+         assert_equal(coinbase_tx_1["transactions"][0]["blockhash"], blocks[1])
+         assert_equal(len(self.nodes[0].listsinceblock(blocks[1])["transactions"]), 0)
+ 
++        # Test that spending coins doesn't fail as long as balance is high enough.
++        to_send = 0.05
++        txids = []
++        while self.nodes[0].getbalance() > to_send:
++            txids.append(self.nodes[0].sendtoaddress(self.nodes[0].getnewaddress(), to_send))
++
++        mempool = self.nodes[0].getrawmempool()
++        sent_tx_not_in_mempool = False
++        for txid in txids:
++            if (txid not in mempool):
++                sent_tx_not_in_mempool = True
++        assert(sent_tx_not_in_mempool) # otherwise test needs to be updated to cover this case
++
+ if __name__ == '__main__':
+     WalletTest().main()
+```
+ 
+
+comment number: 266042728 
+body: @gmaxwell No, I mean more than that. I think it would be good to inform the user that for some reason his transaction has not be accepted to the mempool.  Perhaps there is no good way to do this without breaking the RPC API, but at the very least we could do it from the GUI.
+
+But to be clear, I do not think that should be a blocker for this.  I'll agree that this is an improvement, I just think we should continue to improve afterwards...
+
+
+ 
+
+comment number: 266068535 
+body: ACK
+
+ 
+
+comment number: 266270824 
+body: ACK 
+
+comment number: 266271942 
+body: utACK b3a74100b86423c553ac327f3ea6fdbc2c50890a 
+
+comment number: 266272161 
+body: I'd prefer not to merge any test case for this, as a passing test would assert that there is a bug in the code base. Tests are usually written to assert that there are no bugs... 
+
+comment number: 266282536 
+body: @marcofalke what do you mean by that?  There are certainly ways for transactions to not be accepted into the memory pool which aren't bugs and I think it could make sense to verify that a txid is still returned.  
+
+comment number: 266284389 
+body: @morcos What I mean is that the wallet logic should take care that a transaction is accepted to the mempool. When it is not possible, return early in the wallet logic and don't commit the transaction to the wallet, otherwise it is a bug.
+
+I see the return-txid patch as a temporary workaround and not a solution to the problem. So sure, you could create a unit test to check that a transaction fails ATMP but still returns true when commited, but I don't think it makes sense to create a functional test for this. Note that the test above by sdaftuar relies on bug #9019. Another (maybe minimal) test case could rely on bug #9316. Similarly you could come up with a test that pumps the mempoolminfee above the default wallet fee rate, I assume. Of course one could argue that some of these are features and not bugs, but as long as they appear in conjunction with `-walletbroadcast` enabled, I consider them bugs. 
+
+comment number: 266289492 
+body: @MarcoFalke ah ok, yes I mostly agree.  However I think that too long chains may end up being an exception to that where we want the wallet to generate and save the transaction even if its not accepted to the mempool.  That's obviously after a best efforts try to create the transaction without a too long chain.
+  
+In any case, I think we both agree nothing more needed on this PR (but release notes still needed)
+
+ 
+
+comment number: 266540153 
+body: @sdaftuar fwiw https://github.com/bitcoin/bitcoin/pull/9262 will no longer change any behavior by default aside from attempt to make shorter chains so that test may be fine 
+
+comment number: 266540448 
+body: utACK b3a74100b86423c553ac327f3ea6fdbc2c50890a 
+
+comment number: 266682320 
+body: utACK https://github.com/bitcoin/bitcoin/commit/b3a74100b86423c553ac327f3ea6fdbc2c50890a 
+
+comment number: 267018548 
+body: Backport in #9347 (release notes already merged) 
+
+42. bug report number : ['9269']
+comment number: 264616102 
+body: No way to test ? 
+
+comment number: 264616641 
+body: I believe in practice it never matters, as the added field is in the last
+place, and the size of COrphan isn't used. However, it is technically
+undefined behaviour I think.
+ 
+
+comment number: 264639977 
+body: utACK 22970b0537c9b1747ab66760b8d528fb32848262 
+
+comment number: 264653532 
+body: ACK 22970b0
+
+Minor nit: change the comment: COrphan -> COrphanTx.
+
+Looks like main is still not dead:
+https://github.com/bitcoin/bitcoin/pull/9269/commits/22970b0537c9b1747ab66760b8d528fb32848262#diff-eb50db371aa7bd12e62a13879bc661f7L25
+
+;-) 
+
+comment number: 264722859 
+body: nit: Maybe add a comment to the main definition to remind people to update this one? (ugly but...)
+
+utACK. 
+
+comment number: 264739525 
+body: Alternatively, we could just expose these functions from main.h, and not duplicate them at all... 
+
+comment number: 264751691 
+body: Would prefer to not expose them from net_processing.h, even if duplicating them is really gross. Would prefer to add a comment instead. 
+
+comment number: 264795027 
+body: Added a comment. 
+
+comment number: 264814423 
+body: Adding fields to the end is harmless, a lot of software relies on that with ABIs.
+
+But it makes sense to sync it anyhow, ACK 
+
+43. bug report number : ['9253']
+comment number: 264090880 
+body: utACK 9e1f46821d5bb69e2cbf25738eefa7c6cb99c838 
+
+comment number: 264094773 
+body: utACK https://github.com/bitcoin/bitcoin/commit/9e1f46821d5bb69e2cbf25738eefa7c6cb99c838 
+
+comment number: 264096500 
+body: What is returned by `mapMultiArgs.at("-bind").size()` if `!mapMultiArgs.count("-bind")`? Do we need the condition at all?
+Edit: answering to myself: `std::out_of_range` exception is thrown. 
+
+comment number: 264096923 
+body: @paveljanik It would raise an exception. Using `[]` instead would result in adding "-bind" as a key to the map. 
+
+comment number: 264097453 
+body: ACK 9e1f468 
+
+comment number: 264100798 
+body: utACK 9e1f46821d5bb69e2cbf25738eefa7c6cb99c838 
+
+comment number: 264140914 
+body: utACK 
+
+comment number: 264228581 
+body: utACK 9e1f46821d5bb69e2cbf25738eefa7c6cb99c838 
+
+comment number: 264293203 
+body: utACK
+
+@laanwj ready for merge
+
+ 
+
+44. bug report number : ['9212']
+comment number: 262515959 
+body: Are we really sending inv to the peer which failed VERSION processing? Is this another instance fixed by the first commit in #9128? 
+
+comment number: 262573727 
+body: @paveljanik looks that way :( But that's why the assertion was added, to obviate what we might've been leaking for a while.
+
+This should be fixed by #9128, but we should still track down the individual case so that we can backport a simpler fix. 
+
+comment number: 262738391 
+body: I've just seen this , however running master on main-net.
+```
+2016-11-24 10:02:35 UpdateTip: new best=000000000000000000b3bc203b1183b19e19c4552eefa4fa3b582b7773e0a1c5 height=440334 version=0x20000000 log2_work=85.584251 tx=173289265 date='2016-11-24 10:02:29' progress=1.000000 cache=742.7MiB(784785tx) warning='1 of last 100 blocks have unexpected version'
+2016-11-24 10:02:53 receive version message: /Satoshi:0.9.2.1/: version 70002, blocks=440335, us=203.59.204.161:8333, peer=23
+2016-11-24 10:02:53 UpdateTip: new best=000000000000000000a42b9772a3801d7d001918308de0d4807fe193534e6fe6 height=440335 version=0x20000000 log2_work=85.584282 tx=173291724 date='2016-11-24 10:02:34' progress=1.000000 cache=743.8MiB(787074tx) warning='1 of last 100 blocks have unexpected version'
+2016-11-24 10:02:54 ProcessMessages(version, 102 bytes) FAILED peer=22
+Assertion failed: (nSendVersion != 0), function GetSendVersion, file ./net.h, line 775.
+Abort trap: 6
+``` 
+
+comment number: 263059754 
+body: Anything left to do here after #9128? I know we want to backport those fixes such as #9117, but I couldn't find the commit for backport for this issue report. 
+
+comment number: 267085156 
+body: This is still happening with master, on mainnet, as of last week (with #9128 merged), or came back with one of the pulls I was testing, see #9348.
+
+Nit: we should avoid using assert() for error handling in network code. We should just log a message in these cases and boot the peer. It's only a small step from a bug/oversight to a P2P-triggerable DoS. 
+
+comment number: 267175432 
+body: In my race-detection testing I had a fix for this (not sure if it was for a detected race, another bug, or actually seeing this assert, I dont recall now), which was to not deserialize the version message directly into pfrom->nVersion, but deserialize into a temp and set pfrom->nVersion only after pfrom->SetSendVersion. I'd bet pretty heavily on the use of nVersion != 0 as "are we connected" prior to having set send version is what triggers this. 
+
+comment number: 267253491 
+body: Indeed, it must be a race. I checked my traceback and it checks for `pto->nVersion` the line before calling `GetSendVersion` which asserts out because the nVersion is 0.
+```
+        // Don't send anything until we get its version message
+        if (pto->nVersion == 0 || pto->fDisconnect)
+            return true;
+
+        // If we get here, the outgoing message serialization version is set and can't change.
+        CNetMsgMaker msgMaker(pto->GetSendVersion());
+```
+ 
+
+45. bug report number : ['9060']
+comment number: 257749165 
+body: I don't see anything wrong with doing this, though the IsEmpty/IsFull optimizations were largely a pretextual optimization intended to make unexploitable a remote crash vulnerability (integer division by zero) that existed in the original bloom filtering code without disclosing it. I'm doubtful that they are all that useful. :)
+
+(if someone does want to remove them entirely, make sure to actually remove the vulnerability too! :) )
+ 
+
+comment number: 257749542 
+body: We need to be better about documenting such failures after sufficient time has passed...
+
+On November 1, 2016 9:39:50 PM EDT, Gregory Maxwell notifications@github.com wrote:
+
+> I don't see anything wrong with doing this, though the IsEmpty/IsFull
+> optimizations were largely a pretextual optimization intended to make
+> unexploitable a remote crash vulnerability (integer division by zero)
+> that existed in the original bloom filtering code without disclosing
+> it.
+> 
+> ## 
+> 
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/pull/9060#issuecomment-257749165
+ 
+
+comment number: 257815300 
+body: utACK https://github.com/bitcoin/bitcoin/pull/9060/commits/cccf73db0483cc3945bf8389ce197df35e931e16, as long as we still have these optimizations they should at least be correct.
+ 
+
+46. bug report number : ['8876']
+comment number: 251292799 
+body: I've been able to reproduce this.
+
+On October 4, 2016 12:21:23 AM randy-waterhouse notifications@github.com 
+wrote:
+
+> ### Describe the issue
+> 
+> bitcoin-qt: Debug pop-up window, Peers tab, right-click ban node for 1 
+> hour, day, week, year does nothing. Disconnect node still works.
+> 
+> ### Is the issue reproducible?
+> 
+> Yes.
+> 
+> #### List steps to reproduce below:
+> 1. build master branch after commit 
+>    https://github.com/bitcoin/bitcoin/commit/6423116741de2144872389cf63a621539ae79aaa
+> 2. launch bitcoin-qt (on testnet is advisable)
+> 3. test ban node list right-click functionality on Menu->Help->Debug pop-up 
+>    window, Peers tab.
+> 
+> ## 
+> 
+> You are receiving this because you are subscribed to this thread.
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/8876
+ 
+
+47. bug report number : ['8540']
+comment number: 240771046 
+body: Concept ACK b4a9aa511c95a1bd0da8ae363b3b9c0b3b7afe4e. Is this something for 13.1?
+ 
+
+comment number: 240771364 
+body: > Concept ACK b4a9aa5. Is this something for 13.1?
+
+yes, probably
+ 
+
+48. bug report number : ['8411']
+comment number: 235646910 
+body: Can you post the output from RPCs `getchaintips` and `getpeerinfo`? You can
+use bitcoin-cli if you're running bitcoind or bitcoin-qt in server mode, or
+the debug console in bitcoin-qt.
+ 
+
+comment number: 235706426 
+body: Fwiw, I've restarted the node multiple times now.
+
+``` json
+[
+  {
+    "height": 422512,
+    "hash": "000000000000000001d4563054004ac901876bff14c5a6a97e01c02664198bf7",
+    "branchlen": 128216,
+    "status": "headers-only"
+  }, 
+  {
+    "height": 294296,
+    "hash": "0000000000000000b7a12a4c2e77b71d6938ce3489eb44a36757d362ac2705ac",
+    "branchlen": 0,
+    "status": "active"
+  }
+]
+```
+
+``` json
+[
+  {
+    "id": 1,
+    "addr": "84.125.96.47:8333",
+    "addrlocal": "67.60.48.28:50396",
+    "services": "0000000000000005",
+    "relaytxes": true,
+    "lastsend": 1469650181,
+    "lastrecv": 1469650181,
+    "bytessent": 17426,
+    "bytesrecv": 204513,
+    "conntime": 1469649962,
+    "timeoffset": -1,
+    "pingtime": 0.563988,
+    "minping": 0.563988,
+    "version": 70012,
+    "subver": "/Classic:1.1.0/",
+    "inbound": false,
+    "startingheight": 422511,
+    "banscore": 0,
+    "synced_headers": 422512,
+    "synced_blocks": 294296,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 3,
+    "addr": "91.121.25.211:8333",
+    "addrlocal": "67.60.48.28:50401",
+    "services": "0000000000000001",
+    "relaytxes": true,
+    "lastsend": 1469650179,
+    "lastrecv": 1469650179,
+    "bytessent": 14511,
+    "bytesrecv": 144843,
+    "conntime": 1469649969,
+    "timeoffset": -238,
+    "pingtime": 0.205452,
+    "minping": 0.205452,
+    "version": 70002,
+    "subver": "/Satoshi:0.10.2/",
+    "inbound": false,
+    "startingheight": 422511,
+    "banscore": 0,
+    "synced_headers": 422512,
+    "synced_blocks": 294296,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 4,
+    "addr": "142.4.211.100:8333",
+    "addrlocal": "67.60.48.28:50402",
+    "services": "0000000000000005",
+    "relaytxes": true,
+    "lastsend": 1469650180,
+    "lastrecv": 1469650180,
+    "bytessent": 20340,
+    "bytesrecv": 198927,
+    "conntime": 1469649970,
+    "timeoffset": -72,
+    "pingtime": 0.165906,
+    "minping": 0.165906,
+    "version": 70012,
+    "subver": "/Satoshi:0.12.0/",
+    "inbound": false,
+    "startingheight": 422511,
+    "banscore": 0,
+    "synced_headers": 422512,
+    "synced_blocks": 294296,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 5,
+    "addr": "192.99.5.100:8333",
+    "addrlocal": "67.60.48.28:50405",
+    "services": "0000000000000005",
+    "relaytxes": true,
+    "lastsend": 1469650169,
+    "lastrecv": 1469650169,
+    "bytessent": 2010,
+    "bytesrecv": 92290,
+    "conntime": 1469649976,
+    "timeoffset": -13,
+    "pingtime": 36.757002,
+    "minping": 0.848646,
+    "version": 70012,
+    "subver": "/Satoshi:0.12.1(bitcore)/",
+    "inbound": false,
+    "startingheight": 392313,
+    "banscore": 0,
+    "synced_headers": -1,
+    "synced_blocks": -1,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 6,
+    "addr": "91.134.235.4:8333",
+    "addrlocal": "67.60.48.28:50406",
+    "services": "0000000000000004",
+    "relaytxes": true,
+    "lastsend": 1469650180,
+    "lastrecv": 1469650181,
+    "bytessent": 28050,
+    "bytesrecv": 5097278,
+    "conntime": 1469649977,
+    "timeoffset": 1,
+    "pingtime": 0.344844,
+    "minping": 0.344844,
+    "version": 70012,
+    "subver": "/Satoshi:0.12.1/",
+    "inbound": false,
+    "startingheight": 422511,
+    "banscore": 0,
+    "synced_headers": 422512,
+    "synced_blocks": -1,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 7,
+    "addr": "198.143.186.3:8333",
+    "addrlocal": "67.60.48.28:50443",
+    "services": "0000000000000015",
+    "relaytxes": true,
+    "lastsend": 1469650179,
+    "lastrecv": 1469650179,
+    "bytessent": 15449,
+    "bytesrecv": 1196902,
+    "conntime": 1469650011,
+    "timeoffset": -2,
+    "pingtime": 0.068954,
+    "minping": 0.068954,
+    "version": 80001,
+    "subver": "/BitcoinUnlimited:0.12.0(EB16; AD4)/",
+    "inbound": false,
+    "startingheight": 422511,
+    "banscore": 0,
+    "synced_headers": 422512,
+    "synced_blocks": 294296,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 8,
+    "addr": "54.200.14.112:8333",
+    "addrlocal": "67.60.48.28:50450",
+    "services": "0000000000000001",
+    "relaytxes": true,
+    "lastsend": 1469650180,
+    "lastrecv": 1469650180,
+    "bytessent": 13948,
+    "bytesrecv": 97861,
+    "conntime": 1469650028,
+    "timeoffset": -1,
+    "pingtime": 0.032364,
+    "minping": 0.032364,
+    "version": 70002,
+    "subver": "/Satoshi:0.11.0/",
+    "inbound": false,
+    "startingheight": 422511,
+    "banscore": 0,
+    "synced_headers": 422512,
+    "synced_blocks": 294296,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 10,
+    "addr": "180.150.226.116:8333",
+    "addrlocal": "67.60.48.28:50469",
+    "services": "0000000000000005",
+    "relaytxes": true,
+    "lastsend": 1469650181,
+    "lastrecv": 1469650181,
+    "bytessent": 2096,
+    "bytesrecv": 9397,
+    "conntime": 1469650142,
+    "timeoffset": -1,
+    "pingtime": 0.243645,
+    "minping": 0.243645,
+    "version": 70012,
+    "subver": "/Satoshi:0.12.1/",
+    "inbound": false,
+    "startingheight": 422512,
+    "banscore": 0,
+    "synced_headers": 422512,
+    "synced_blocks": 294296,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }
+]
+```
+ 
+
+comment number: 237693610 
+body: Still reporting no block sources available.
+ 
+
+comment number: 237742431 
+body: Can you start with `-debug=net` and check in the lock if you have better information about the messages received ?
+ 
+
+comment number: 238035612 
+body: Thanks. Net log shows plenty of traffic and some but not many rejections.
+Attached is log from startup for today.
+[nettrace_wkbaran_2016aug06.txt](https://github.com/bitcoin/bitcoin/files/405110/nettrace_wkbaran_2016aug06.txt)
+ 
+
+comment number: 238057508 
+body: Your node does not even ask for new blocks, interesting. But it seems to know about the biggest chain still. Will check out.
+ 
+
+comment number: 238061864 
+body: @wkbaran You're running an old (v0.12) version.. does this problem still exist with the latest (v0.13) version?
+ 
+
+comment number: 238070129 
+body: @rebroad 0.12.1 is currently the latest stable version. Also running an "old" version shouldn't cause any problems. I think you can get 0.8 and still sync by just letting it run long enough.
+ 
+
+comment number: 238082995 
+body: @rebroad Yes. I moved to 0.12 to see if that would fix the issue.
+I'll give 0.8 a try. Thanks @MarcoFalke 
+ 
+
+comment number: 238083289 
+body: @wkbaran Please don't. Version 0.8 is no longer supported. I solely mentioned it to illustrate the point that "old" software should still work.
+ 
+
+comment number: 238083369 
+body: Oh ok.
+ 
+
+comment number: 240617668 
+body: I'm having the same symptoms with v0.12.1-g9779e1e1 on linux (4.4.6-gentoo). 
+
+Special installation - the blocks dir is symlinked to a NFS drive (accessed by only a single computer).
+
+```
+getchaintips
+[
+  {
+    "height": 425668,
+    "hash": "0000000000000000019a7e0c25edb9e81493c88fec69a326fa3e435b7fe28a77",
+    "branchlen": 81611,
+    "status": "headers-only"
+  }, 
+  {
+    "height": 344057,
+    "hash": "0000000000000000021cb18ec216ff9522b0ac87895041c56153cfa352f5e261",
+    "branchlen": 0,
+    "status": "active"
+  }, 
+  {
+    "height": 336554,
+    "hash": "00000000000000000c68c54e767c945f3e08d77208ad6ea01e3c4b41fe0778b0",
+    "branchlen": 1,
+    "status": "valid-headers"
+  }, 
+  {
+    "height": 335742,
+    "hash": "00000000000000000c40362958d0f1193cfb4501d17d36f31e18a1b63a772f24",
+    "branchlen": 1,
+    "status": "valid-headers"
+  }, 
+  {
+    "height": 335644,
+    "hash": "00000000000000001b2f46a8b4c7c0619338db4ea5643810962b961ed2a5d44a",
+    "branchlen": 1,
+    "status": "valid-fork"
+  }, 
+  {
+    "height": 335464,
+    "hash": "00000000000000001a131ce2cf11f52b64155de1bc8adef22a57c297f0c1d6bc",
+    "branchlen": 1,
+    "status": "valid-fork"
+  }, 
+  {
+    "height": 325691,
+    "hash": "00000000000000001dca095a71642fb5fa3ead2e965870451ffdf025b8ad9242",
+    "branchlen": 1,
+    "status": "valid-headers"
+  }, 
+  {
+    "height": 304822,
+    "hash": "0000000000000000326712413c774d233eed4cfeb97facd3c66dca7b143fd41a",
+    "branchlen": 1,
+    "status": "valid-headers"
+  }, 
+  {
+    "height": 110,
+    "hash": "00000000f251625ddf6d11ce65aff673129d5464418d5d26542acb0bf18590ca",
+    "branchlen": 110,
+    "status": "valid-fork"
+  }
+]
+
+getpeerinfo
+[
+  {
+    "id": 2,
+    "addr": "195.56.63.10:8333",
+    "addrlocal": "xxxxxxxxxxxx",
+    "services": "0000000000000005",
+    "relaytxes": true,
+    "lastsend": 1471492300,
+    "lastrecv": 1471492300,
+    "bytessent": 19792,
+    "bytesrecv": 196206,
+    "conntime": 1471492029,
+    "timeoffset": 13,
+    "pingtime": 0.373318,
+    "minping": 0.310643,
+    "version": 70012,
+    "subver": "/Satoshi:0.12.1/",
+    "inbound": false,
+    "startingheight": 425670,
+    "banscore": 0,
+    "synced_headers": 425670,
+    "synced_blocks": 344057,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 3,
+    "addr": "67.167.88.176:8333",
+    "addrlocal": "xxxxxxxxxxxx",
+    "services": "0000000000000017",
+    "relaytxes": true,
+    "lastsend": 1471492300,
+    "lastrecv": 1471492300,
+    "bytessent": 20149,
+    "bytesrecv": 359644,
+    "conntime": 1471492074,
+    "timeoffset": -1,
+    "pingtime": 0.134369,
+    "minping": 0.134369,
+    "version": 70011,
+    "subver": "/Bitcoin XT:0.11.0F(Windows; x86_64)/",
+    "inbound": false,
+    "startingheight": 425670,
+    "banscore": 0,
+    "synced_headers": 425670,
+    "synced_blocks": 344057,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }, 
+  {
+    "id": 4,
+    "addr": "87.236.196.222:8333",
+    "addrlocal": "xxxxxxxxxxxx",
+    "services": "0000000000000001",
+    "relaytxes": true,
+    "lastsend": 1471492297,
+    "lastrecv": 1471492298,
+    "bytessent": 6491,
+    "bytesrecv": 72922,
+    "conntime": 1471492246,
+    "timeoffset": 0,
+    "pingtime": 0.300367,
+    "minping": 0.300367,
+    "version": 70002,
+    "subver": "/Satoshi:0.11.1/",
+    "inbound": false,
+    "startingheight": 425670,
+    "banscore": 0,
+    "synced_headers": 425670,
+    "synced_blocks": 344057,
+    "inflight": [
+    ],
+    "whitelisted": false
+  }
+]
+
+```
+
+Edit:  I reverted to v0.11.2-g7e278929 (on the same computer) and after re-indexing, I am able to synchronize with the chain again.
+ 
+
+comment number: 245308164 
+body: I just had this issue on 0.12.1. Upgrading to 0.13 did not change anything. I fixed it with `reconsiderblock "0000000000000000011c672f3731a6ba1a390331fb154d470eaf76419801d384"`. I also needed to restart the software after executing that statement. By itself it only synced one more block. Might be a bug.
+ 
+
+comment number: 285401500 
+body: i want to install the 32 bit or classic but then after verifying block it will say internal error see debug.log i don't know what to do. please fix. at first it went through until syncing process but then it shut down now that's the error. 
+
+49. bug report number : ['8402']
+comment number: 234938694 
+body: An overflow error during generation of JSON instead of parsing?
+That's odd.
+ 
+
+comment number: 236378160 
+body: > The master branch is regularly built and tested, but is not guaranteed to be completely stable. Tags are created regularly to indicate new official, stable release versions of Bitcoin Core.
+ 
+
+comment number: 237553140 
+body: I've been unable to reproduce this:
+
+``` bash
+$ curl --user __cookie__ --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getmininginfo", "params": [] }' -H 'content-type: text/plain;' http://127.0.0.1:8332/
+Enter host password for user '__cookie__':
+{"result":{"blocks":423636,"currentblocksize":0,"currentblockweight":0,"currentblocktx":0,"difficulty":201893210853.059,"errors":"This is a pre-release test build - use at your own risk - do not use for mining or merchant applications","networkhashps":1.506995848235919e+18,"pooledtx":13390,"testnet":false,"chain":"main"},"error":null,"id":"curltest"}
+```
+
+Also I still don't fully understand how this can happen. The error `JSON integer out of range` is raised in `UniValue::get_int()` and `UniValue::get_int64()`, neither of which is called in `getmininginfo` - as it has no arguments to parse.
+
+The only `get_int()` that is not part of a specific RPC command its input parsing is the one in `JSONErrorReply`. I suppose if something inside the call raises a JSONRPCError with an invalid "code" field, this could happen, it would be internally unable to parse its own error value. I don't see where/how this could happen though.
+ 
+
+comment number: 237617623 
+body: You're right; it wasn't a bug - it was a compatibility issue with my own code. I'll be posting a related trivial documentation fix shortly.
+ 
+
+50. bug report number : ['8334']
+comment number: 232029033 
+body: @maiiz Thanks for reporting. Are you working on a fix for that particular overflow?
+ 
+
+comment number: 232276506 
+body: @jonasschnelli  i just make a simple pull request for this issues, this my first commit~~
+ 
+
+comment number: 232278522 
+body: Just cast to double inside the expression... 400,000 BTC in a free transaction, must be nice! :P  (in the bitcoin network there really is no free transactions anymore, and I expect all the priority code will be removed soon, but while its there no reason to not fix it.)
+ 
+
+51. bug report number : ['8256']
+comment number: 228312607 
+body: Good catch!
+I take it that "АВарийный останов" is a "Segmentation Fault" in Russian (Google translates it as "Emergency Stop")?
+utACK https://github.com/bitcoin/bitcoin/pull/8256/commits/59b861b0dd4e5be5cb3dccc6a514d4904dd3c91a
+ 
+
+comment number: 228312914 
+body: Concept ACK. Thanks for adding steps to reproduce!
+ 
+
+comment number: 228323119 
+body: Thanks. Seems necessary.
+utACK d7828ab.
+ 
+
+52. bug report number : ['8230']
+comment number: 227270134 
+body: utACK
+ 
+
+comment number: 227271643 
+body: utACK ba6194928a03a474b442744511da4c753441469d
+ 
+
+comment number: 227369942 
+body: utACK ba61949
+Good catch!
+This mistake is all too easy to make, unfortunately.
+
+At some point we either need to rename one of those functions, or create an automatic checker for Printf/LogPrintf arguments, or both.
+ 
+
+comment number: 227370388 
+body: I hate that this isn't typesafe, what is this, PHP? :) ... when I saw the ticket open I felt immediately stupid, sure than it must have been me that did this again.  (posthumous utACK).
+ 
+
+comment number: 227372047 
+body: Eh, why is this merging into 0.12 though?
+Isn't this a problem on master?
+
+> I hate that this isn't typesafe, what is this, PHP? :) .
+
+Well it was a step up from C's printf - none of this will allow mangling values or corrupting memory.
+It is typesafe, e.g you don't need size specifiers, it doesn't matter if you use `%i` or `%lli` etc.
+Worst-case, you get an exception if the number of arguments doesn't match the number of `%`. Or nothing is logged and you rub your head why.
+There would be logging methods that are more robust, e.g. C++/Qt style:
+
+```
+LogInfo() << "";
+LogDebug("rpc") << "Invalid RPC call " << strMethod;
+```
+
+(tinyformat even uses this internally, but emulates C printf-isms because that was what was already in the code and this had the least impact)
+
+Then again, there's so much to do already, it's never been urgent.
+ 
+
+comment number: 227372832 
+body: Forward-ported to master as bf9c70b.
+(this is not how we usually work, please base your PR on master next time unless it's a backport)
+ 
+
+comment number: 227373332 
+body: Changing the debug category into an enum would also avoid type ambiguity
+(which arises from the fact that the format string and the debug category
+are both strings).
+ 
+
+comment number: 227374475 
+body: > Changing the debug category into an enum would also avoid type ambiguity
+
+That's a neat idea, a problem with that is that it requires centralizing all the debug categories of the program in one place. That would be inimical to modularization.
+
+Another option would be to create a DebugCategory type that is based on string, and only allow passing that as category argument.
+
+```
+DebugCategory LOG_RPC("rpc");
+...
+LogPrintf(LOG_RPC, "Invalid RPC call %s\n", strMethod);
+```
+ 
+
+53. bug report number : ['8196']
+comment number: 225503106 
+body: Can you post the `debug.log` and maybe the time when the "stack smashing" was detected?
+ 
+
+comment number: 225543935 
+body: The "stack smashing" error message was only in my console, there's nothing mentioned in my logs though. Here are the logs from when the client Bitcoin version v0.12.99.0-3e4cf8f terminated:
+
+---
+
+2016-06-12 23:44:56 socket send error Connection timed out (110)
+2016-06-12 23:45:00 socket send error Connection timed out (110)
+2016-06-12 23:45:07 socket recv error Connection timed out (110)
+2016-06-12 23:45:18 socket recv error Connection timed out (110)
+2016-06-12 23:45:18 UpdateTip: new best=0000000000000000033927d833b8c8b037a643d904b4924c1bbb83149944e3af height=416033 version=0x20000001 log2_work=84.820649 tx=135389797 date='2016-06-12 23:44:51' progress=1.000000 cache=53.2MiB(7183tx) warning='4 of last 100 blocks have unexpected version'
+2016-06-12 23:45:23 connect() to 216.155.129.35:8333 failed after select(): Connection refused (111)
+2016-06-12 23:45:27 receive version message: /bitcoinj:0.14.1/: version 70001, blocks=0, us=127.0.0.1:8333, peer=98
+2016-06-12 23:45:31 ProcessMessages: advertising address 92._.__.114:8333  [redacted]
+2016-06-12 23:45:31 receive version message: /Satoshi:0.12.1/: version 70012, blocks=416033, us=92.3.33.114:39254, peer=99
+2016-06-12 23:45:31 AdvertiseLocal: advertising address 92._.**.114:8333  [redacted]
+2016-06-12 23:45:34 receive version message: /bitcoinj:0.14.1/: version 70001, blocks=0, us=127.0.0.1:8333, peer=100
+2016-06-12 23:45:37 connect() to 198.46.152.2:8333 failed after select(): Connection refused (111)
+2016-06-12 23:45:37 ProcessMessages: advertising address 92.*.**.114:8333  [redacted]
+2016-06-12 23:45:37 receive version message: /Satoshi:0.12.1/: version 70012, blocks=416033, us=92.3.33.114:38186, peer=101
+2016-06-12 23:45:37 AdvertiseLocal: advertising address 92._.__.114:8333  [redacted]
+2016-06-12 23:45:52 receive version message: /bitnodes.21.co:0.1/: version 70002, blocks=416030, us=92.3.33.114:8333, peer=102
+2016-06-12 23:45:52 AdvertiseLocal: advertising address 92._.**.114:8333  [redacted]
+2016-06-12 23:46:01 tor: Thread interrupt
+2016-06-12 23:46:01 torcontrol thread exit
+2016-06-12 23:46:01 msghand thread interrupt
+2016-06-12 23:46:01 opencon thread interrupt
+2016-06-12 23:46:01 scheduler thread interrupt
+2016-06-12 23:46:01 addcon thread interrupt
+2016-06-12 23:46:01 net thread interrupt
+2016-06-12 23:46:01 Shutdown: In progress...
+2016-06-12 23:46:01 StopNode()
+2016-06-12 23:46:01 Shutdown: done
+2016-06-12 23:47:07
+
+---
+
+No idea why part of the log is in bold - ignore it.
+ 
+
+comment number: 225546550 
+body: Looks like it happens during shutdown, if you got that crash only after sending the `stop` command yourself. Is that the case?
+ 
+
+comment number: 225829850 
+body: Can you reproduce this?
+ 
+
+comment number: 225836151 
+body: I didn't issue any stop command, it terminated itself with the "stack" error in my screen console. I've since reverted back to the stable version I'm afraid, so am unable to reproduce.
+ 
+
+comment number: 225836638 
+body: There's nothing in that log to indicate that something else than RPC stop triggered the shutdown (it looks like a normal shutdown, even the final message `Shutdown: done`). Are you sure you quoted the right log?
+ 
+
+comment number: 225847332 
+body: Hmmmm. I done a search for "stack" in the debug log but it showed no results, so I posted the shutdown log closest to when I received the "**\* stack smashing detected ***: bitcoind terminated" error.
+
+I just done another search for "stack", "smashing" & "terminated" in the debug log - but nothing turns up, it's very strange.
+
+Edit: What does "stack smashing" mean actually?
+ 
+
+comment number: 225847623 
+body: That "stack smashing detected" will not be written to debug.log, but
+printed to the console.
+ 
+
+comment number: 225848367 
+body: Right, that's where I saw it. Never seen or heard of that message before, that's why I thought I should report it. Maybe if that message was reported in the log it would be easier to locate the cause?
+ 
+
+comment number: 225848780 
+body: It can't be. It's not bitcoind's code that is doing this detection, but the
+built-in stack smashing detector, added by the compiler.
+ 
+
+comment number: 237548964 
+body: We're lacking information to troubleshoot this.
+
+If this is an intermittent problem that happens randomly, I'd suggest starting bitcoind in gdb, then generating a backtrace if this happens and posting it here.
+
+To run bitcoind in gdb transparently, as well as possibly get a mail when it crashes, see my scripts here: https://gist.github.com/laanwj/29bc141fb8d10608651c
+ 
+
+54. bug report number : ['8004']
+comment number: 217081409 
+body: I think you're missing signal.h include at the places you use the type.
+ 
+
+comment number: 217751245 
+body: @laanwj ahh you were right 👍  
+ 
+
+comment number: 217791046 
+body: @catilac Mind to squash the commits?
+ 
+
+comment number: 217810102 
+body: ACK after squash into one "atomic" commit
+E.g.
+
+``` bash
+$ git checkout fix_signal_handler
+$ git rebase -i 88b77c7
+# set bottom two commits from 'pick' to 'squash', save and quit editor
+$ git push -f
+```
+ 
+
+comment number: 217896348 
+body: Ah right! Done and done.
+ 
+
+comment number: 217964439 
+body: utACK 326231611bda6808b579ab7286e471c36f62e98c
+ 
+
+comment number: 218063773 
+body: utACK 3262316
+ 
+
+comment number: 218351267 
+body: utACK 3262316
+ 
+
+comment number: 218749626 
+body: Thanks for [your small source code improvement](https://github.com/bitcoin/bitcoin/commit/326231611bda6808b579ab7286e471c36f62e98c).
+ 
+
+55. bug report number : ['7933']
+comment number: 214212713 
+body: I think this needs a test (that fails without this, and succeeds with it). Or are we talking about 'insane lengths' of such magnitude that would result in a very long running test case?
+ 
+
+comment number: 214218652 
+body: The test (without fix) would use 2 GB+ RAM, and segfault. With fix, it will
+work fine. I'll add one.
+ 
+
+comment number: 214265039 
+body: > The test (without fix) would use 2 GB+ RAM, and segfault. 
+
+Maybe we can cap it off before that happens?
+In any case a test that OOMs and crashes without this, but runs quickly with it, would be great too, it effectively prevents regression.
+ 
+
+comment number: 214318626 
+body: Added a test, and included #7936 (the test fails without).
+ 
+
+comment number: 214340312 
+body: utACK https://github.com/bitcoin/bitcoin/pull/7933/commits/1e44169f0e0c334a86b14a22ebc8fec45cec7354
+ 
+
+comment number: 214356281 
+body: Can confirm the test fails:
+
+```
+$ src/test/test_bitcoin -t coins_tests
+Running 3 test cases...
+unknown location(0): fatal error in "ccoins_serialization": memory access violation at address: 0x...: no mapping at fault address
+test/coins_tests.cpp(411): last checkpoint
+
+*** 1 failure detected in test suite "Bitcoin Test Suite"
+```
+ 
+
+comment number: 214598974 
+body: utACK 1e44169
+ 
+
+56. bug report number : ['7890']
+comment number: 210789806 
+body: Works ok on testnet. Hmm.
+ 
+
+comment number: 210796184 
+body: ```
+Before GetKey() keyTmp = (c, c9e3a8404fee8c8fe3406f86dec2989d7534a3b0c3548f139698a6f85affffff)!
+GetKey() returned not OK, keyTmp = (d, c9e3a8404fee8c8fe3406f86dec2989d7534a3b0c3548f139698a6f85affffff)!
+```
+
+Notice the 'd'...
+ 
+
+comment number: 210803205 
+body: Keeping the copy of `chainstate` directory for later investigation and doing `-reindex`...
+ 
+
+comment number: 210803224 
+body: That's this code
+
+```
+    if (pcursor->Valid()) {
+        bool ok = pcursor->GetKey(keyTmp);
+        assert(ok); // If GetKey fails here something must be wrong with underlying database, we cannot handle that here
+    } ...
+```
+
+I don't get it - why would a GetKey fail when the cursor is valid?
+ 
+
+comment number: 210803331 
+body: I extended dbwrapper.h's `template<typename K> bool GetKey(K& key) {` and the exception there is:
+
+```
+PJ: e = CDataStream::read(): end of data: unspecified iostream_category error
+```
+
+End of file?
+ 
+
+comment number: 210803353 
+body: I think the leveldb operation succeeds, but it is unable to deserialize the key:
+
+```
+    template<typename K> bool GetKey(K& key) {
+        leveldb::Slice slKey = piter->key();
+        try {
+            CDataStream ssKey(slKey.data(), slKey.data() + slKey.size(), SER_DISK, CLIENT_VERSION);
+            ssKey >> key;
+        } catch (const std::exception&) {
+            return false;
+        }
+        return true;
+    }
+```
+
+Not sure why this would be the case but unless other people are experiencing this too, I'd say it's database corruption.
+ 
+
+comment number: 210806147 
+body: Can you put a `LogPrintf("Failed key: %s\n", HexStr(slKey.data(), slKey.data() + slKey.size()));` in the catch() of `GetKey` to see what key can't be parsed?
+ 
+
+comment number: 210806379 
+body: Yup. Once the reindex finishes.
+`db.log` is empty.
+ 
+
+comment number: 210827257 
+body: The `db.log` was transferred from the other system, where there were some lines about full disk space 8)
+
+Edit: the `chainstate` (and other directories) was transferred from other machine. `db.log` from there is deleted. The file on the new machine is empty.
+
+Will investigate further once the reindex locally is finished.
+ 
+
+comment number: 210828705 
+body: db.log is about bdb
+ 
+
+comment number: 210829100 
+body: I think the corruption in `chainstate` happened on the source machine.
+ 
+
+comment number: 210962042 
+body: Reindex helped to solve this issue for me.
+
+I added @laanwj 's debug line and it is printed even on the start of `bitcoind`:
+
+```
+2016-04-17 05:48:23 Using obfuscation key for /Users/test/Library/Application Support/Bitcoin/chainstate: 0000000000000000
+2016-04-17 05:48:25 Failed key: 6600000000
+```
+
+But it continues there. The crash happens in `gettxoutsetinfo`:
+
+```
+Failed key: 6400000003f13983c3a719c42b25eadf94446075b3
+```
+ 
+
+comment number: 210983766 
+body: Closing, the real source of the problem was database corruption.
+ 
+
+comment number: 210983911 
+body: On second thought: is there a guarantee that keys always deserialize into the (char,uint256) stanza?
+
+```
+Failed key: 6600000000
+```
+
+'f' → DB_BLOCK_FILES
+
+```
+Failed key: 6400000003f13983c3a719c42b25eadf94446075b3
+```
+
+'d' → not listed
+
+No, doesn't seem to be the case, see for example WriteBatchSync:
+
+``` c++
+batch.Write(make_pair(DB_BLOCK_FILES, it->first), *it->second);
+```
+
+This serializes a char and integer into the key.
+So: GetKey can legitimately return `false`, it just means that we've reached a different key type. My interpretation of the meaning of the `false` return value in this comment was wrong:
+
+``` c++
+// If GetKey fails here something must be wrong with underlying database, we cannot handle that here
+```
+
+Labeling this as bug!
+ 
+
+comment number: 210984022 
+body: I still have the `chainstate` contents. 3.3GB...
+ 
+
+comment number: 211310796 
+body: @paveljanik see #7904
+ 
+
+comment number: 211842577 
+body: #7094 was merged, this was solved
+ 
+
+57. bug report number : ['7780']
+comment number: 204095583 
+body: utACK
+ 
+
+comment number: 204106964 
+body: utACK new comment
+ 
+
+comment number: 204330213 
+body: utACK, nice comment https://github.com/bitcoin/bitcoin/pull/7780/commits/869262605f21973910640676858f4c4a3baa6da8
+ 
+
+comment number: 204336071 
+body: utACK but #7568 should be milestoned to 0.13 before this is merged.
+ 
+

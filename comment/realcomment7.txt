@@ -1,0 +1,1991 @@
+334. bug report number : ['2178']
+comment number: 12228733 
+body: Doesn't exploiting this require you to have the private key in question yourself...?
+ 
+
+comment number: 12229440 
+body: No. 
+Anyone that can connect to you can check if you're the owner of a wallet address. Even if all the outputs of the address in question have been spent, there is a modification of the disclosed attack that can be used to check if you owned that address, as long as you keep the keypair in your wallet.
+Maybe my post was not clear enough.
+ 
+
+comment number: 12230181 
+body: Thanks Sergio, I was about to start working on a patch for this.  Is that the only place in the receive-a-tx-from-the-network callchain where network behavior is different for "my" transactions than other-people's transactions?
+ 
+
+comment number: 12232870 
+body: Is far as I can see, that's the only place IsFromMe() is used in the whole main.cpp file.
+
+I don't understand how own transactions are handled in SendMessages() (see comment "always trickle our own transactions"). Maybe there could be a problem there. I don't know.
+
+Nevertheless it could be possible to achieve the same attack via a timing attack using SyncWithWallets() as an oracle.
+It is called just after tx.AcceptToMemoryPool(). An attacker could try to measure how much time  SyncWithWallets() takes by sending a "ping" right after a transaction.
+
+I really don't know if this last attack is practical.  
+
+But SyncWithWallets() does a lot of things that could take measurable time:
+1- Loops over all user wallets ( SyncWithWallets())
+2- Loops over mapWallet (CWallet::OrderedTxItems())
+3- Loops over CAccountingEntry entries..(CWallet::AddToWallet())
+4 -Loops over all transaction outputs.(CWallet::AddToWallet())
+5- Loops over all transaction inputs (WalletUpdateSpent())
+
+There are too many cases to analyze one by one for me now, and two loops that the attacker could control the number of executions. It would be a good idea to measure the time SyncWithWallets()  takes per previn/prevout/waller/etc.
+If the measurements show that it can take over 10 msec  then we could have an attack vector.
+
+It would be better to detach SyncWithWallets() and execute the method in a different thread in order to prevent to attack more or less "by design". 
+Nevertheless, the attacker could still try to measure the responsiveness of the peer and detect background processing even if  SyncWithWallets() runs in another thread. But IMHO trying to protect oneself from this last attack would be a bit paranoic, 
+ 
+
+comment number: 12234760 
+body:  This source code looks interesting... it could be the source of another DoS vuln...
+
+bool CWallet::AddToWallet(const CWalletTx& wtxIn)
+{
+ ... something ... 
+#ifndef QT_GUI
+        // If default receiving address gets used, replace it with a new one
+        CScript scriptDefaultKey;
+        scriptDefaultKey.SetDestination(vchDefaultKey.GetID());
+        BOOST_FOREACH(const CTxOut& txout, wtx.vout)
+        {
+            if (txout.scriptPubKey == scriptDefaultKey)
+            {
+                CPubKey newDefaultKey;
+                if (GetKeyFromPool(newDefaultKey, false))
+                {
+                    SetDefaultKey(newDefaultKey);
+                    SetAddressBookName(vchDefaultKey.GetID(), "");
+                }
+            }
+        }
+#endif
+
+The code extracts (and probably generates) a new key from the key pool each time we get a txout with certain script. An attacker could construct a transaction with thousands of outputs similar to scriptDefaultKey, sending 1 satoshi to each one, and force the client app to generate 1000 new keypairs. 
+(Note that scriptDefaultKey is not updated in the inner loop)
+
+It would also bloats the size of the user wallet files and provides still another timing attack (this time much more easy) to discover which is the user's default public key.
+
+So Jackpot!  4 attacks in one!
+Memory exhaustion, CPU exhaustion,  hard disk space exhaustion, and loss of anonymity. 
+ 
+
+comment number: 12235022 
+body: No.
+
+There is no way for the attacker to know what your default key is, unless you tell them. They cannot find it by sending transactions to random addresses, there are 2**160 addresses.
+
+If you do tell them, then yes, they can make you generate a new default key by sending bitcoins to that address. The new default key will be random, and so IT is not guessable unless you tell them.
+ 
+
+comment number: 12238131 
+body: Pardon. What exactly is the "default key" ? 
+If you used that key once, then an attacker can try all possible existent keys in the blockchain until he hits your default key.
+ 
+
+comment number: 12238413 
+body: There are around 1M unique addresses in the block chain. They can all be tested against "if (txout.scriptPubKey == scriptDefaultKey)" very quickly.
+ 
+
+comment number: 12238484 
+body: And per the code you showed above, the default address is changed as soon as a transaction is received to it. So, typically, there will not be any transaction to a default address.
+ 
+
+comment number: 12238582 
+body: The point is that scriptDefaultKey is not updated in the inner loop even if is changing. So the same address can be stored in 10K prevouts, and tested at the same time, amplifying an time deviation 10K times.
+A 1 msec deviation will result in a 10 seconds delay.
+ 
+
+comment number: 12238658 
+body: Good code:
+BOOST_FOREACH(const CTxOut& txout, wtx.vout)
+{
+if (txout.scriptPubKey == scriptDefaultKey)
+{
+CPubKey newDefaultKey;
+if (GetKeyFromPool(newDefaultKey, false))
+{
+SetDefaultKey(newDefaultKey);
+SetAddressBookName(vchDefaultKey.GetID(), "");
+scriptDefaultKey.SetDestination(vchDefaultKey.GetID());  <--- this line must be added?
+}
+}
+}
+ 
+
+comment number: 12238705 
+body: Now I see. Yes, you're right @SergioDemianLerner. That line would prevent the amplication. It's still something that's hard to exploit nonetheless, IMHO.
+ 
+
+comment number: 12238880 
+body: Adding that line is a good idea.
+
+Two things on the top of my TODO list right now:
+
+1) Fix the IsMine() check in the penny-flooding-check code
+
+2) Do not add dust-spam transactions from other people to the wallet (avoids all sorts of wallet-bloating attacks).
+
+(2) needs some thought, though, and may make SatoshiDice customers unhappy.
+ 
+
+comment number: 12238955 
+body: @gavinandresen about 2): WHAT? and let those fill up everyone's UTXO sets forever?
+ 
+
+comment number: 12239032 
+body: @sipa The UTXO bloat can be addressed by only including them when confirmed. The penny flood breaking things can be addressed by excluding the dust in the primary coin selection but then adding them back into transactions with change as a post-processing step. ... but the incentivize the latter we need a different priority rule.
+ 
+
+comment number: 12239243 
+body: @gmaxwell Excluding them from the coin selection process is very different from not adding them to the wallet.
+ 
+
+comment number: 12240222 
+body: (regarding the exploitness of the previous vuln)
+It takes only 24 days, sending transactions a full 50 kbytes/sec bandwidth to test for 1M addresses (with amplification 50x) in order to discover a single default key. If generating a new keypair takes 2 msec, 50x amplification requires the attacker to be able to remotely detect an additional 100 msec from a normal round-trip delay of a message, which seems possible..
+So this attack is much worse than the timing attack I published a couple of days ago (14 minutes vs 24 days)
+
+Nevertheless, if we monitor all the output transactions of a peer, then we probably don't need to test for the 1M existent addresses but for only each new address we watch going out of the peer, then the attack becomes completely realistic.
+
+For each new address we see, it takes only 35 milliseconds to check if it was the default key that was used!
+ 
+
+comment number: 12240900 
+body: @SergioDemianLerner : the default key is generated randomly (because keypool keys are generated randomly).
+
+If there are ever bitcoins sent to it (thereby revealing it in the blockchain), then it is changed. That is what this code does.
+
+So, again, unless you tell the attacker what your default key is, there is no vulnerability. You would have to send 2**159 transactions on average to guess a default key.
+ 
+
+comment number: 12241181 
+body: Ok. Thanks Gavin. I didn't know that.
+In  CWallet::CommitTransaction() first AddToWallet() is called and then wtxNew.AcceptToMemoryPool() is called, so there should be not even a window of time for an attack.
+
+Sorry!
+ 
+
+comment number: 12259926 
+body: Aside: Does anyone even use this default key, or can it be deprecated? I
+removed the functionality in bitcoin-qt because users were annoyed and
+confused that adresses were automatically being created.
+ 
+
+comment number: 12664421 
+body: I went back to the source code to see if  SyncWithWallets() could be used as an oracle for transactions with IsMine()=true.
+I found that the only two timing differences from a transaction sent to me over another not sent to me are:
+1. wtx.WriteToDisk() in CWallet::AddToWallet()
+
+I haven't measured how much it takes to write to the WalletDB a 1 Mbyte tx, but its seems that the BerkleyDB has now the DB_TXN_WRITE_NOSYNC flag set, so it won't try to sync.
+(a 1 Mbyte sync takes 50 msec aproximately in my computer, which can be detected from a peer). 
+
+Nevertheless, if the wallet becomes constantly modified, then the backup thread  (BackupWallet) that runs every 100 msec, may lock the DB for a noticeable time (say more than 100 msec), and so this could theoretically be detected from a peer. Can anyone research on this? My understanding of the WallletDB -> CDB interface is very limited.
+1. BOOST_FOREACH(const CTxOut& txout, wtx.vout) in CWallet::AddToWallet()
+
+Again, I have not tested this loop performance, but I don't think that 1M empty Txouts[] can make this loop last for more than 1 msec.
+
+So my last word is that SyncWithWallets() seems safe.
+ 
+
+comment number: 12785561 
+body: This can be closed, as the patch got merged.
+ 
+
+335. bug report number : ['2137']
+comment number: 11764475 
+body: When you say you edit the label of the uppermost label in the list, i.e. changing part "25.0" to "75.0", 
+
+do you mean changing part "50.0" to "75.0" ?
+ 
+
+comment number: 11769197 
+body: Yes, in fact I change this label:
+spaar-adres #01 @25BTC = 50.0
+into this:
+spaar-adres #01 @25BTC = 75.0
+
+By clicking on the label and pressing F2.
+
+--- On Sun, 12/30/12, Michael Ford notifications@github.com wrote:
+
+From: Michael Ford notifications@github.com
+Subject: Re: [bitcoin] Editing label single address in address book also changes another label (#2137)
+To: "bitcoin/bitcoin" bitcoin@noreply.github.com
+Cc: "SimonVrouwe" simonvrouwe@yahoo.com
+Date: Sunday, December 30, 2012, 2:23 PM
+
+When you say you edit the label of the uppermost label in the list, i.e. changing part "25.0" to "75.0", 
+
+do you mean changing part "50.0" to "75.0" ?
+
+```
+          —
+
+          Reply to this email directly or view it on GitHub.
+```
+ 
+
+comment number: 11970301 
+body: I can extend this bug report!
+
+Double clicking on an address in the addressbook and not making changes duplicates the entry. Very weird, I guess I need to look into this ^^.
+ 
+
+comment number: 12043665 
+body: @SimonVrouwe Can you test the fix from #2157? You find a Windows binary for that pull over here: http://jenkins.bluematt.me/pull-tester/e6d230056202b05a27f187dff2648eb5c76fcfee/bitcoin/bitcoin-qt.exe
+ 
+
+comment number: 12137586 
+body: I tested it and it works! 
+
+The version that I used was on Linux, so I installed bitcoin-qt 0.7.1 on windows machine which reproduced the bug (Issue #2137) as above. Then I tested the (http://jenkins.bluematt.me/pull-tester/e6d230056202b05a27f187dff2648eb5c76fcfee/bitcoin/bitcoin-qt.exe) and it works fine. I have not tested it in Linux.
+ 
+
+comment number: 12785592 
+body: @laanwj Can be closed!
+ 
+
+336. bug report number : ['2127']
+comment number: 176744590 
+body: I wonder how this changed with the switch from json_spirit to univalue in 0.12.
+
+I don't think it is completely fixed: there's one known issue with utf-8 handling at least: https://github.com/jgarzik/univalue/issues/16
+ 
+
+comment number: 226443703 
+body: Closed by #7892
+ 
+
+337. bug report number : ['2107']
+comment number: 12133411 
+body: @gavinandresen Can you close this issue, as you fixed it already.
+ 
+
+338. bug report number : ['2079']
+comment number: 11100580 
+body: Yes, that is a 'WONTFIX'.
+
+A `sendall account <address>` command that took the account to exactly zero might be a good solution, although you can still run into edge cases like "what if the account contains 0.000001 BTC" (fee to sendall might be greater than that).
+ 
+
+comment number: 11100712 
+body: But... what's the point of preventing the balance from going negative, if you don't actually do that and it can go negative anyway?
+
+I really don't get it, either completely remove the check, or check it fully... :(
+ 
+
+comment number: 11112799 
+body: Removing the check completely might have been the right way to go initially, but it is what it is and changing it now might break existing services that rely on the check to make sure customers can't spend more bitcoins than are in their account.
+
+Always preventing the account from going negative would also break existing services.  I know ClearCoin (my closed escrow service) paid all transaction fees, so the code did:
+
+sendfrom
+gettransaction <txid>
+if fee paid:
+  reimburse account for tx fees using 'move' from an account stocked with coins to pay fees
+
+Having the sendfrom fail because the customer has 10 BTC in their account and sends exactly 10 BTC would be unacceptable.
+
+Do you have a use case that doesn't work, or is this just a "but that's UGLY!" issue?
+ 
+
+comment number: 11112976 
+body: Well, I planned _not_ to pay myself the tx fees, so for me it is not acceptable for any account balance to go negative...
+
+If I had a way to know in advance the tx fee about to be paid, I could manually check if it had enough balance for the whole operation.
+Of course, since that wouldn't be an atomic operation anyway, it could be pretty pointless (i.e. risks to be exploitable somehow).
+
+I've seen plenty of services with fees (internal fees) where if you wanted to send away all your money, you had to deduct their fee. For them the tx fee is not a problem, since they deduct it from the fee that goes to them: since I planned to be able to ask no fee for myself, at least I'd like not to go at a loss...
+
+ps: I already hacked "movecmd" to check the balance before committing the operation, I could try to modify sendfrom too, of course...
+https://github.com/Lohoris/bitcoin/commit/4442224ee497260de6800fd09d6c2af993a046ac
+ 
+
+comment number: 11113207 
+body: Any service operator should be aware that it isn't reasonable to simply pass transaction fees on to their end users: generally the fee has little to do with the transaction being requested itself, and more to do with the particular wallet (which is account-independent) history. A fair method of passing this cost on to end users usually amounts to a fixed fee (on your accounting) possibly coupled with a distribution of excess income across users who made transactions every month or so.
+ 
+
+comment number: 11158833 
+body: Mh, I see.
+I'd like to be able to choose my approach here, but since this appears to be not only the most used one, but also the only one the software currently supports, I guess I'll have to bend me to it...
+ 
+
+comment number: 25414647 
+body: I just started running into this behavior.  When looking for a workaround I hoped to find a prepare step where I could see what the fees would be for a transaction that I could then execute once I have gotten user approval.  After looking over the docs I did not immediately find a way to do this.
+ 
+
+comment number: 25415725 
+body: Fees are semi-random, and might not even be related to the account in question. That is, it's not fair to expect the sending account to be responsible for the transaction fees. Instead, the traditional model for services doing things like this is to simply charge users a flat fee that works out to what you pay on average in transaction fees.
+
+PR #1645 would make it possible to set a limit on the transaction fee included.
+ 
+
+comment number: 25423435 
+body: If that is the case shouldn't it then be possible for sendfrom to have an optional argument for which account the fees should come out of?  Currently the fees come out of the from account in a way that would require a reimbursement transaction in order to get to the right balance if the sender's account wasn't actually responsible for fees.  This does not seem optimal for maintaining a user's account balance, but not charging them outbound transaction fees.
+ 
+
+comment number: 25427088 
+body: @skruger the only correct way would be what @gavinandresen says: let the account pay the fee (possibly going negative), then reimburse the fee to that account. A "prepare" step will not support concurrency as there is no atomic way to do RPC.
+A way to limit the paid fee in advance would be useful of course, but is orthogonal to this.
+ 
+
+comment number: 25447560 
+body: @laanwj I decided to go with letting the account pay the fee and reimbursing, but I observed something a little bit troubling.  When I did my move the account I was reimbursing came up to 0, but the account I was reimbursing from didn't change.
+
+My accounts
+
+```
+>>> r.listaccounts()
+[u'', u'testing', u'user_account_6', u'user_account_5']
+```
+
+My move request
+
+```
+>>> [r.getbalance(x) for x in r.listaccounts()]
+[Decimal('0.00650000'), Decimal('0E-8'), Decimal('0E-8'), Decimal('-0.00050000')]
+>>> r.move('', 'user_account_5', 0.0005)
+True
+>>> [r.getbalance(x) for x in r.listaccounts()]
+[Decimal('0.00650000'), Decimal('0E-8'), Decimal('0E-8'), Decimal('0E-8')]
+```
+
+It is troubling to me that the sum of all accounts after doing the reimbursement move is 0.0005 higher than the sum before doing the move.  The interesting thing is that my default account with the balance of 0.0065 before the move is the one that was wrong according to my external transaction log table.
+
+The move command to reimburse actually created the transactions inside the bitcoind database so that a sum of all transactions in the '' account matched getbalance('') which indicates to me that getbalance('') may not be relying on the transaction tables alone for its calculation.
+
+Based on this it would appear as if the reimbursement step is required for accounting sanity purposes which makes me wish all the more that there were a way to set an account for transaction fees to be charged against when calling sendfrom so as to avoid reimbursement and the accounting oddities I have noted around that (or the oddities when a reimbursement isn't made).
+ 
+
+comment number: 36968472 
+body: still no solution for this? many online services fail a trasaction if send + fee is larger than balance, but i don't know how they do it.
+ 
+
+comment number: 74217028 
+body: 2 years passed, still do not resolve this issue?
+ 
+
+comment number: 74217486 
+body: @philsong 
+I think this still is a "WONTFIX".
+See #3816 or merged #5575.
+Accounting could be removed once and can/should be done within your app and not within bitcoin core.
+ 
+
+comment number: 74223963 
+body: More like not-a-bug. :)
+ 
+
+339. bug report number : ['2041']
+comment number: 26985623 
+body: Is this still the case?
+ 
+
+340. bug report number : ['2040']
+341. bug report number : ['2038']
+comment number: 26990566 
+body: @luke-jr Is this still happening with current master? I'm not aware of chmod syntax, does -r remove all rights on the blk files?
+ 
+
+comment number: 26991457 
+body: I don't think anything changed related to this, though I haven't tested.
+ 
+
+comment number: 44372955 
+body: Should be fixed by #4173 
+ 
+
+342. bug report number : ['2007']
+comment number: 10369503 
+body: Did any other dev try this? Or am I the only one that can re-create that crash situation?
+ 
+
+comment number: 10557328 
+body: @sipa Did you check this out? Does it happen also on Linux or with bitcoind?
+ 
+
+comment number: 10707279 
+body: Would it be possible to make an NTP request to a one of a list of well known time servers to check for this kind of problem?
+ 
+
+comment number: 10712430 
+body: This problem would be solved with a friendlier error message. Bailing out
+as early as possible is all we can do when the user's clock is detected to
+be wrong by this much.
+
+(p2p nodes already send their time so ntp is not needed, and relying on
+well known servers would be a big nono for a distributed protocol)
+ 
+
+comment number: 10718980 
+body: @laanwj I would prefer an error message before the client simply crashes, before we talk about how friedly that message should be :-D. Does a wrong time cause a crash on Linux, too with current master?
+ 
+
+comment number: 10740361 
+body: I would suggest it as a client feature, not a part of the protocol.
+
+But you are right, the protocol does seem to provide for time services already. I apologize for the superfluous suggestion.
+ 
+
+comment number: 12728350 
+body: @sipa Any comment for this one?
+ 
+
+343. bug report number : ['1965']
+comment number: 32021406 
+body: Pre-autotools issue, closing
+ 
+
+344. bug report number : ['1961']
+comment number: 10473673 
+body: @wowus Is this related to the problem described in #1960 and the mentioned fix? Can you check if current master fixes this for you.
+ 
+
+comment number: 11019988 
+body: @Diapolo It's unrelated.
+ 
+
+comment number: 16892995 
+body: I think we should have a look at this before 0.8.2.
+ 
+
+comment number: 17365591 
+body: walletpassphrase starts 2 threads, `ThreadTopUpKeyPool()` and `ThreadCleanWalletPassphrase()` I guess there is something wrong here when calling walletlock, while the ThreadCleanWalletPassphrase() is still running?
+ 
+
+comment number: 17366669 
+body: The wallet passphrase logic should be rewritten, preferably using a boost::asio timer (we're using boost::asio for RPC anyway).
+ 
+
+comment number: 17550095 
+body: Should be fixed by https://github.com/bitcoin/bitcoin/pull/2625
+ 
+
+comment number: 17665190 
+body: @wowus : I cannot reproduce this either, even on my wimpy 32-bit OSX 10.6 laptop.  What OS/machine configuration are you running on?
+ 
+
+comment number: 17693293 
+body: Arch Linux Intel x86_64
+ 
+
+comment number: 22745708 
+body: Closing as "we can't reproduce"
+ 
+
+345. bug report number : ['1960']
+comment number: 9773843 
+body: Sounds like a deadlock...
+ 
+
+comment number: 9884639 
+body: I'm using `Bitcoin version v0.7.1-95-gc13f5db-beta`.
+
+I've got the same issue here, after using `move` at least the RPC server is broken. as i don't mine with the client i can't tell about other stuff breaking, though `tail -f -n 0 debug.log` still shows it connecting to peers:
+
+```
+10/29/12 20:38:45 received: inv (37 bytes)
+10/29/12 20:38:45   got inventory: tx fd684056c7c7debb3ff1  have
+10/29/12 20:38:45 connection timeout
+10/29/12 20:38:45 ThreadRPCServer method=move
+10/29/12 20:38:46 trying connection 82.177.152.52:8333 lastseen=4.2hrs
+10/29/12 20:38:51 connection timeout
+10/29/12 20:38:51 trying connection 78.72.91.171:8333 lastseen=6.8hrs
+10/29/12 20:38:56 connection timeout
+10/29/12 20:38:57 trying connection 69.115.20.67:8333 lastseen=4.8hrs
+10/29/12 20:38:57 connected 69.115.20.67:8333
+10/29/12 20:38:57 send version message: version 60002, blocks=205609, us=88.198.39.134:8333, them=69.115.20.67:8333, peer=69.115.20.67:8333
+10/29/12 20:38:57 sending: version (101 bytes)
+10/29/12 20:38:57 trying connection 98.218.70.45:8333 lastseen=8.0hrs
+10/29/12 20:39:02 connection timeout
+```
+ 
+
+comment number: 10239626 
+body: Same problem here. RPC command "move" locks the client.
+Tested on Windows 7 x64 & Linux 2.6.32-5-amd64, BitCoin v0.7.1 (64 bit)
+ 
+
+comment number: 10254212 
+body: @laanwj You are way more skilled to debug this, so as this is now high priority you can perhaps take a look at it?
+ 
+
+comment number: 10348896 
+body: Fixed by #2009.
+ 
+
+comment number: 10473663 
+body: @94m3k1n9 Can you verify current master is fixing your problem with `move`?
+ 
+
+comment number: 10473865 
+body: Yes, moving works for me after applying this patch.
+ 
+
+comment number: 10474388 
+body: Fixed!
+ 
+
+346. bug report number : ['1951']
+comment number: 9715924 
+body: Seems logical, as before the blk000x.dat files had a hard-coded limit of < 2GiB on Windows. I'm sure @jgarzik or @sipa can clarify this. Are you using NTFS or FAT32 as filesystem?
+ 
+
+comment number: 9725372 
+body: NTFS and EXT4. Linux PPA build 0.7.0 exhibits the same behaviour.
+ 
+
+comment number: 9729271 
+body: Don't blame the file system, modern filesystems can handle huge files (how else would you store your BluRay images :smirk:) 
+It's probably some trivial issue using `int` or `unsigned int` as file pointer with `fseek` instead of `off_t`.
+
+Looking at `CDiskBlockPos` in main.h: 
+
+```
+...
+unsigned int nPos
+....
+```
+
+Also line 2502 in `main.cpp` https://github.com/bitcoin/bitcoin/blob/master/src/main.cpp#L2502. 
+And in `util.h`:
+
+```
+void AllocateFileRange(FILE *file, unsigned int offset, unsigned int length) 
+```
+ 
+
+comment number: 9732973 
+body: I suppose a CReadBuffer that wraps around CAutoFile or other reader classes, and has a method for skipping input until a fixed string is found, would be a very neat solution that doesn't require any seeking at all.
+
+Also, fixing the byte offsets to use off_t instead of ints in the code would certainly be an improvement, but at least in the current flow, AllocateFileRange should never be called with offset+length > 128 MiB.
+ 
+
+comment number: 9737788 
+body: Is off_t a 64 bit unsigned integer? That would allow quite bigfiles ^^.
+
+We need to fix this even with ultraprune, because of the bootstrap.dat file mentioned.
+ 
+
+comment number: 9738470 
+body: off_t is whatever the system supports for offsets, but it's not entirely standardized (there's also a off64_t sometimes, with corresponding lseek64 function, defeating the purpose of the origin off_t somewhat). 
+
+What I'm saying is that off_t would certainly be an improvement over what we have now, it'd even be better not to need to seek at all, which is certainly possible in LoadExternalBlockFile.
+ 
+
+comment number: 9739447 
+body: As noted in IRC, the specific problem is that LoadExternalBlockFile() calls fseek(), whose file offset is limited to signed 32-bit (long) on 32-bit platforms.  This impacts Windows, Linux and presumably OSX as well.
+
+1) LoadExternalBlockFile() should be updated to avoid seeking.  Most likely fread() will continue to work beyond even 4GB boundary, if we read linearly and accumulate the file position ourselves.
+
+2) Most of the code uses 32 bits for file position, which is highly disappointing.  At a minimum, we should make sure that external serialized storage in databases like ultraprune record 64-bit file positions.
+ 
+
+comment number: 9739607 
+body: I wonder if SEEK_CUR would work?
+ 
+
+comment number: 9739710 
+body: SEEK_CUR would probably work, but why chance it?  A simple linear read works fine too.
+ 
+
+comment number: 9756183 
+body: A different solution would be to have blockchain-generating scripts create transaction block files less than 2GB in size, perhaps named bootstrap.001, bootstrap.002, etc, and have Bitcoin look for and import these sequentially instead. One must be concerned about another file - blkindex.dat, it is 1.1GB and must be replaced in all clients with the ultraprune leveldb and/or reviewed for big file support before it approaches 2GB.
+ 
+
+comment number: 9766916 
+body: `off_t` is 64 bit if -D_FILE_OFFSET_BITS=64 is defined. I've just verified this with mingw and linux (someone needs to verify on OSX). 
+
+Another problem is that we use `fseek` takes a `long` for the offset. This depends on the architecture. We could instead use `fseeko` which takes an `off_t` (and `ftello` which returns one).
+
+@qubez: blkindex.dat is not affected, it is a berkelydb database, which has no problems with large files
+ 
+
+comment number: 13370473 
+body: This is reported solved by https://bitcointalk.org/index.php?topic=142151.msg1518404#msg1518404
+ 
+
+comment number: 13370882 
+body: Yes, it is solved
+ 
+
+347. bug report number : ['1944']
+comment number: 9699891 
+body: <pre>
+Upgraded -> Started bitcoin -> Tried donation links which failed -> Quit bitcoin -> Found multiple donation link processes and force closed them -> Tried starting bitcoin again, but would get no gui or unresponsive gui -> Tried your suggestion and got same result -> Reboot machine -> bitcoin works fine
+</pre>
+
+I'm not sure if it's a code bug this time, perhaps it takes too long to pass an URI to the message queue, which makes users impatient. And they click again and again, which can screw things up (which IS not good).
+ 
+
+comment number: 9732617 
+body: Maybe do a check at startup so the client don't start more instances if it's already running?
+But Bitcoin-qt 0.7.1 does know that the database is locked and quits after the error message is shown in my windows 7 64-bit.
+ 
+
+comment number: 9732720 
+body: There seem to be way too many problems with boost::interprocess... how do other programs deal with this? Sending a message to a running program should be something trivial, in my opinion. Maybe it would require platform-specific code for almost any platform, but that isn't worse than what we have now.
+ 
+
+comment number: 9735444 
+body: Qt supports named pipes on any platform that we care about, imo that's the
+best solution.
+
+Platform specific solutions are more work and probably require hacking
+around qt left and right for window handles and such.
+ 
+
+comment number: 9737887 
+body: @burger2 There is a check at startup, which just tries to send new URIs to the message queue used for handling URIs. If that succeeds skip further client startup and exit, if no message queue is available start a new client. To me it seems that check doesn't work reliable, when impatient users are clicking to fast on a bitcoin: URI (which is indeed no fault and should not crash the client though).
+ 
+
+comment number: 9768162 
+body: I wasn't impatiently clicking on the link multiple times in rapid succession. I clicked it twice, the second time only after a few minutes. Rebooting the computer did seem to resolve the issue though, so it might have just been a specific issue to my machine. As I suggested, maybe rebooting a windows machine after upgrading should be recommended.
+ 
+
+comment number: 9769040 
+body: I was not trying to say you are that kind of impatient user, I just wanted to clarify this can trigger a problem :).
+ 
+
+comment number: 15832257 
+body: @gavinandresen As your paymentserver pull was merged, this can be closed IMO.
+ 
+
+348. bug report number : ['1902']
+comment number: 9089222 
+body: Retarget message continues ad infinitum, until internal miner is disabled (setgenerate false).
+
+100% reproducible, when internal miner is turned on.
+0% reproducible, when internal miner is turned off.
+ 
+
+comment number: 9090202 
+body: Turned the internal miner back on at height=32259. No flood of messages.
+
+I'm guessing this occurs (a) only on testnet, and (b) only at a difficulty retarget boundary.
+ 
+
+349. bug report number : ['1877']
+comment number: 8965233 
+body: @diapolo can you please check?
+ 
+
+comment number: 8965784 
+body: Yeah, I'm going to do some tests!
+
+Tests were run with v0.7.0-beta (last official release):
+Running instance and clicking an invalid Bitcoin-URI: passed (tray-notification is shown)
+Running instance and clicking a valid Bitcoin-URI: passed (client is shown / address and amount is entered)
+Starting instance by clicking an invalid Bitcoin-URI: passed (tray-notification is shown)
+Starting instance by clicking a valid Bitcoin-URI: passed (client starts / address and amount is entered)
+
+Looking good to me, I didn't yet read the thread, will do that now.
+ 
+
+comment number: 8971644 
+body: It could be we have a problem with:
+https://github.com/bitcoin/bitcoin/blob/master/share/setup.nsi#L104
+
+A user on the forum reports this as his entry in the registry:
+`"C:\Program Files (x86)\Bitcoin\bitcoin-qt.exe" "$1"`, wheras I have `"C:\Program Files (x86)\Bitcoin\bitcoin-qt.exe" "%1"` (which I setup for myself)
+ 
+
+comment number: 9002700 
+body: I'm now sure that we use a wrong character in the setup.nsi file, it needs to write `"%1"` into the registry. But I'm not sure if this is also valid for Windows XP...
+ 
+
+350. bug report number : ['1873']
+comment number: 8945469 
+body: This message is a bit confusing.  The "accepted connection" message only occurs for _incoming_ connections.
+
+Maybe you can provide your _exact_ bitcoin.conf (sans password) and command line being used?
+ 
+
+comment number: 8946086 
+body: bitcoin-qt.exe -connect=5.x.x.x, or bitcoind -connect=5.x.x.x    (when I run it with maxconnections=1, it'll still open two connections to the peer listed under -connect, but no others)
+
+whoops, should have included source log:
+
+09/27/12 17:40:29 connected 5.x.x.x          (no port shown)
+09/27/12 17:40:29 send version message: version 60002, blocks=200778, us=0.0.0.0:0, them=5.x.x.x:8333, peer=5.x.x.x:8333
+09/27/12 17:40:29 connected 5.x.x.x:8333
+09/27/12 17:40:29 send version message: version 60002, blocks=200778, us=0.0.0.0:0, them=5.x.x.x:8333, peer=5.x.x.x:8333
+09/27/12 17:40:30 receive version message: version 60002, blocks=200778, us=76.x.x.x:22379, them=5.x.x.x:8333, peer=5.x.x.x:8333
+09/27/12 17:40:30 receive version message: version 60002, blocks=200778, us=76.x.x.x:22378, them=5.x.x.x:8333, peer=5.x.x.x:8333
+ 
+
+comment number: 44372496 
+body: You need to pass -nolisten as well if you want no further connections. `-connect` limits the number of outgoing connections to one, but by design doesn't limit the number of incoming connections.
+ 
+
+351. bug report number : ['1848']
+352. bug report number : ['1839']
+comment number: 8716018 
+body: Can you paste the relevant part of the debug.log? 
+
+Especially stuff such as:
+
+```
+NotifyAddressBookChanged ...
+```
+
+And warnings like:
+
+```
+Warning: AddressTablePriv::updateEntry
+```
+ 
+
+comment number: 8717014 
+body: Sure (I renamed 'satoshidice lessthan 48000' by adding an 'x' to the end of its label):
+
+```
+FIXME: handle dialog start. 
+NotifyAddressBookChanged 1dice9wcMu5hLF4g81u8nioL5mmSHTApw satoshidice lessthan 48000x isMine=0 status=1
+NotifyAddressBookChanged 1dice9wcMu5hLF4g81u8nioL5mmSHTApw  isMine=0 status=2
+NotifyAddressBookChanged 1dice9wcMu5hLF4g81u8nioL5mmSHTApw satoshidice lessthan 48000x isMine=0 status=0
+FIXME: handle dialog end. 
+Warning: AddressTablePriv::updateEntry: Got CT_UPDATED, but entry is not in model
+Warning: AddressTablePriv::updateEntry: Got CT_DELETED, but entry is not in model
+Flushing wallet.dat
+Flushed wallet.dat 258ms
+```
+ 
+
+comment number: 10053334 
+body: I also have this problem. It happens on both receive coins and address book lists. In the receive coins list case, a new address is generated  for the duplicate. That is a serious problem.
+
+My log looks the same as the one above.
+
+Bitcoin version v0.7.0-beta (2012-09-12 14:07:22 -0400)
+ 
+
+comment number: 10920763 
+body: I can confirm that this problem is still occurring with bitcoin-qt version v0.7.1.0-geb49457-beta, at least for the "Receive coins" list. I also noticed that the list does not get updated when the labels are changed via an RPC command.
+ 
+
+comment number: 12043680 
+body: @dooglus @jambolo Can you test the fix from #2157? You find a Windows binary for that pull over here: http://jenkins.bluematt.me/pull-tester/e6d230056202b05a27f187dff2648eb5c76fcfee/bitcoin/bitcoin-qt.exe
+
+Others are also encouraged to test the fix!
+
+@nybble41 `I also noticed that the list does not get updated when the labels are changed via an RPC command.` It would be nice to know if this one is still present and if yes can you create a separate issue please :).
+ 
+
+comment number: 12134061 
+body: I don't use Windows, but I built a Linux binary from #2157 and it does indeed appear to fix this issue.
+
+As for @nybble41's comment, I've tried using the RPC command setaccount on the same address with various different account names using the #2157 build, and it updates correctly in the 'receive coins' tab each time.
+ 
+
+comment number: 12134100 
+body: @dooglus Thanks for testing, that are some good news :).
+ 
+
+comment number: 12785601 
+body: @laanwj Can be closed!
+ 
+
+353. bug report number : ['1832']
+comment number: 8719529 
+body: Hm, this could be solved by making CDBEnv bitdb an explicitly constructed/destructed singleton instead of a static global. Explicitly created in Init() and destroyed in Shutdown().
+
+It would be more clear, too.
+ 
+
+comment number: 8730560 
+body: But then we'll run into the same issue again if we ever have other global or static objects that want to printf() during shutdown (and it is a nasty issue because it can work just fine for some people and not for others).
+
+Making the mutex a pointer initialized to NULL, creating it using 'new' and then simply never deleting it is probably the best fix.
+ 
+
+comment number: 8730902 
+body: Yes that would fix the instances of printf() in shutdown, but there could always be other dependencies between static objects' destructors.
+
+I think it'd be better to not have non-trivial objects that rely on static construction / destruction, and do our own object lifetime management in a well-defined order. That seems to be pretty common in C++ coding guidelines.
+
+Or do both.
+ 
+
+comment number: 12133430 
+body: @gavinandresen Wasn't this also fixed?
+ 
+
+comment number: 12150928 
+body: @Diapolo : yes, thanks for looking through the issues list, that's a huge help!  Closing.
+ 
+
+comment number: 12152295 
+body: I'll keep an eye on the issues list, because it's getting quite long recently ;).
+ 
+
+354. bug report number : ['1824']
+comment number: 9194862 
+body: So i have upgraded to 0.7.0 i have a transfer that is 15mins old and it got 3 comfirms already because the client wasn't synced so it got confirms from older blocks. 
+
+I did close the issue by mistake. 
+ 
+
+comment number: 9194912 
+body: Can you tell us (or me privately) the transaction ID of one of these transactions and give us the debug.log from your client?
+ 
+
+comment number: 10473679 
+body: Any news on that issue?
+ 
+
+comment number: 10686106 
+body: I can not recreate the bug so i will now close it.
+ 
+
+355. bug report number : ['1820']
+comment number: 8483030 
+body: 13e100dd08b6da0a7426ea520b0bb3ae54cef79dd045e2e4f7116023df3a5c95  is an example of a violating transaction in the chain.
+ 
+
+comment number: 8491812 
+body: How do you mean IsFinal() can never return false? If you want a non-final transaction, at least one transaction input should have a non-maximum nSequence number.
+ 
+
+comment number: 8492239 
+body: Doh. Missed that it was calling the ctxin IsFinal not itself.
+ 
+
+356. bug report number : ['1819']
+comment number: 8552273 
+body: This has been fixed, closing
+ 
+
+357. bug report number : ['1801']
+comment number: 27201164 
+body: @laanwj @sipa Is this still one of our problems? I know there were some changes recently.
+ 
+
+358. bug report number : ['1776']
+comment number: 8229960 
+body: I find it really hard to interpret these.
+- There is no direct call to setVisible from main(). It's likely inlined somewhere. hide and show are called various times, but I don't see any place where it could conditionally depend on an uninitialized value. Main is a pretty large function so it'd help to know where in the function it happens.
+- UPNP errors are about the call:
+  
+  ```
+  r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
+                      port, port, lanaddr, strDesc.c_str(), "TCP", 0, "0");
+  ```
+
+`urls`, `data` and `lanaddr` are output arguments of `UPNP_GetValidIGD`, whose return value is checked to be 1 (success?).
+`port` is a `char[6]` that comes from `sprintf(port, "%d", GetListenPort());` (which, I agree, is a bit dangerous as the buffer is only 6 chars wide and %d can represent a full 32 bit integer. But I doubt that is the specific problem here. Fixed this in #1777 anyway)
+`strDesc` is simply built from `"Bitcoin " + FormatFullVersion()` (yes, which is still in scope)
+... and the other arguments are literal values.
+
+I could try running valgrind on Linux (maybe with debug info) and see if the same errors appear.
+ 
+
+comment number: 8384677 
+body: Unable to reproduce any of these on linux.
+ 
+
+comment number: 8800045 
+body: Perhaps @gavinandresen could re-run his tests with current master. And I'm asking myself if setVisible() could contain bugs because of the "old" Qt version we use for compiling Bitcoin-Qt?
+ 
+
+comment number: 10473694 
+body: @gavinandresen Can you comment again please, such orphans need more love ;).
+ 
+
+comment number: 10474087 
+body: Closing this, we can always run valgrind again.
+ 
+
+359. bug report number : ['1773']
+comment number: 12017874 
+body: Also for 0.7, @gavinandresen any news on this?
+ 
+
+comment number: 16893040 
+body: Solved by the thread rewrite?
+ 
+
+comment number: 17567318 
+body: Valgrind happy now.
+ 
+
+360. bug report number : ['1768']
+comment number: 8201658 
+body: Valgrind is complaining:
+
+```
+==56158== Thread 8:
+==56158== Conditional jump or move depends on uninitialised value(s)
+==56158==    at 0x2267CB: CService::SetSockAddr(sockaddr const*) (netbase.cpp:1029)
+==56158==    by 0x201FB9: ThreadSocketHandler2(void*) (net.cpp:814)
+```
+
+USE_IPV6 versus not USE_IPV6 issue?
+
+.... no, compiling without USE_IPV6 seems to make no difference...
+ 
+
+comment number: 8206732 
+body: Saving my place in the debugging stack:
+
+Problem seems to be with call:
+  listtransactions '' n
+
+valgrind complains:
+
+```
+==56158== Thread 3:
+==56158== Invalid read of size 4
+==56158==    at 0x1504336: std::string::compare(std::string const&) const (in /usr/lib/libstdc++.6.0.9.dylib)
+==56158==    by 0x71C33: bool std::operator==<char, std::char_traits<char>, std::allocator<char> >    (std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char,     std::char_traits<char>, std::allocator<char> > const&) (basic_string.h:2154)
+==56158==    by 0x286B97: AcentryToJSON(CAccountingEntry const&, std::string const&, std::vector<json_spirit::Value_impl<json_spirit::Config_vector<std::string> >, std::allocator<json_spirit::Value_impl<json_spirit::Config_vector<std::string> > > >&) (rpcwallet.cpp:972)
+==56158==    by 0x2A8F6B: listtransactions(std::vector<json_spirit::Value_impl<json_spirit::Config_vector<std::string> >, std::allocator<json_spirit::Value_impl<json_spirit::Config_vector<std::string> > > > const&, bool) (rpcwallet.cpp:1019)
+==56158==    by 0x5C547: CRPCTable::execute(std::string const&, std::vector<json_spirit::Value_impl<json_spirit::Config_vector<std::string> >, std::allocator<json_spirit::Value_impl<json_spirit::Config_vector<std::string> > > > const&) const (bitcoinrpc.cpp:1015)
+```
+
+(on my mac)
+ 
+
+comment number: 8208593 
+body: As an aside, I am interested in suggestions for testing the RPC calls, so that we may add them to the test suite.  Be more rigorous about problems like this.
+
+My initial idea is that we can skip all the HTTP stuffs, and just internally generate / receive JSON calls.  Of course, RPC calls tend to be unit-unfriendly, requiring a full and active node with wallet to be useful.
+ 
+
+comment number: 8216805 
+body: git bisect tells me:
+
+c3f95ef13f48d21db53992984976eac93e7a08fc is the first bad commit
+commit c3f95ef13f48d21db53992984976eac93e7a08fc
+Author: Luke Dashjr <luke-jr+git@utopios.org>
+Date:   Mon May 28 18:45:12 2012 +0000
+
+```
+Choose reasonable "smart" times to display for transactions
+```
+ 
+
+comment number: 8216949 
+body: CWallet::OrderedTxItems declares a local list<CAccountingEntry> acentries
+
+Pointers into the items in that list are then added to the txOrdered map.
+
+Unfortunately, acentries is deleted before returning from that routine, leaving txOrdered pointing to freed memory.
+ 
+
+comment number: 8217087 
+body: Sorry about that, I really should have known better :(
+ 
+
+comment number: 8246191 
+body: Is this one fixed? If yes, we have a blocker less ^^.
+ 
+
+comment number: 8303376 
+body: Fixed.
+ 
+
+361. bug report number : ['1763']
+comment number: 27769188 
+body: I suppose this is working by now? Or is it still the case?
+ 
+
+362. bug report number : ['1759']
+comment number: 8175512 
+body: @bondbeau 0.6.3 doesn't like it, when the process just get's killed, 0.7 should be more sane as we did some shutdown-code-tweaking there. Could be, that your database was damaged and if you never used the client and have no funds in your wallet it would be easiest to just empty your whole Bitcoin data directory.
+
+ONLY delete it, if there are NO coins or needed addresses in your wallet!
+ 
+
+comment number: 8178272 
+body: @Diapolo Thanks for your reply, but I have to say I'm quite shocked that Bitcoin is being proffered as a refined money replacement for world-wide use if something as simple as an unplanned shutdown brings it to its knees.
+
+Since I really don't want to be a tester and therefore only want to run 'released' versions...please explain step-by-step exactly how one can repair this situation. I do actually have a tiny amount of coin in the wallet which I would be just as happy to keep as to lose (as I suspect would be the case for most users regardless of circumstance), so exactly which files in which directories need to be deleted or fixed or whatever...it that is the correct solution? For example, I don't see a "data" directory for Bitcoin. I see "daemon" and "src"...
+
+Please understand that I am simply an end-user...just like most any other person in-the-wild who might like to see what this is about...and thanks for your help.
+ 
+
+comment number: 8178344 
+body: If you want, [you could try 0.6.4rc1](http://luke.dashjr.org/programs/bitcoin/files/bitcoin-qt/0.6.4/test/rc1/), which only has bugfixes. I don't know if that will help with this particular issue, however.
+
+Most unplanned shutdowns don't cause problems for me...
+ 
+
+comment number: 8178497 
+body: @luke-jr I doubt that'd make any difference
+
+@bondbeau  I assume the shutdown caused Bitcoin to be terminated prematurely, and the database got corrupted. Little we can do about that while using BDB (the database engine) I'm afraid, but it is embarrassing to be frank. BDB should deal with such events, but since it didn't, I fear there's little you can do but delete blkindex.dat, blk0001.dat, and if it exists blk0002.dat. They can be found in the data directory (see https://en.bitcoin.it/wiki/Data_directory). After that, start Bitcoin again, and it should redownload the blockchain.
+ 
+
+comment number: 8178853 
+body: @luke-jr Thanks, but the the file for the .exe didn't want to download after I reloaded the page...(I hesitated and cancelled it the first time because Avast said something like "hey...do you really want to download this file that almost nobody around the world has ever downloaded"). Hope you understand...
+
+@sipa Bitcoin is running again and downloading the block chain according to your suggestion...so thank you very kindly. I'll play around with it a bit, but given this first-time experience I can't imagine trying to rely on Bitcoin as a way to actually live and make routine transactions. It's desperately...D-E-S-P-E-R-A-T-E-L-Y...needed...but it simply can't fly like this in my opinion...it just can't gain widespread use.
+
+Really...thinking about it just now, wouldn't it have to be essentially foolproof for children as young as four or five...or whatever age it is that kids commonly start to handle small amounts of paper and coin money?
+
+Much appreciation for the concept though...cheers and well wishes!
+ 
+
+comment number: 8179061 
+body: @bondbeau np, like @sipa said, it probably isn't fixed anyway. On a side note, you might consider another antivirus suite: Avast seems fairly hostile to Bitcoin so far.
+
+Keep in mind that neither this client, nor any other today, is considered production-ready. For better or worse, the market is ahead of the software in this area.
+ 
+
+comment number: 8183046 
+body: @bondbeau These problems are why we still call our Bitcoin client experimental software. The people who are participating here do this mostyl in their freetime and they do a pretty good job. A switch to a "better" or more stable database system is in the works and every day brings fixes to the client. We simply need users, like you, who will report problems here, so thanks for that :).
+ 
+
+comment number: 8674455 
+body: We need to do a much better job of recovering from bdb errors.
+
+I created a little tool that randomly changes bytes in files, and am working on auto-recovery (as much as possible) for corrupt wallet.dats.  When I'm happy with that, I plan on moving on to peers.dat and maybe blkindex.dat (although we're likely to switch to LevelDB before I get there).
+ 
+
+comment number: 8678299 
+body: @gavinandresen  that just means you get to do it to leveldb too. :P
+ 
+
+comment number: 8681064 
+body: To be fair, if we set up good exception handling for broken databases that will come in just as handy with leveldb. 
+
+At least in bitcoin-qt there should really be a pop-up "The block chain database is corrupted. Exit, or try to recover/redownload?". Instead of some vague "runaway exception" error and having the user come here or even mail us with "what to do now?"...
+
+Wallets are a completely different issue of course, as the data is usually not so readily available, and trying to recover automatically can be disastrous. 
+ 
+
+comment number: 8690778 
+body: The next chapter in this story after @sipa's suggestion helped me get Bitcoin running again: 
+1. After running it for a number of days (with only ordinary laptop sleep along the way) and letting it finish downloading the blockchain, I did a PLANNED shutdown. As in, I selected File > Exit and quit the program before restarting my machine. 
+2. Bitcoin not having been high priority, I didn't try to start it again until yesterday...but guess what..it doesn't. In fact, the only option given in the Bitcoin directory of the start menu is to "Uninstall Bitcoin".
+ 
+
+363. bug report number : ['1725']
+comment number: 8031257 
+body: They show the same information, because Transaction details shows the details of the underlying Bitcoin transaction, not the specific sub-transaction (output). This is by design.
+
+However, it is a bug if the To: only shows one address instead of both. 
+ 
+
+comment number: 18693316 
+body: Is this still present/relevant?
+ 
+
+comment number: 18695140 
+body: Looking at the code in TransactionDesc, it only shows one "To:" address for the first To, even if a transaction has multiple outputs
+
+https://github.com/bitcoin/bitcoin/blob/master/src/qt/transactiondesc.cpp#L111
+
+So this could indeed be regarded a very minor bug, though it shows all the outputs (along with the amount) later on, so it's not that the information is not there.
+ 
+
+364. bug report number : ['1715']
+comment number: 14806487 
+body: If this is a trojan horse of some kind, malware, or any kind of malicious EXE, What is the problem for the torjan to replace all the Bitcoin-QT software altogether, maybe even leaking out private keys...
+ 
+
+comment number: 17387796 
+body: Should we display the txfee in the transcation-confirm-promt in bitcoin-qt?
+Display the txfee only when it's higher than the tx amount?
+
+Protection (some security mechanism) of the config/registry value would make no sense in my eyes.
+ 
+
+comment number: 17391171 
+body: Not sure, it would be nice to do so, but I don't think the actual fee is known yet at the time the confirmation dialog is shown (that's also why there is an separate askFee prompt).
+ 
+
+comment number: 17398341 
+body: @laanwj could we not just show the "nTransactionFee" from walletmodel in the dialog according to mockups in #1714? Because we also do the exceeds calculations based on nTransactionFee,... so i would say it's also okay to place them there. The real txfee will might be different. Maybe we show " and ~0.0005 BTC to transaction fees"?
+ 
+
+comment number: 17403057 
+body: Nah, showing an approximate value could confuse people even more. I'm for either showing nothing or the actual fee that will be paid.
+ 
+
+comment number: 17469463 
+body: @laanwj okay,... let me check if i can somehow calculate (use the current txfee calc code) the fee before the confirmation dialogue pops up.
+ 
+
+comment number: 27957613 
+body: This is fixed by #2651, closing
+ 
+
+365. bug report number : ['1714']
+comment number: 7995934 
+body: Good catch!
+ 
+
+comment number: 7995979 
+body: Yes that would be useful
+ 
+
+comment number: 7997197 
+body: It's pretty trivial to make it show the preferred fee (as set in Options). Maybe that's good enough.
+
+However, showing the computed fee, which is only available after building the transaction, would require quite some re-ordering and re-thinking.
+
+Currently the order of operating when the send button is clicked is:
+- Build list of recipients / amounts from UI
+- Show confirmation dialog
+- Ask passphrase to unlock encrypted wallet
+- WalletModel::sendCoins
+  - Do input checks (balance, duplicates, empties etc)
+  - With wallet mutex
+    - Build transaction outputs
+    - Create transaction -> determines inputs for outputs, **this returns the computed fee nFeeRequired**
+    - Callback: If the computed fee is higher than the configured fee, ask user if he accepts the fee
+    - Commit transaction (send to network)
+  - Update misc stuff (labels, addresses)
+
+So that would effectively mean that the confirmation can only be shown _after_ the transaction has been created, probably by splitting send into a two-stage process.
+ 
+
+comment number: 7997997 
+body: A re-ordering would be nice, as that perhaps also solves the issue with not knowing how high the fee will be (#1570)!
+But a 2-stage fix is fine with me :).
+ 
+
+comment number: 8021670 
+body: Yes I think that'd also be best. The user knows what fee he has configured, so the first proposal is kind of pointless.
+
+Showing the computed fee could even give the user the chance to to pay more or less. Of course, paying less could mean that miners don't include the fee, but that's the user's own risk.
+ 
+
+comment number: 8621421 
+body: I want to get involved with bitcoin development. Think this would be a decent thing for me to work on?
+ 
+
+comment number: 8622952 
+body: I don't think this is an good issue to start with. This cross-cuts into both the UI and core code, and touches code that is pretty risky to alter. 
+
+Of course, you can always try...
+ 
+
+comment number: 8626122 
+body: Any recommendations on a good issue then?
+On Sep 17, 2012 1:15 PM, "Wladimir J. van der Laan" <
+notifications@github.com> wrote:
+
+> I don't think this is an good issue to start with. This cross-cuts into
+> both the UI and core code, and touches code that is pretty risky to alter.
+> 
+> Of course, you can always try...
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/bitcoin/bitcoin/issues/1714#issuecomment-8622952.
+ 
+
+comment number: 8644994 
+body: Improving the transaction details dialog would be a nice one. It could be
+user friendlier, looks like abracadabra currently to normal users, and also
+has some problems such as #1725 and #752.
+ 
+
+comment number: 9704854 
+body: It seems impossible to lock down the voluntary tx fee, a trojan simply writing a new paytxfee to the user's conf file could cause some unnoticed higgledy-piggledy. It would be wise to deprecate the config file setting and move tx fee inside the encrypted wallet. In addition the voluntary fee should be shown with a confirmation box whenever it is non-zero.
+ 
+
+comment number: 13478408 
+body: Please make the wording in the dialog more clear so that the user understands that the fee is paid additionally to the amount he sends and not included.
+I frequently get people sending a fee-amount too much on my website because they seem to think that the fee will be deducted at the recipients end. (Thanks paypal I guess)
+ 
+
+comment number: 16106413 
+body: Just going to drop this here from #2403:
+This needs to get coded as optional fees become normal and users need to know what they are sending (especially so they can rethink if their fee is OptionalFee x kB of spam). Optional fees give no warning currently.
+
+![transfeesimple](https://f.cloud.github.com/assets/1425520/356379/d28cad14-a104-11e2-8e32-13d8af33adf5.png)
+ 
+
+comment number: 16109945 
+body: @qubez So you don't have a patch, but just did some graphics mod how you would like it to look ;)?
+ 
+
+comment number: 16127928 
+body: Funny how two semesters of writing bubble sorts in Java doesn't prepare you to grok Bitcoin written in a language and framework you've never used... ;)
+ 
+
+comment number: 24580619 
+body: @laanwj Can be closed, as the great patch from @jonasschnelli was merged recently.
+ 
+
+comment number: 25684370 
+body: Can still be closed... dear devs, please help ^^.
+ 
+
+366. bug report number : ['1688']
+367. bug report number : ['1663']
+comment number: 7592929 
+body: If I use bitcoin-0.5.4rc3-linux, wallet upgrade works as expected..none of the above errors. Prompt occurs about wallet needing to be upgraded, and client restarts.
+ 
+
+comment number: 7602614 
+body: sometimes also fails with...
+
+ terminate called after throwing an instance of 'boost::exception_detail::clone_implboost::exception_detail::error_info_injector<boost::lock_error >'
+  what():  boost::lock_error
+Aborted (core dumped)
+
+Some git bisect results...
+
+git bisect start v0.5.6 v0.5.4rc3
+
+```
+The first bad commit could be any of:
+9a48f56fb02338b7f68ab9fd469abc1abe0011c3
+af413c0a0ff507da69afae6399bf3ff3fbf0774b
+9849f50b6866f326040622f124601efaa8c37434
+a0ea95d3ceacea5868b8f921c36bbdddb5dc2b1b
+82a227b263fa7d4caee454884661548f7415b9d7
+ca39829ecb90e392b9722292739585124ba0d7c1
+3703150d56ff6ee557ab330e55637c9c23835902
+We cannot bisect more!
+
+git bisect log
+# bad: [fad2231f8664434e913ad5c6d458fa9139492390] Merge branch '0.4.x' into 0.5.x
+# good: [9bf1140b90387643ad83e89199e391d002352b22] Merge branch '0.5.0.x' into 0.5.x
+git bisect start 'v0.5.6' 'v0.5.4rc3'
+# good: [479c99022e0e65ac525b45d3a18599726c00cc03] remove HTML code around "Wallet" (displayed on overview page) and use Qt tags for font settings
+git bisect good 479c99022e0e65ac525b45d3a18599726c00cc03
+# good: [fdd907c9f12d5435dcd23f45c54f803cb3854a89] Correct blockchain size in contrib/debian.
+git bisect good fdd907c9f12d5435dcd23f45c54f803cb3854a89
+# bad: [3703150d56ff6ee557ab330e55637c9c23835902] Merge branch '0.4.x' into 0.5.x
+git bisect bad 3703150d56ff6ee557ab330e55637c9c23835902
+# good: [1bc2f0a37b68aa99e90437105a48c47046b6c0d0] Fix build of testcases after commit 0f10b21719e1b0d9683a142f0a7105e65f095694
+git bisect good 1bc2f0a37b68aa99e90437105a48c47046b6c0d0
+# skip: [af413c0a0ff507da69afae6399bf3ff3fbf0774b] fix an incorrect if-clause in net.cpp
+git bisect skip af413c0a0ff507da69afae6399bf3ff3fbf0774b
+# skip: [9a48f56fb02338b7f68ab9fd469abc1abe0011c3] Bugfix: Move IsStandard scriptSig size check out of IsPushOnly, since BIP16 verification uses the latter too
+git bisect skip 9a48f56fb02338b7f68ab9fd469abc1abe0011c3
+# skip: [a0ea95d3ceacea5868b8f921c36bbdddb5dc2b1b] Serialize access to debug.log stream
+git bisect skip a0ea95d3ceacea5868b8f921c36bbdddb5dc2b1b
+# skip: [9849f50b6866f326040622f124601efaa8c37434] Bump VERSION so we can differentiate between fixed 0.4.7rc2 and not-fixed 0.4.7rc1
+git bisect skip 9849f50b6866f326040622f124601efaa8c37434
+# skip: [82a227b263fa7d4caee454884661548f7415b9d7] .gitignore: add test_bitcoin
+git bisect skip 82a227b263fa7d4caee454884661548f7415b9d7
+# skip: [ca39829ecb90e392b9722292739585124ba0d7c1] Update wiki changelog at doc/release-process.txt
+git bisect skip ca39829ecb90e392b9722292739585124ba0d7c1
+```
+
+Skips are where I was not able to build with qmake; make; "No rule to make target `bitcoin-qt.pro'"
+ 
+
+comment number: 7603578 
+body: I went through this bisect twice and got identical results.
+ 
+
+comment number: 7628022 
+body: Tested with a few more old wallet files, and a few more bitcoin versions. Crashing is consistent per wallet/app pair, crash or success result fails depending on wallet file used, and bitcoin version used.
+ 
+
+comment number: 7641107 
+body: I got this for the first time after emptying my wallet to balance 0 (sendtoaddress) and attempting to stop bitcoind.
+
+```
+    "version" : 60300,
+    "protocolversion" : 60001,
+    "walletversion" : 60000,
+    "balance" : 0.00000000,
+```
+
+```
+$ bitcoind stop
+bitcoin server stopping
+$ terminate called after throwing an instance of 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::lock_error> >'
+  what():  boost::lock_error
+```
+ 
+
+comment number: 7650675 
+body: that correlates...all the old wallets I am testing with have zaro balance
+ 
+
+comment number: 35866702 
+body: Very old issue that is likely solved by the many changes to the wallet code since, please re-open a new one if this is still a problem.
+ 
+
+368. bug report number : ['1625']
+comment number: 7440803 
+body: Just as a remainder: Perhaps ban such misbehaving nodes!
+ 
+
+comment number: 7998032 
+body: @sipa Do you think this does need further checks or something? If no just close this issue.
+ 
+
+comment number: 35866919 
+body: Does this cause a crash of the program or just an exception after which it will continue on as normal?
+
+If the first this is a serious issue, otherwise it is just a matter of a client getting booted for invalid messages and we can close this.
+ 
+
+comment number: 35873613 
+body: At the time of my test it was a hard crash...
+ 
+
+comment number: 35878839 
+body: Ok, I'm going to try to reproduce this.
+ 
+
+comment number: 35880581 
+body: I couldn't reproduce this during a testnet IBD. But as far as I remember it just happend on main net.
+ 
+
+comment number: 35881395 
+body: Hm. I don't think it matters on which network. How did you try to reproduce, did you try to manually inject the packet?
+ 
+
+comment number: 35882025 
+body: No I just startet with an empty block-db to start an IBD.
+ 
+
+comment number: 35885106 
+body: inv `type=3` is a "Filtered block" by the way. It is a relatively new type introduced in the bloom filter extension. Not sure if it already was the case back then.
+
+I've tried sending invalid 'inv' packets to my local bitcoin client using pynode, this does result in the following message on stderr and debug.log:
+
+```
+************************
+EXCEPTION: St12out_of_range       
+CInv::GetCommand() : type=4 unknown type       
+bitcoin in ProcessMessages()    
+```
+
+No crash though. It logs the exception and carries on as normal.
+ 
+
+369. bug report number : ['1599']
+comment number: 7070252 
+body: See http://doc.gnu-darwin.org/am_misc/dbsizes.html
+
+Short answer: blkindex.dat will eventually break if it gets bigger than the underlying filesystem supports.
+
+I would vote for "Don't run a full bitcoin node on a FAT32 filesystem", along with a tiny bit of code to warn the user if they try to do that (is there a POSIX call to get the maximum supported file size for a given filesystem?)
+
+Pieter's "ultraprune" work might make blkindex.dat go away before it reaches 4GB, though.
+ 
+
+comment number: 7399231 
+body: BDB currently managed blkindex.dat, and I suppose it is as good as handling large files as the underlying OS and filesystem are. I wouldn't worry about this, especially since we're working on several things that will change this radically anyway.
+ 
+
+comment number: 11930239 
+body: Seems obsolete with the change over to LevelDB, so closing it.
+ 
+
+370. bug report number : ['1560']
+371. bug report number : ['1558']
+comment number: 7739469 
+body: Just saw this one ... where is the fix to this issue to be found ;)?
+ 
+
+comment number: 7997481 
+body: Fixed in #1565.
+ 
+
+372. bug report number : ['1556']
+comment number: 7075590 
+body: This is not a problem when using GCC 4.7, but it IS one with GCC 4.4 (the compiler shipping with the current Qt SDK on Windows).
+ 
+
+comment number: 8763019 
+body: @sipa I'm not sure if this needs fixing, but I dunno how anyway. If you consider this to be a non-issue just close it!
+ 
+
+comment number: 12728387 
+body: This warning doesn't happen with recent MinGW version. @sipa Should this be fixed and if no you are free to close this!
+ 
+
+comment number: 17589800 
+body: @sipa Another ping... trying to get some things closed or looked at ^^.
+ 
+
+comment number: 28303040 
+body: Closing as it doesn't happen with recent mingw.
+ 
+
+373. bug report number : ['1550']
+comment number: 102997479 
+body: The number of RPC threads created by bitcoind is bounded at `-rpcthreads=<n>`. These are created during initialization and terminated at shutdown. The memory leak will be thus be bounded to that number too. I don't see this as a serious issue.
+ 
+
+374. bug report number : ['1547']
+comment number: 6699313 
+body: for (int nHost = 1; nHost <= 2; nHost++)
+if (nHost == 1)
+{
+pszGet=
+pszKeyword=
+}
+else if (nHost == 2)
+{
+pszGet =
+ pszKeyword = 
+}
+
+Value analysis in your compiler is obviously deficient. Is that an old version of GCC (4.2?) or what?
+ 
+
+comment number: 6699575 
+body: > Value analysis in your compiler is obviously deficient. Is that an old version of GCC (4.2?) or what?
+
+Instead of upgrading, FreeBSD seems to like to patch contributed
+source like gcc,
+ssh, ssl, bind, etc that is included in the base. So I've no idea what
+this one really
+contains. You'd have to see the source. To the extent it is emitted by
+one of the
+current OS's on the planet and therefore seen by others, I reported it
+for consideration.
+
+gcc version 4.2.1 20070831 patched [FreeBSD] RELENG_8 i386
+ 
+
+comment number: 8757746 
+body: Investigation by gmaxwell shows these warnings are false positives -> closing this
+ 
+
+375. bug report number : ['1543']
+comment number: 6693533 
+body: ACK, I'm fine with that change, as long as the main client window is larger than the address selection window, which is the case.
+ 
+
+comment number: 6933820 
+body: Seems the dialog was already enlarged to width 691 by someone else. Needs rebase if it needs to be still wider.
+ 
+
+comment number: 6934543 
+body: I know that @cardpuncher played around with the width and the one in this pull is the one that works, even for french ^^. But yea, this one needs a rebase then!
+ 
+
+comment number: 7077309 
+body: @cardpuncher Can you please rebase this?
+
+<pre>
+git fetch upstream
+git rebase upstream
+git push ...
+</pre>
+ 
+
+376. bug report number : ['1542']
+comment number: 6685643 
+body: ![new splash screen graphic V1](http://i50.tinypic.com/2i8zoli.jpg)
+![new splash screen graphic V2](http://i50.tinypic.com/o6bev4.jpg)
+![new splash screen graphic V3](http://i45.tinypic.com/20iza75.jpg)
+ 
+
+comment number: 6829698 
+body: As our aim is to get rid of it, I don't think we should change the splash image, it will only focus people more on it, probably resulting in useless bikeshedding discussing as to which one was better / worse. 
+ 
+
+comment number: 6830205 
+body: You are most likely right, so closed!
+ 
+
+377. bug report number : ['1535']
+comment number: 6668101 
+body: Based on the reports on IRC we clearly have some cases where txn are get missed but I've not seen any easy way to pin them down. Assuming the issues are shutdown related. It might be useful to always rescan the last couple block before the wallets claimed height.
+ 
+
+comment number: 6669186 
+body: I was hoping the details in this report would make finding and fixing the real cause easier :)
+ 
+
+comment number: 274572752 
+body: This may be because SetBestChain is called when the block state is flushed, irregardless of whether the wallet is currently doing ScanForWalletTransactions. eg if a user starts Bitcoin Core, it is running wallet scan, they try to stop the node, and it takes too long so they kill it (because wallet rescan is uninterruptible, I believe), the wallet best tip pointer may be set based on blocks which were flushed to disk (eg via FlushStateToDisk() in Shutdown()). 
+
+comment number: 349813118 
+body: Bump. What could be done here? 
+
+comment number: 350130637 
+body: I'd bet this is no longer a bug, and given it was never reported to be reproduceible, I'd suggest close. 
+
+378. bug report number : ['1522']
+comment number: 6569821 
+body: Needs more information;
+Upgrading from what version to what version?
+Which OS?
+Do you have "close to tray" enabled? Isn't it simply shutting down?
+ 
+
+comment number: 6570013 
+body: Sorry, didn't copy the top half of my issue. 
+OS X 10.7.4, upgrading from 0.6.2.2 to 0.6.3
+
+Close to tray?
+ 
+
+comment number: 6570487 
+body: Never mind, that option doesn't exist on MacOSX. 
+
+A problem with the dock icon on OSX has been solved something like a month ago:
+
+https://github.com/bitcoin/bitcoin/commit/b06f9c1364ab70763ded9c0c7ba795c0da72aa7a
+
+I'm not sure whether it is backported to 0.6.x, though.
+ 
+
+comment number: 6968817 
+body: I've had a look into this, and adding that code back in actually fixes the problem.
+ 
+
+comment number: 6981262 
+body: But that brings back the problems in #1327 right? We really need someone to hack on bitcoin ui on the mac, currently it's mostly guess work.
+ 
+
+comment number: 7151396 
+body: Same problem here. i have to right-click at dock icon and select "Show/Hide Bitcoin" to bring the window back.
+ 
+
+comment number: 7842817 
+body: Can anyone answer my question? Does re-adding that code bring back issue #1327?
+ 
+
+comment number: 8182393 
+body: I have a feeling it does. Although that would probably be preferred over the gui dissapearing completely. Not all users would realise that they have to use show/hide to bring it back. Whereas they will more than likely click the dock icon more than once if the gui shows up and then dissapears.
+ 
+
+comment number: 11577658 
+body: I have this same problem on a linux box.
+Commenting out the `#ifndef Q_OS_MAC` in `BitcoinGUI::createTrayIcon` (and relative `#endif`) fixes the issue for me, which suggests that macro is defined when it should _not_ be...
+ 
+
+comment number: 11577823 
+body: Forget it, it still works after dropping the comments. There must be an issue with the dependency tracker which prevented my build to catch a recent fix
+ 
+
+comment number: 11997845 
+body: Any Mac dev, who can contribute here?
+ 
+
+comment number: 12634187 
+body: Has this been fixed?
+ 
+
+comment number: 12634469 
+body: Works for me on OSX 10.8 using git HEAD.  Please open a new issue if it doesn't work for you when 0.8 is out.
+ 
+
+comment number: 14684231 
+body: With the new version 0.8 the GUI disappears completely again. I have to restart bitcoin-qt to bring it back.
+OSX 10.8.2 on three different computers.
+Others on the forum reported the same issue: https://bitcointalk.org/index.php?topic=145184.msg1582293#msg1582293
+ 
+
+comment number: 14702961 
+body: I have observed this in OS X 10.7.5 as well, but to clarify:  the window is irretrievable only after I hit the window-close button. If I hit the window-minimize button, the window minimizes as expected and can be restored in the usual way.
+ 
+
+comment number: 14703336 
+body: Does this have to do with tray icon at all ? Do you have a tray icon ?
+ 
+
+comment number: 14718151 
+body: The closest equivalent to a system tray in Mac OS is the right-hand side of the menu bar. My Bitcoin-Qt does not put an icon in the menu bar.
+
+I played with the window options "Minimize to the tray instead of the taskbar" and "Minimize on close" to see if they had any effect, but they do not.  Moreover, these settings do not appear to be retained in the Mac OS version.
+
+I found an older thread on the Qt Project forums that may or may not be relevant here:
+http://qt-project.org/forums/viewthread/2416
+
+I can work on doing builds on my machine if you are still in need of people who can make and test their own builds on Mac OS.
+ 
+
+comment number: 14720495 
+body: RE: working on doing builds:  yes, we need a Qt/OSX programmer.  My main machine is OSX, but I spend most of my time working on lower-level code, not GUI stuff.
+ 
+
+comment number: 14762192 
+body: Okay. I was just able to run one of my own builds, so you can consider me at least a rookie QA engineer for Mac. :smile_cat: 
+ 
+
+comment number: 14781115 
+body: Here would be one way to make a quickie fix.  In BitcoinGUI::closeEvent is this block:
+
+``` c++
+     if(clientModel)
+     {
+#ifndef Q_OS_MAC // Ignored on Mac
+         if(!clientModel->getOptionsModel()->getMinimizeToTray() &&
+            !clientModel->getOptionsModel()->getMinimizeOnClose())
+         {
+             qApp->quit();
+         }
+#endif
+     }
+```
+
+Moving the `#endif` up by 3 lines would at least ensure that the app quits when the window-close button is clicked.
+
+However, I think I see some possibilities for enabling minimize-to-tray and minimize-on-close on Mac OS, so I'm going to play with those some more.
+ 
+
+comment number: 15052723 
+body: if I change 
+
+```
+void BitcoinGUI::createTrayIcon()
+{
+#ifndef Q_OS_MAC
+trayIcon = new QSystemTrayIcon(this);
+
+trayIcon->setToolTip(tr("Bitcoin client"));
+trayIcon->setIcon(QIcon(":/icons/toolbar"));
+trayIcon->show();
+#endif
+```
+
+to
+
+```
+void BitcoinGUI::createTrayIcon()
+{
+trayIcon = new QSystemTrayIcon(this);
+#ifndef Q_OS_MAC
+
+trayIcon->setToolTip(tr("Bitcoin client"));
+trayIcon->setIcon(QIcon(":/icons/toolbar"));
+trayIcon->show();
+#endif
+```
+
+the menu on the dockicon appears again.
+ 
+
+comment number: 15068421 
+body: For those watching at home, @Nerzahd moved `#ifndef Q_OS_MAC` down one line to keep `trayIcon = new QSystemTrayIcon(this);` from being excluded by the conditional.
+
+(I had to diff the two to figure out what was going on.) :grin:
+ 
+
+comment number: 15141663 
+body: I'm not sure why that patch helps on Mac really ^^. Can some Mac-capable dev enlighten me?
+ 
+
+comment number: 15143723 
+body: You have a point. At least this way the call the call to `QSystemTrayIcon` will get compiled into the Mac version, but without the call to `trayIcon->show`, it may be useless. I have a Mac and can try this out (just not right this moment).
+
+Wait, were you talking about @Nerzahd's patch or mine?
+ 
+
+comment number: 15146968 
+body: i'm not a developer but i think it has something to do with:
+
+```
+// Create system tray menu (or setup the dock menu) that late to prevent users from calling actions,
+// while the client has not yet fully loaded
+if(trayIcon)
+    createTrayIconMenu();
+```
+ 
+
+comment number: 15147635 
+body: createTrayIconMenu() on Mac should work without depending on trayIcon to be non-zero. Perhaps that is the problem why it works, when allowing `trayIcon = new QSystemTrayIcon(this);` on Mac.
+
+Solution could be to call createTrayIconMenu() on Mac always. Can a Mac dev try this?
+
+Edit: I created a patch, dunno if it works though ^^.
+ 
+
+comment number: 35859502 
+body: I have this problem on v0.8.6-beta Windows 7 professional x64
+ 
+
+379. bug report number : ['1513']
+comment number: 6787131 
+body: Your blk0001.dat or blkindex.dat file got corrupted somehow (did you run out of disk space perhaps?).  To recover, backup your wallet.dat file, remove everything except for wallet.dat from the bitcoin data directory, and re-run.
+
+Keeping this bug open, because it would be good to at least report a helpful error message in cases like this, and even better if bitcoin could recover itself.  Pieter and Mike have both been working on complete re-writes of the block database, though, so spending time working on the current way we're doing things might be a waste of time.
+ 
+
+comment number: 6787470 
+body: Thanks Gavin. 
+
+This error has been happening to me every couple of months going back to maybe September 2011. I've always upgraded to the latest version hoping the bug would be gone (including clean re-installs) but for some reason I always comes back. It is a pain since the only way to recover is to delete all the block-chain files and re-download. My wallet was never affected though.  
+
+I don't think I ran out of space (although space is tight - I'm running on a 64GB SSD). Perhaps it has to do with the fact that I always send my laptop into 'sleep' mode while running the bitcoin client in the background? 
+
+Good to hear a rewrite of the block db is on the way. Sounds like that might fix the issue. 
+ 
+
+comment number: 6788991 
+body: Speaking of the devil - the bitcoin client just unexpectedly crashed on me again. I have 5.54GB Free space on my SSD. 
+
+Debug.log: 
+
+http://dl.dropbox.com/u/1007482/debug.log
+
+Error:
+
+Problem signature:
+  Problem Event Name:   APPCRASH
+  Application Name: bitcoin-qt.exe
+  Application Version:  0.0.0.0
+  Application Timestamp:    4d44aa00
+  Fault Module Name:    bitcoin-qt.exe
+  Fault Module Version: 0.0.0.0
+  Fault Module Timestamp:   4d44aa00
+  Exception Code:   40000015
+  Exception Offset: 00efd58a
+  OS Version:   6.1.7601.2.1.0.768.3
+  Locale ID:    6153
+  Additional Information 1: e403
+  Additional Information 2: e403e395f61488c484a049fbfa26e55d
+  Additional Information 3: fdd5
+  Additional Information 4: fdd5fe2be60a02ae15c676188e0d931d
+
+Read our privacy statement online:
+  http://go.microsoft.com/fwlink/?linkid=104288&clcid=0x0409
+
+If the online privacy statement is not available, please read our privacy statement offline:
+  C:\Windows\system32\en-US\erofflps.txt
+
+I am able to restart the client without errors this time though, so it could be unrelated/different bug. 
+ 
+
+comment number: 15664454 
+body: @nanpanman still got the problem?
+ 
+
+comment number: 15666221 
+body: No. I moved to a new computer no issues since. The previous one had an SSD
+that got progressively more corrupted so that might have been the culprit.
+On Mar 29, 2013 3:53 PM, "Birger Hedman" notifications@github.com wrote:
+
+> @nanpanman https://github.com/nanpanman still got the problem?
+> 
+> —
+> Reply to this email directly or view it on GitHubhttps://github.com/bitcoin/bitcoin/issues/1513#issuecomment-15664454
+> .
+ 
+
+comment number: 276109875 
+body: @nanpanman hello, today I also have the same problem, when I try to transfer the bitcoin, the software was crashed and reminded the "A fatal error occured. Bitcoin can no longer continue safely and will quit.",I have the wallet.dat file, could you tell me how did you solve the problem?thanks much 
+
+380. bug report number : ['1505']
+comment number: 6518036 
+body: with carets this time?
+
+upgradewallet=<0..100k+>
+
+terminate called after throwing an instance of 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::program_options::invalid_syntax> >'
+ 
+
+comment number: 6520755 
+body: Seems the argument parsing routine doesn't like what you fed to it IMHO.
+ 
+
+comment number: 6520800 
+body: > Seems the argument parsing routine doesn't like what you fed to it IMHO.
+
+Obviously. Though it should not crash, crashing is poor form.
+ 
+
+comment number: 6520823 
+body: Indeed ... makes me wonder, if only `upgradewallet` makes the client crash or also other stuff. This needs to be looked into.
+
+I tried to reproduce with a build based on current master using `bitcoin-qt.exe -upgradewallet` -> no crash and `bitcoin-qt.exe -upgradewallet=FOO` -> no crash. Does it crash for you on bitcoind or bitcoin-qt?
+ 
+
+comment number: 6698812 
+body: Tracking stable 0.6.x at that time, not master. And bitcoind on FreeBSD, not qt.
+There are three ways to say upgradewallet...
+Nothing after the 't', only '=' after, and '=n' after. n could perhaps be numeric, alpha, printable, etc.
+Placing the exact string 'upgradewallet' in the conf crashed for sure. Others may have, I don't recall.
+ 
+
+comment number: 6707286 
+body: I cant reproduce on current master, does it depend on having a wallet of a specific version, or could it be a stable-only issue?
+ 
+
+comment number: 6750029 
+body: v0.6.3, new wallet on current blockchain, 'upgradewallet' in
+bitcoin.conf, coredump.
+freebsd 8.x boost149 db4830. that's all i know.
+
+EXCEPTION: N5boost16exception_detail10clone_implINS0_19error_info_injectorINS_15program_options14invalid_syntaxEEEEE
+bitcoin in AppInit()
+terminate called after throwing an instance of
+'boost::exception_detail::clone_implboost::exception_detail::error_info_injector<boost::program_options::invalid_syntax
+
+> '
+>   what():  unrecognized line in 'upgradewallet'
+
+[New Thread 28801140 (LWP 100943/initial thread)]
+#0  0x2874b9a7 in kill () from /lib/libc.so.7
+#1  0x2853a397 in raise () from /lib/libthr.so.3
+#2  0x2874a4da in abort () from /lib/libc.so.7
+#3  0x285ad880 in __gnu_cxx::__verbose_terminate_handler () from
+/usr/lib/libstdc++.so.6
+#4  0x285b208a in std::set_unexpected () from /usr/lib/libstdc++.so.6
+#5  0x285b20d2 in std::terminate () from /usr/lib/libstdc++.so.6
+#6  0x285b1f58 in __cxa_rethrow () from /usr/lib/libstdc++.so.6
+#7  0x0817739a in PrintException (pex=0x288590d0, pszThread=0x82ff75a
+"AppInit()") at util.cpp:801
+#8  0x0808b1f5 in AppInit (argc=2, argv=0xbfbfedd8) at init.cpp:127
+#9  0x0808b23d in main (argc=Cannot access memory at address 0x3) at
+init.cpp:110
+ 
+
+comment number: 6787813 
+body: The real problem is we're digging down into boost internals to parse the config file (the documented, supported config-file-parsing API doesn't do exactly what we need).
+
+Easiest fix will be to catch the exception and Do the Right Thing.
+ 
+
+comment number: 33357486 
+body: Can't reproduce this on current master, perhaps fixed by a more recent Boost version and changes to parsing.
+ 
+
+comment number: 33357992 
+body: Thanks for testing @diapolo, closing this
+ 
+
+381. bug report number : ['1504']
+comment number: 6519773 
+body: rpcssl=1 was set in the bitcoin.conf, so bitcoind was expecting a https connection.
+ 
+
+comment number: 353720626 
+body: From https://github.com/bitcoin/bitcoin/issues/10218#issuecomment-294343860
+
+> Authentication is not optional. Configuring it yourself is optional, but bitcoind never accepts RPC connections without explicitly or implicitly configured username/password.
+
+If you didn't add user and pass in bitcoin.conf, you can use default from file `/root/.bitcoin/.cache`.
+For example:
+`curl --user __cookie__:96fea535b009e62ddffe1c6f5090c50396d17e7f96d0b0a75eb580bdd1771d29 --data-binary '{"jsonrpc":"1.0","id":"curltext","method":"getinfo","params":[]}' -H 'content-type:text/plain;' http://127.0.0.1:8332` 
+
+382. bug report number : ['1492']
+comment number: 6464732 
+body: Working around by commenting out:
+disk.update(registering_applications=False)
+
+@p2k : any idea why this suddenly stopped working?
+ 
+
+comment number: 7424812 
+body: i have an issue since i upgraded to macosx 10.8.
+
+Traceback (most recent call last):
+  File "../bitcoin/contrib/macdeploy/macdeployqtplus", line 708, in <module>
+    disk = finder.disks[disk_name]
+  File "build/bdist.macosx-10.8-intel/egg/appscript/reference.py", line 579, in **getattr**
+AttributeError: Unknown property, element or command: 'disks'
+
+i sent yesterday an email to p2k. no answer.
+ 
+
+comment number: 12519463 
+body: Fixed by https://github.com/bitcoin/bitcoin/pull/2179
+ 
+
+383. bug report number : ['1491']
+comment number: 6463598 
+body: If the message was made less specific— and thus less misleading— would that mostly address your concern? 
+
+E.g. "This transaction is too small or difficulty to process for it to be distinguished from an attack on Bitcoin. You can still send it for a fee of 0.0005, which goes to the nodes that process your transaction and helps to support the network. Do you want to pay the fee?"
+ 
+
+comment number: 6465123 
+body: On 06/20/2012 08:50 PM, Gregory Maxwell wrote:
+
+> If the message was made less specific— and thus less misleading—
+> would that mostly address your concern?
+
+I'd prefer to have a specific message for each situation, so the user
+knows what's causing the fee and can act accordingly.
+
+If this is difficult, then stating all the possible reasons is ok.
+
+> E.g. "This transaction is too small or difficulty to process for it
+> to be distinguished from an attack on Bitcoin. You can still send it
+> for a fee of 0.0005, which goes to the nodes that process your
+> transaction and helps to support the network. Do you want to pay the
+> fee?"
+
+Explaining that very small transactions might be used in an attack and a
+fee solves this problem is excellent. Your first sentence appears a
+little weird, though (apart from the typo s/difficulty/difficult). How
+about: "To avoid attacks on Bitcoin a minimum fee of 0.0005 is required
+for transactions under 0.01. Do you want to pay the fee?"
+
+If the reason is a large size, then printing the size might help to
+decide if it's worth trying to make the transaction size smaller.
+
+Bernhard
+
+## 
+
+Encrypt emails.
+My GPG key is on public key servers.
+ 
+
+comment number: 6468682 
+body: The 'size' in question is the data size, not the transaction value— and their relationship is chaotic if not outright byzantine. :)
+
+The reason I asked about the vague message is that it's actually quite hard to give the "real" reason in some cases.  E.g. say you have a 100 BTC input unconfirmed (so it won't use it),  and 100 btc in 1e-8 dust inputs.  You go to do a 10 btc transactions and the selection will ignore the 100 BTC unconfirmed input, then build a TXN which is too big to be permitted out of dust inputs. .. then come back and tell you that your transaction data was too big when the "real" issue was that the 100btc input wasn't confirmed yet.  There are a dozen variations of this.
+
+Another similar case is,  consider that you have two possible transactions: one has 2 BTC in change, but will require a 0.0005 fee (because of its low priority or data size)...  Another would have 0.000001 BTC in change but require no fee except the change output of less than 0.01 means a fee of 0.0005 would be required— so instead the system proposes you give up the 0.000001 change as fee thus avoid hitting the 0.01 rule.    If it says "a minimum fee of 0.0005 is required for transactions under 0.01" you'll be thinking "what the heck, my output was >0.01, and that fee is much less than 0.0005!"
+
+So I think that we probably can't give specific understandable messages for all cases. We can probably give better messages for some, but we will need good generic text too.  So any suggestions on comprehensible generic text would be helpful. Crafting this kind of text is hard. 
+ 
+
+comment number: 35285741 
+body: That message doesn't exist anymore with the new confirmation dialog. Now it simply states the fee that is needed. It does not try to explain why, as that is a lost cause here.
+
+With coin control you can manually (un)select inputs and get some insight into the transaction (byte) size and when a fee is needed or not.
+ 
+
+384. bug report number : ['1455']
+comment number: 6334158 
+body: Fixed in #1463.
+ 
+
+385. bug report number : ['1436']
+comment number: 35867533 
+body: bitcoind itself will also set Misbehaving for peers that send anything before the version message, including alerts.
+ 
+
+386. bug report number : ['1414']
+comment number: 6208351 
+body: sounds like 'sendrawtx' has a bug...  it adds the new tx to relay inventory, but does not force immediate broadcast.
+
+sounds like it should force immediate broadcast too.
+ 
+
+comment number: 6645774 
+body: Retract my previous comment... it should broadcast as any other tx.
+ 
+
+comment number: 6953763 
+body: Commit 771ffb5e28a75bf2a99283b3a9c7c40dc0f7907d should fix this issue.
+ 
+
+387. bug report number : ['1371']
+comment number: 5836007 
+body: @gavinandresen : BOOST_SPIRIT_THREADSAFE should be included in script_tests.cpp and rpcdump.cpp, I'd guess.  Can you try adding it at each location where the json_spirit headers are included?
+ 
+
+388. bug report number : ['1234']
+comment number: 5668764 
+body: Issue #1053 was kinda this, but maybe too specific :)
+ 
+
+comment number: 5668880 
+body: This just needs a line adding such as pfrom->AskedForBlocks = true along with nAskedForBlocks++, which then can nAskedForBlocks-- when that node disconnects... so the getblocks fires off again (maybe even move that code outside of the strCommand == "version", so that already connected nodes can fire off the getblocks).
+
+I've already coded this in my fork, but not gotten around to neatening it into a commit and pull requesting it. Will do asap (unless someone else does first), in fact, doing this now.
+ 
+
+comment number: 12198671 
+body: I don't understand why it's taking so long to fix this rather simple issue.... 
+ 
+
+comment number: 16893242 
+body: Closed by #2461 
+ 
+

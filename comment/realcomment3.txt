@@ -1,0 +1,2815 @@
+114. bug report number : ['6179']
+comment number: 104989093 
+body: The ip/CIDR string to CSubNet constructor is also buggy. Working on a fix.
+ 
+
+115. bug report number : ['6159']
+comment number: 104736856 
+body: Ok, pushed.  I think I captured the best of both worlds, re-used the existing localized string to indicate there's a problem with locking the datadir.  (another copy already running may be misleading in some cases though)  Follow it with the english text of the exception to give a hopefully familiar and if not, a google-able clue as to what the problem might be.  I fired it up in Spanish and Russian, and it didn't look crazy.  Sound good?
+ 
+
+comment number: 104993290 
+body: Tested ACK
+ 
+
+116. bug report number : ['6153']
+comment number: 105259929 
+body: You should update the -upnp help message also to e.g. `Use UPnP to map the listening port (default: 1 when listening and no -proxy)`.
+
+utACK, when updated
+ 
+
+comment number: 105406161 
+body: I'm not going to change the help message for 0.11 (string freeze), but after that feel free to do that.
+ 
+
+117. bug report number : ['6130']
+comment number: 102042661 
+body: Pushed up a small fix (was using fHavePruned instead of fPruneMode in the test). 
+ 
+
+comment number: 102524727 
+body: tested ACK.  Although I don't think this change is needed until #6122 goes through, it will be needed at that point.
+ 
+
+comment number: 112465496 
+body: Closing, as I don't think this bug can be triggered without enabling block relay for pruning nodes, and this commit is included in #6148 already.
+ 
+
+118. bug report number : ['6123']
+119. bug report number : ['6095']
+comment number: 98649214 
+body: It should only notify for transactions for the address(es) that you `importaddress`ed.
+
+Can you add concrete steps to reproduce?
+ 
+
+comment number: 98697834 
+body: I did this in -regtest mode. So, run bitcoind -regtest -daemon. Generate a few blocks:
+
+  `bitcoin-cli -regtest setgenerate true 50`
+
+Generate a random address and import it:
+
+ `bitcoin-cli -regtest importaddress mo7W7FBZqg4frF5XtchSJUNVhjkbNr9aWB`
+
+And now you get a flurry of transactions being notified. Sometimes it exhausts all memory in my laptop and crashes it.
+ 
+
+comment number: 101592126 
+body: ~~This is technically not a bug of bitcoind.  The example you cite is entirely legitimate to rapid fire all the unique txid's as separate walletnotify events.~~
+
+Exhausting all memory and crashing is the fault of your implementation.  walletnotify is firing off many near-simultaneous processes, each of which is probably doing a RPC query in return to bitcoind.  bitcoind services only 4 simultaneous RPC connections (almost true), certain things can cause all the queries to stall, and the responses can be fairly slow.
+
+Increasing your resource limits wouldn't hurt but doing so won't fix the real problem.
+
+Responding to every walletnotify in parallel might be a bad idea.  Maybe you need whatever walletnotify is doing to finish instantly after adding the txid to an queue, and have a separate event loop that processes them one at a time.
+ 
+
+comment number: 101594566 
+body: Here's another way to understand it ... `importaddress` is not at fault.  The very same failure of your system could happen if a lot of transactions hit your wallet fast enough.
+ 
+
+comment number: 101605108 
+body: Oh wait ... if #6084 ~~is a real bug~~, then `importaddress` could be hitting the same problem.
+
+If your system is running out of memory and crashing from your regtest example of only 50 transactions, it is entirely possible it could die during normal operation if hit quickly enough.
+ 
+
+comment number: 101606853 
+body: RPC might be stuck entirely during the importaddress rescan, thereby guaranteeing all the walletnotify processes will be stuck if they are waiting for RPC to respond.  Queuing the RPC commands for one at a time execution would safely handle this.
+ 
+
+comment number: 101619439 
+body: If the complaint in #6084 for `importprivkey` and here for `importaddress` is the unrelated transactions causing walletnotify, then the real complaint is both commands causing a full rescan instead of looking at only a particular privkey or address.
+ 
+
+comment number: 101705609 
+body: I wonder how one address, which is actually an entirely new one (participating in no transactions whatsoever) leads to walletnotify calling my handler program repetitively -- a large number of times -- filling up the process table with I don't know how many new processes, and while eventually depriving every other process of CPU time. Furthermore, it sends me loads of transactions from the coinbase, because bitcoind may contain at that point -- in regtest -- only 1 or 2 non-coinbase transactions.Why does it need to send me all those coinbase transactions? 
+ 
+
+comment number: 101756617 
+body: I explained above that your system failing is an indication that you implemented it wrong, as it is entirely possible for many transactions to appear on your node near simultaneously during normal operation.  I suggested one way to make your system more robust against that possibility.
+
+There may be room for improvement in the behavior of particularly `importprivkey` and `importaddress`, but please understand that your system as you described could fail even if the unrelated transactions no longer trigger walletnotify.
+ 
+
+comment number: 101868446 
+body: It concerns a newly-generated address that has not participated in any transaction. When I do `importaddress` on it, I get a flurry of walletnotify calls. How could that brand new address ever have been in a transaction that I should be notified of? By the way, this happens in -regtest on testnet. I haven't tried with mainnet addresses yet ...
+ 
+
+comment number: 102103067 
+body: https://en.bitcoin.it/wiki/How_to_import_private_keys#Import_Private_key.28s.29
+If you are importing an address that you KNOW has never been used, you can use rescan=false.  That type of import finishes instantly.
+ 
+
+comment number: 107694957 
+body: @eriksank The `walletnotify` is not called only on newly imported address, but on every wallet transaction seen on full rescan (because this is the default - see `help importaddress`).
+
+I do not think this is a bug. Maybe it could be explicitly mentioned in the `walletnotify` or `importaddress` help though.
+ 
+
+comment number: 107697053 
+body: ... or should we change the code to run `walletnotify` only on the newly added address when rescan (ie. not notify on old stuff)?
+... or disable `walletnotify` when rescanning to prevent such issues at all?
+
+To me, it looks pretty stupid to run external shell script on bulk scan anyway... But the only bug is that the user doesn't expect it to happen.
+ 
+
+comment number: 107748985 
+body: @paveljanik, I am actually quite ok with the workaround suggested by @wtogami in which I just call the `importaddress` function with the added parameter `rescan=false`. The function no longer crashes my laptop. In my impression, it would indeed make sense only to run `walletnotify` on the newly added address when rescanning. Indeed, I do not think that anybody expects `walletnotify` to notify transactions totally unrelated to the address being imported by the `importaddress` function. 
+ 
+
+comment number: 371232883 
+body: Is this still an issue? There has been no further discussion on it for nearly 3 years 
+
+comment number: 371323571 
+body: Actually, no. Closing the issue. Thanks for inquiring. 
+
+120. bug report number : ['6093']
+comment number: 98120925 
+body: Good catch. I already fixed this once before, people really shouldn't be touching this 'magic' code. Maybe add a comment referring to the issue.
+ 
+
+comment number: 98122033 
+body: This will likely bring back issue #3136 (solved by #5877). You should imbue _some_ locale on WIN32, I'm not sure which one, but indeed `C` is wrong.
+Maybe the result of `std::locale("")`? what does boost lazily initialize it to?
+ 
+
+comment number: 98128744 
+body: Right. This is not the right approach.
+Was trying to go down the rabbit hole of win/unicode handling...
+Can't find a solution. It seems that it could also be a compiler wchar issue.
+It looks like that the default locale is `C`?
+
+I could also guess that it might be connected to https://github.com/bitcoin/bitcoin/blob/master/src/util.cpp#L672 `SHGetSpecialFolderPathA`. The A stands for ANSI. There is also a SHGetSpecialFolderPathW equivalent which supports WCHAR.
+ 
+
+comment number: 98138377 
+body: In windows the file system locale depends on the user locale. I think it only works if boost uses the same locale as windows. But I'm not sure anymore how this was determined. I got it to work once, hence it worked in 0.10...
+(using the W\* functions is out of the question unless you use them _everywhere_ and that'd involve a lot of platform specific code as well as widechar to UTF-8 conversion)
+ 
+
+comment number: 98139231 
+body: @jonasschnelli: using the "C" locale to imbue `boost::filesystem::path` indeed triggers the failure on Windows in this context.
+
+There is more than one problem tackled by `SetupEnvironment()`:
+1. On POSIX systems, messed up environment settings can cause a failure ([Python test](https://gist.github.com/dexX7/ab3f7411a9040e96d55c)).
+2. During the deinitialization, an internal facet pointer of `boost::path` is deleted, and if `boost::path` was not initialized by the main thread, it causes failures such as #3136 (and related).
+
+The current situation:
+1. As default, the "C" locale is used.
+2. On POSIX systems, the environment locale is used (via `std::locale("")`).
+3. On POSIX systems, to detect bad environment settings, an exception thrown by `std::locale("")` is caught.
+4. On POSIX systems, and if there are bad environment settings, the "C" locale is used as fallback.
+5. As workaround, to explicitly force the initialization of the internal facet pointer by the main thread, `boost::filesystem::path::imbue()` is called.
+6. Bad initialization of `boost::filesystem::boost::path` can result in exceptions, which are currently not caught.
+7. On Windows systems, the "C" locale appearingly does not cover the whole character set, which can result in (6), as shown by #6078.
+
+In practise, the current 0.10.1 can result in a failure on Russian (and other) Windows, and earlier versions are affected by the deinitialization issue, resulting in faulty Boost test executions, as well as other failures during the shutdown, such as the crash reported in the context of rebuilding the block database.
+ 
+
+comment number: 98162584 
+body: Arguably the new problem is worse, as it prevents people from running the client at all with some characters in their data directories, instead of a rare shutdown race. What about:
+
+``` c++
+    std::locale loc("C");
+    // On most POSIX systems (e.g. Linux, but not BSD) the environment's locale
+    // may be invalid, in which case the "C" locale is used as fallback.
+    try {
+        loc = std::locale(""); // Raises a runtime error if current locale is invalid
+    } catch (const std::runtime_error&) {
+#if !defined(WIN32) && !defined(MAC_OSX) && !defined(__FreeBSD__) && !defined(__OpenBSD__)
+        setenv("LC_ALL", "C", 1);
+#endif
+    }
+    // The path locale is lazy initialized and to avoid deinitialization errors 
+    // in multithreading environments, it is set explicitly by the main thread.
+    boost::filesystem::path::imbue(loc);
+```
+
+This would imbue the system locale on all platforms and should avoid the race condition, as well as the data directory problems. Needs to be tested though..
+ 
+
+comment number: 98173470 
+body: @laanwj i tried you proposed code and it does not fix the problem. Maybe it would be worth to revert #5877 and find a proper solution.
+
+What really surprises me: At least since 0.9.2 (didn't try further down), bitcoind and Bitcoin-Qt does not run with a datadir-path containing special Chinese or other Asian chars (Windows only).
+ 
+
+comment number: 98185779 
+body: boost::filesystem::path::imbue() returns the "previously used locale", which should be the "right one", if called in a pristine environment, or to put it another way: if imbue() wouldn't be called at all, then this appears to be the one fs::path would use.
+
+In the following patch, a dummy locale is used to extract the internal locale, to use it explicitly, which seems to be a preferable choice, because the goal is not to modify the locale at all, but to prevent deinitialization issues, and the bad-environment-fallback also kicks in earlier.
+
+``` diff
+diff --git a/src/util.cpp b/src/util.cpp
+index 4fea18b..68fb326 100644
+--- a/src/util.cpp
++++ b/src/util.cpp
+@@ -713,18 +713,20 @@ void RenameThread(const char* name)
+
+ void SetupEnvironment()
+ {
+-    std::locale loc("C");
+     // On most POSIX systems (e.g. Linux, but not BSD) the environment's locale
+     // may be invalid, in which case the "C" locale is used as fallback.
+ #if !defined(WIN32) && !defined(MAC_OSX) && !defined(__FreeBSD__) && !defined(__OpenBSD__)
+     try {
+-        loc = std::locale(""); // Raises a runtime error if current locale is invalid
++        std::locale(""); // Raises a runtime error if current locale is invalid
+     } catch (const std::runtime_error&) {
+         setenv("LC_ALL", "C", 1);
+     }
+ #endif
+     // The path locale is lazy initialized and to avoid deinitialization errors 
+     // in multithreading environments, it is set explicitly by the main thread.
++    // A dummy locale is used to extract the internal default locale, used by
++    // boost::filesystem::path, which is then used to explicitly imbue the path.
++    std::locale loc = boost::filesystem::path::imbue(std::locale::classic());
+     boost::filesystem::path::imbue(loc);
+ }
+```
+
+I tested 0.9.3, 0.10.1, another patch and this one, and it's behavior appears to be similar to 0.9.3 (i.e. it can handle paths, which 0.10.1 can't handle).
+
+Example paths and test results:
+- https://gist.github.com/dexX7/7394a947b29c7d84c710#file-results_bitcoind-log
+- https://gist.github.com/dexX7/7394a947b29c7d84c710#file-results_bitcoin-qt-log
+
+Neither the newly patched version, 0.9.3, or 0.10.0, are able to use `"E:\LocaleTests\юзза"` as datadir.
+
+When choosing `"E:\LocaleTests\юзза"` as datadir via bitcoin-qt 0.9.3, then the error message is in German, while the patched version, as well as bitcoin-qt 0.10.0, shows an English message, even though the rest of the UI is actually translated.
+ 
+
+comment number: 98225181 
+body: I think that's a bit circuitous. It works, but not for obvious reasons.
+
+The returned loc from boost is the classic locale plus custom boost facet for windows. Otherwise, you could just replace the first call with std::locale().
+
+The below is greatly simplified and I think it does what we want. Note that std::locale::global("") does not work as intended on windows, presumably because we're statically linking libstdc++. The basic C setlocale() does though.
+
+```
+void SetupEnvironment()
+{
+    if (!setlocale(LC_ALL, ""))
+    {
+        setenv("LC_ALL", "C", 1);
+        setlocale(LC_ALL, "C");
+    }
+    boost::filesystem::path::imbue(std::locale());
+}
+```
+
+All we're really trying to accomplish here is to teach boost how to handle locale-specific char conversions for paths, right? Afaik we don't mess with c++ locales elsewhere.
+
+The above accomplishes that, won't throw exceptions, and I believe it's portable. Tested and verified with a Chinese profile/username/locale on win7, and on Linux with a busted locale via `LC_LANG=bad ./bitcoind`
+ 
+
+comment number: 98242672 
+body: @theuni: when building on Ubuntu 14.04, with `HOST=x86_64-w64-mingw32`, and the dependency packages provided via `depends`, I had to wrap `setenv` with `#if !defined(WIN32) ...`, because it would otherwise cause a build error.
+
+Back on Windows 8.1 x64, when [using bitcoin-qt.exe](https://gist.github.com/dexX7/7394a947b29c7d84c710#file-results_bitcoin-qt-log), the tricky paths, such as `..\œ` and `..\€@ä®`, are accepted and work very well, however, when using `..\юзза`, a runtime error is raised.
+
+I was not able to use that path with any version or patch, though 0.9.3, and the build with the dummy-workaround, respond with `"Error: Specified data directory "E:\LocaleTests\????" does not exist."` instead.
+
+The [behavior of bitcoind.exe](https://gist.github.com/dexX7/7394a947b29c7d84c710#file-results_bitcoind-log) 0.9.3, the dummy-workaround patch, and your simple patch appears to be similar.
+ 
+
+comment number: 98333186 
+body: Updated this PR with @theunis solution (fixed: added a `#if !defined(WIN32)` for `setenv()`).
+Built through gitian: https://builds.jonasschnelli.ch/pulls/6093/
+
+Won't run on win7 with a username containing Chinese chars (as it was with 0.9.3, 0.10.0, probably it was always like this).
+**But won't also run on win7 with a username containing Russian chars (where 0.9.3 and 0.10.0 was running okay).**
+
+Short term we need a solution to fix #6078 without reintroducing #3136.
+Long term we need a solution who can handle all possible windows charsets.
+
+![bildschirmfoto 2015-05-02 um 10 37 53](https://cloud.githubusercontent.com/assets/178464/7440490/1b7b6286-f0b8-11e4-8827-34c38133e0eb.png)
+
+![bildschirmfoto 2015-05-02 um 10 43 54](https://cloud.githubusercontent.com/assets/178464/7440491/25ff10c2-f0b8-11e4-8dc3-859966287b2d.png)
+ 
+
+comment number: 98367514 
+body: Ok, I've done more debugging here.
+tl;dr: After poking some more with even more variables, I think @dexX7's change is the right one.
+
+@jonasschnelli It works fine for me with a Chinese username. Turns out there's another variable: selected system "Format" in system location settings. Looks like that's what influences the default locale at runtime rather than the system locale.
+
+Some testing using `printf("locale %s:"setlocale(LC_ALL,NULL))`:
+With a Chinese format selected:`locale: Chinese (Simplified)_People's Republic of China.936`
+With English selected: `English_United States.1252`
+
+So.. makes sense. Locale is per-user.
+
+When the Format is set to Chinese, a Chinese username works.
+When the format is left (default?) in English, the Chinese username doesn't work.
+
+This is the case because when we use the user's locale (Format), paths for that language should just work.
+
+However.
+
+Using @dexX7's trick, Chinese username with English Format does work. This is because of boost's usage of its own codecvt, which queries the Win API for the codepage type: https://github.com/boostorg/filesystem/blob/boost-1.55.0/src/windows_file_codecvt.cpp#L39
+
+So it looks like that's actually the way to go.
+ 
+
+comment number: 98374385 
+body: @theuni: my idea was basically to get access and capture the whole following block, which uses different facets, depending on the OS and build: [boost-1.55.0/src/path.cpp#L792-L873](https://github.com/boostorg/filesystem/blob/boost-1.55.0/src/path.cpp#L792-L873), and then use it to properly "initialize" Boost path by the main thread with the correct locale, after taking care of bad environment settings.
+
+Nevertheless, it would probably make sense to catch the exception, or handle failures related to the datadir. In your simpler solution I can trigger a runtime error, if I use the path `"E:\LocaleTests\юзза"` (which is a legit path) on a German localized Windows, while 0.9.3 and my patch results in `"Error: Specified data directory "E:\LocaleTests\????" does not exist."`. I'm not entirely sure, where this is coming from, but ideally there should be a more expressive user faced message, with clear instructions to use a "compatible" path, if possible
+
+FWIW: https://github.com/dexX7/bitcoin/commit/c9a37843bc58bce12ece6bcf896339eeadc58ccd
+
+@laanwj's words are still ringing in my ear.. :/
+
+> This more and more looks like just some occult incantation to ward off the evil spirits of bad locales :)
+ 
+
+comment number: 98374467 
+body: Can't we all just agree to go back to EBCDIC?
+ 
+
+comment number: 98639063 
+body: I preferred [PETSCII](https://en.wikipedia.org/wiki/PETSCII) :)
+
+Question: at least for the 0.10 branch, can you code this so that it doesn't affect behavior on non-Windows? I'd hate to release a 'fix' then break the Linux issue again, where an invalid locale prevents the application from starting.
+
+> Using @dexX7's trick, Chinese username with English Format does work. This is because of boost's usage of its own codecvt, which queries the Win API for the codepage type: https://github.com/boostorg/filesystem/blob/boost-1.55.0/src/windows_file_codecvt.cpp#L39
+
+Phew -- that's suble. Thanks for shedding some light on this dark matter. I agree that @dexX7's swap-the-locale trick, though circuitous. seems to be the best way forward.
+ 
+
+comment number: 98689436 
+body: Updated to make use of @dexX7 solution (https://github.com/bitcoin/bitcoin/pull/6093#issuecomment-98185779).
+I think this is okay for 0.11.
+
+If there are no complains, i'll open a PR for the 0.10 branch with the same solution but only touching Win32 behavior (some ifdefs).
+ 
+
+comment number: 98713996 
+body: @dexX7 Thanks for sticking with this and explaining the issue well. It looks like it took me a little while to figure out exactly what you already had, I just had to work through it myself for it to make sense. Nice detective work!
+
+@laanwj Agreed on making it windows only for 0.10, and on adding comments.
+
+Additionally, we're depending on internal boost workings here that may change in the future, I wonder if it'd be worthwhile to add a quick test to use './bitcoind.exe -datadir=c:\something\non-latin'. Sadly, I don't think we could trust wine to faithfully reproduce the issue, but at least we'd have a set of tests that could be run manually.
+
+If that's possible, we'd probably want to bake it into the test_bitcoin.exe binary to rule out python/shell middle-man issues.
+
+Edit: thinking on it a little more, using -datadir for a test is overkill. We could just add a quick unit-test to add a subdir inside the current profile and touch a file in there.
+ 
+
+comment number: 98763242 
+body: > @laanwj: Question: at least for the 0.10 branch, can you code this so that it doesn't affect behavior on non-Windows? 
+
+Is this the case? [Travis is happy](https://travis-ci.org/dexX7/bitcoin/builds/60885645) with the change applied on top of 0.10.1, and the bad-environment test passes as well. It does not bring back #3136, and at least to my understanding, it should restore the behavior of pre-0.10, but without the multithreading-deinitialization issue. _But please don't give my understanding much weight here._ 
+
+All this is based on the assumption that [path::codecvt()](https://github.com/boostorg/filesystem/blob/boost-1.55.0/src/path.cpp#L884-L914) is called via `boost::filesystem::path` at some point, which then undergoes a [similar path](https://github.com/boostorg/filesystem/blob/boost-1.55.0/src/path.cpp#L792-L873) as `path::imbue()` does, to return the original locale.
+
+> @theuni: Thanks for sticking with this and explaining the issue well.
+
+It's the least I can do, given that my fix for #3136 (deinitialization issue), and the follow up #5950 (bad environment handling), ultimately led in this situation.
+
+> We could just add a quick unit-test to add a subdir inside the current profile and touch a file in there.
+
+Having more tests for this would be incredibly useful.
+
+There might be a twist though: the unit tests (via [TestingSetup](https://github.com/bitcoin/bitcoin/blob/0.10/src/test/test_bitcoin.cpp#L41-L43)) appear to use `pathTemp = GetTempPath() / ...` for the temporary test datadir, and this probably throws, even before any tests are executed, if `path` can't handle paths inside the current profile, because `GetTempPath()` returns `\Users\{username}\AppData\Local\Temp` as per default on Windows Vista+.
+
+Just brainstorming on this: what I [tested manually](https://gist.github.com/dexX7/7394a947b29c7d84c710#file-results_bitcoind-log) might be wrapped into a Python test, which starts and stops nodes, using a bunch of datadirs with "exotic" characters. Unfortunally I'm not sure, which test data could be used for it, given that, appearingly, the system's localization plays a significant role here (e.g. `œ™€®` passes on my system, while `юзза`, which seems to work fine for the original poster of #6078, doesn't).
+
+Tackling this from another perspective: ideally there would also be some form of mitigation in the context of `GetDataDir()` ([create datadir] and related), to a) catch potential exceptions, and b) provide some form of guidance for the user, or more telling messages, if it actually happens.
+
+Edit: where I'm getting: there are probably other related issues in the context of the filesystem, which are not related to localization. For example, using a datadir without permission, results in a segfault.
+ 
+
+comment number: 98768564 
+body: @dexX7 If the test throws during initialization, then it will fail anyway, no? I don't see how that's a problem as it still indicates an error.
+ 
+
+comment number: 100600384 
+body: I lost track of this PR.
+How we proceed here? @theuni @dexX7? Is this ready?
+
+My tests still tell me that there are problems with special char datadir on windows (as it always was the case). Maybe this PR should concentrate on fixing #6078 without reintroducing #3136 (solved by #5877).
+There will still be cases where bitcoind/qt won't start up. As example: if you use a Chinese username on a english windows.
+ 
+
+comment number: 100612712 
+body: > @jonasschnelli: As example: if you use a Chinese username on a english windows.
+
+It's the best solution I've found, though this is still very unfortunate. As far as I can see, it restores the behavior of 0.9.3, without reintroducing #3136.
+ 
+
+comment number: 100614636 
+body: Okay. Then i think this is merge ready and should probably get a ACK/NACK from @theuni.
+@laanwj: Should we backport this (as it is) to 0.10 or should i create a PR where it only touches win32 codeflow?
+ 
+
+comment number: 100633314 
+body: Cherry-picked to 0.10 as 424ae66 (the change is now subtle enough that no  special path for WIN32 is necessary)
+ 
+
+comment number: 100668510 
+body: post-merge ACK.
+ 
+
+comment number: 100671037 
+body: @laanwj: the current 0.10 tip doesn't include the changes of this PR?
+
+Edit: now I see it. :)
+ 
+
+comment number: 106928012 
+body: post-merge comments. Kudos to you guys for sticking with a win32 issue, but... Why?  'They' say that coding for *nix is too human resource hungry due to intra-distribution incompatibilities... hmmmmm, Oooookay, if 'they' say so.
+
+@sipa @laanwj  EBCDIC, PETSCII You must have been rich!   "When I were a lad" (olde [Englysh](https://en.wikipedia.org/wiki/Jasper_Heywood#Works) comedy) we programmed our [4004](https://en.wikipedia.org/wiki/Intel_4004) directly in [binary](https://en.wikipedia.org/wiki/Binary_number) using mechanical switches. Our output device was four LED's.  Encoding? Who needs it? ;-)
+ 
+
+121. bug report number : ['6091']
+comment number: 98059253 
+body: output from memtester indicates the memory is ok. All loops reported the same.
+
+```
+Loop 10/10:
+    Stuck Address       : ok         
+    Random Value        : ok
+    Compare XOR         : ok
+    Compare SUB         : ok
+    Compare MUL         : ok
+    Compare DIV         : ok
+    Compare OR          : ok
+    Compare AND         : ok
+    Sequential Increment: ok
+    Solid Bits          : ok         
+    Block Sequential    : ok         
+    Checkerboard        : ok         
+    Bit Spread          : ok         
+    Bit Flip            : ok         
+    Walking Ones        : ok         
+    Walking Zeroes      : ok         
+    8-bit Writes        : ok
+    16-bit Writes       : ok
+```
+ 
+
+comment number: 98060098 
+body: output from gdb:
+
+```
+ci20@ci20-3168:~/.bitcoin$ gdb bitcoind
+GNU gdb (GDB) 7.4.1-debian
+Copyright (C) 2012 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "mipsel-linux-gnu".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /usr/local/bin/bitcoind...done.
+(gdb) run
+Starting program: /usr/local/bin/bitcoind 
+
+Program received signal SIGBUS, Bus error.
+0x558b04ec in load (this=0xaf155018, __m=std::memory_order_acquire)
+    at /usr/include/c++/4.6/bits/atomic_0.h:563
+563     void* __v = _ATOMIC_LOAD_(this, __m);
+(gdb)
+```
+ 
+
+comment number: 98649407 
+body: Looks like a problem with atomic loads on your architecture.
+Anything more specific in the kernel log maybe?
+ 
+
+comment number: 98743579 
+body: I have a very hazy recollection of a busted libstdc++ atomic implementation on mips for some version, but i can't remember any details now.
+
+Maybe side-stepping that would fix your problem: https://github.com/google/leveldb/pull/272
+ 
+
+comment number: 181927536 
+body: Closing due to inactivity.
+ 
+
+122. bug report number : ['6084']
+comment number: 101608161 
+body: What are you running exactly with walletnotify?
+ 
+
+comment number: 101619797 
+body: See also #6095 which is the same complaint for `importaddress`.  Unclear if this is a bug though ...
+ 
+
+comment number: 102109020 
+body: > What are you running exactly with walletnotify?
+
+A bash script that calls gettransaction and getbalance.
+
+> See also #6095 which is the same complaint for importaddress. Unclear if this is a bug though ...
+
+Yes, same problem. And I agree with the reporter of that ticket- it's a bug if it's resulting in wallnetnotify script to be called for every transaction in the wallet, and not just the transactions belonging to the new key/address.
+
+Even if this bug and #6095 are resolved to only trigger notifications corresponding only to the specified key/address, running `bitcoind -rescan` will result in too many simultaneous processes. A thread pool would solve that, right?
+ 
+
+comment number: 102263386 
+body: The guy in #6095 didn't listen when I told him his system could still fail under normal operation even if the rescan behavior were made specific during an import.  He furthermore could have skipped the rescan entirely if he used `rescan=false` as he indicated the key was new.
+ 
+
+comment number: 102966428 
+body: #6031 also a duplicate.  
+ 
+
+comment number: 371369637 
+body: I assume this is no longer an issue in the same way as https://github.com/bitcoin/bitcoin/issues/6095 
+
+123. bug report number : ['6079']
+comment number: 97269244 
+body: This was reported on IRC by smccully; either of the two internal checks fix my reproduction of his problem.
+
+An implication of this is that it makes it harder to intentionally fork testnet-- due to requiring getting it past IsInitialBlockDownload, which may be undesirable. (Though you should be able to syncup then invalidate block and mine ahead).
+ 
+
+comment number: 97330888 
+body: This may be solved by `Bugfix: Fix testnet-in-a-box use case` #5987 as well (or at least overlaps in scope).
+ 
+
+comment number: 100862041 
+body: See here: https://github.com/laanwj/bitcoin/commit/89388eb36fe3e220605b9f4ffc46f4ad7e8fadb7
+
+I've tested it with and without the change to BitcoinMiner, it catches the same problem.
+ 
+
+comment number: 101059448 
+body: That looks good to me.
+ 
+
+comment number: 101200538 
+body: Ok, submitted that as pull, closing in favor of #6123
+ 
+
+comment number: 103093119 
+body: Great. Adding a reference to #5742 for tracking purposes.
+ 
+
+124. bug report number : ['6078']
+comment number: 97184246 
+body: Tested 0.10.1 on windows 7 with a username containing a "ä" and a "ö".
+No problems (see proof screen below).
+
+@vayvanne: could you be more precise?
+- Define "does not start" (any output in the log)?
+- Windows version?
+- What do you mean with "path to DB"? Do you mean --datadir=?
+
+![bildschirmfoto 2015-04-28 um 21 45 59](https://cloud.githubusercontent.com/assets/178464/7378734/fb972a6a-edef-11e4-969d-a7bb66a5c31f.png)
+ 
+
+comment number: 97198108 
+body: I have got the following
+![bitcoind](https://cloud.githubusercontent.com/assets/12157216/7379480/236d5fda-eded-11e4-8b31-9f85c654655e.png)
+in russian windows 7 x64
+generally I do see russian letters in console but these printed out by bitcoind are unreadable.
+ 
+
+comment number: 97323750 
+body: Indeed.
+This is an issue.
+It looks like that the boost filesystem library can't handle non-latin chars (or similar).
+Will analyze this more precise.
+I could also reproduce the issue with 0.10. @vayvanne: are you sure that 0.10 didn't had this problem? Can you post a screenshot/log of the startup using 0.10?
+
+I also wonder why my windows shell is not capable of displaying a correct unicode value (but that's probably a different story).
+
+![bildschirmfoto 2015-04-29 um 08 28 14](https://cloud.githubusercontent.com/assets/178464/7385700/c6a8b444-ee4a-11e4-93db-2de840b220e1.png)
+
+![bildschirmfoto 2015-04-29 um 08 28 49](https://cloud.githubusercontent.com/assets/178464/7385688/a1fa44fa-ee4a-11e4-878a-cc29914e8f3c.png)
+ 
+
+comment number: 97489040 
+body: I am sure that 0.10.0 was running well on the same system. But I can not get it running now:
+![bitcoin-0 10 0](https://cloud.githubusercontent.com/assets/12157216/7395621/f2180b8c-ee92-11e4-99e4-5e9164d341a6.png)
+Error message is other than from first screenshot this time.
+My guess is it was ok because DB was _created_ with non-English symbols in paths. It is confirmed by this: 
+![bitcoin-0 10 0-init](https://cloud.githubusercontent.com/assets/12157216/7395724/cfe0eb46-ee93-11e4-8c90-6d9aea9a2f68.png)
+As you can see 0.10.0 inits ok with empty DB.
+Then bitcoind was upgraded several times from 0.8 to 0.10. Not sure why the boot error is triggered on only in 0.10.1.
+PS. you can get non-English letters in place of question marks if you set your language support for all programs that does not support unicode in windows control panel. For russian windows 7 it looks like this:
+![non-unicode](https://cloud.githubusercontent.com/assets/12157216/7395822/76cc1fa2-ee94-11e4-8d56-b9e0c40eb504.png)
+ 
+
+comment number: 97508533 
+body: I was wrong that 0.10.0 inits correctly with empty DB. It shuts down in short time:
+
+2015-04-29 17:00:09 
+2015-04-29 17:00:09 Bitcoin version v0.10.0 (2015-02-13 09:55:11 +0100)
+2015-04-29 17:00:09 Using OpenSSL version OpenSSL 1.0.1k 8 Jan 2015
+2015-04-29 17:00:09 Using BerkeleyDB version Berkeley DB 4.8.30: (April  9, 2010)
+2015-04-29 17:00:09 Default data directory C:\Users\юзза\AppData\Roaming\Bitcoin
+2015-04-29 17:00:09 Using data directory C:\Users\юзза\AppData\Roaming\Bitcoin
+2015-04-29 17:00:09 Using config file C:\Users\юзза\AppData\Roaming\Bitcoin\bitcoin.conf
+2015-04-29 17:00:09 Using at most 125 connections (2048 file descriptors available)
+2015-04-29 17:00:09 Using 2 threads for script verification
+2015-04-29 17:00:09 Allowing RPC connections from: 127.0.0.0/255.0.0.0 ::1/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff 
+2015-04-29 17:00:09 Using wallet wallet.dat
+2015-04-29 17:00:09 init message: Verifying wallet...
+2015-04-29 17:00:09 CDBEnv::Open : LogDir=C:\Users\юзза\AppData\Roaming\Bitcoin\database ErrorFile=C:\Users\юзза\AppData\Roaming\Bitcoin\db.log
+2015-04-29 17:00:09 Bound to [::]:8333
+2015-04-29 17:00:09 Bound to 0.0.0.0:8333
+2015-04-29 17:00:09 init message: Loading block index...
+2015-04-29 17:00:09 Opening LevelDB in C:\Users\юзза\AppData\Roaming\Bitcoin\blocks\index
+2015-04-29 17:00:09 Opened LevelDB successfully
+2015-04-29 17:00:09 Opening LevelDB in C:\Users\юзза\AppData\Roaming\Bitcoin\chainstate
+2015-04-29 17:00:09 Opened LevelDB successfully
+2015-04-29 17:00:09 LoadBlockIndexDB: last block file = 0
+2015-04-29 17:00:09 LoadBlockIndexDB: last block file info: CBlockFileInfo(blocks=1, size=293, heights=0...0, time=2009-01-03...2009-01-03)
+2015-04-29 17:00:09 Checking all blk files are present...
+2015-04-29 17:00:09 LoadBlockIndexDB(): transaction index disabled
+2015-04-29 17:00:09 LoadBlockIndexDB(): hashBestChain=000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f height=0 date=2009-01-03 18:15:05 progress=0.000000
+2015-04-29 17:00:09 init message: Verifying blocks...
+2015-04-29 17:00:09 Shutdown requested. Exiting.
+2015-04-29 17:00:09 Shutdown: In progress...
+2015-04-29 17:00:09 StopNode()
+2015-04-29 17:00:09 Committing 0 changed transactions (out of 0) to coin database...
+2015-04-29 17:00:09 Shutdown: done
+ 
+
+comment number: 97678846 
+body: @laanwj AFAIK there was a patch which changed some locale stuff and was related to boost? Can you perhaps shed some light in here?
+ 
+
+comment number: 97680894 
+body: https://github.com/bitcoin/bitcoin/commit/c9e022b7eee9f77cd33b333d6ff52f711d3bc989 and https://github.com/bitcoin/bitcoin/commit/df45564cf0ad3b591d4eb8cc2354093bcb7df14c set a locale explicitly for boost::path, where the "C" locale is used as default and as fallback, if no valid environment locale is detected in POSIX systems.
+
+However, what strikes me is https://github.com/bitcoin/bitcoin/issues/6078#issuecomment-97508533, which hints a path/locale related issue, before those changes were adopted.
+ 
+
+comment number: 97963006 
+body: I just invested some hours to track this down without success.
+Tried to change https://github.com/bitcoin/bitcoin/blob/master/src/util.cpp#L672 from A(nsi) to W(widechar). Worked partial but produced issues wherever a boost path was converted to `c_str()` (Databases, etc.).
+
+Also figured out that 0.10 was running fine in Russian but not in Tajiki (chosen by random).
+0.10.1 Does not run on Russian Window; therefore i think is serious and should get fixed asap.
+ 
+
+comment number: 98038871 
+body: @jonasschnelli Indeed. Thanks for looking into this. I'll join you in the hunt.
+ 
+
+comment number: 98118852 
+body: I have tested bitcoind and Bitcoin-Qt 0.9.2, 0.9.3 and 0.10.0 and 0.10.1 on Windows 7 with Russian, Chinese, Tajik and German.
+If you use usernames (or lets say a --datadir path) with special characters from one of these languages you might run into this boost::filesystem chars issue.
+#6093 fixes this only partial.
+ 
+
+comment number: 98119176 
+body: @vayvanne: can you test #6093? If you can't build yourself you can try use a prebuilt binary: https://builds.jonasschnelli.ch/pulls/6093/
+ 
+
+comment number: 98168153 
+body: I think this warrants a 0.10.2 release for Windows. If we don't find a better fix, I'll just roll back the patch that caused this on the 0.10 branch. This will re-introduce a rare shutdown race condition (#3136), but is preferable to users not being able to use the software at all.
+ 
+
+comment number: 98172849 
+body: I'm currently testing two alternatives: https://gist.github.com/dexX7/7394a947b29c7d84c710
+
+To test it, I'm trying to use different paths with those builds, as well as 0.9.3, 0.10.1 on Windows 8.1 x64, and I should have a list of results in a few minutes.
+
+The "classic" route has a similar faulty behavior as 0.10.1, but the "dummy" route works very well so far.
+ 
+
+comment number: 98178513 
+body: @jonasschnelli I have got running 0.10.0, the problem was probably wrong permissions to %appdata%\bitcoin. The build you proposed does run ok too on my setup.
+ 
+
+comment number: 98239781 
+body: As mentioned here: https://github.com/bitcoin/bitcoin/pull/6093#issuecomment-98185779
+I propose this fix: https://github.com/theuni/bitcoin/commit/a0828049a7aa8dba3bfd12964ac897cbf1698a03
+ 
+
+comment number: 101983315 
+body: @vayvanne Should be fixed in the 0.10.2 release candidate - you're very welcome to test. See https://bitcoin.org/bin/bitcoin-core-0.10.2/test for executables.
+ 
+
+comment number: 102102941 
+body: Yep. 0.10.2rc1 running good on my setup although the non-English symbols in console are still not readable.
+ 
+
+comment number: 102584657 
+body: Thanks for testing.
+
+The character handling in the logging output is an orthogonal issue, and the result of mixing different kinds of encodings. On Linux and MacOSX this issue doesn't exist as everything from front-end to back-end is UTF-8, but Windows is the odd duck out. Needs to be fixed some day but is much lower priority than 'not running at all'.
+ 
+
+125. bug report number : ['5985']
+comment number: 92500057 
+body: utACK
+ 
+
+comment number: 101335372 
+body: Fixed comment nit and clarified commit message
+ 
+
+comment number: 106052222 
+body: Tested ACK
+ 
+
+comment number: 110681343 
+body: utACK
+ 
+
+comment number: 110682778 
+body: Cherry-picked to 0.11 branch as 37b4e425af00b285fb66ac1169d1c115e924b9a2
+ 
+
+126. bug report number : ['5984']
+comment number: 91009009 
+body: It should be safe to remove the check for testing. I have an incomplete fix for this locally, but it adds the tip expiry time as a chain param.
+ 
+
+comment number: 103030593 
+body: See #5987
+ 
+
+comment number: 103041003 
+body: Perfect! #5987 should fix the issue!
+ 
+
+comment number: 181929189 
+body: Note that in 0.12, this no longer comes automatically with `-testnet`, but you need to set the tip age manually to a large number, say `-maxtipage=99999999`.
+ 
+
+127. bug report number : ['5945']
+comment number: 86161539 
+body: I tested this.  ACK.  
+I think it has the side effect of making reorgs a little faster too!
+ 
+
+comment number: 86773762 
+body: Very much untested and rushed ACK
+ 
+
+comment number: 88446874 
+body: Going to test this.
+ 
+
+comment number: 88573290 
+body: Untested ACK.
+ 
+
+comment number: 89848484 
+body: I was observed two crashes in 0.10rc1, each 24 hours apart with checkmempool=1 (and a non-default fee policy) during reorgs that appeared to be likely due to the bug this fixes.  I've now run three days with this pull applied and no crashes, and there have been several reorgs during that time.
+ 
+
+comment number: 89962173 
+body: Tested ACK
+ 
+
+comment number: 89964584 
+body: Backported to 0.10 branch as 8bb4abc19ae0e76424e69a19ff6fc31e5b044333
+ 
+
+128. bug report number : ['5910']
+comment number: 81612541 
+body: Looks like this issue: https://bugs.freedesktop.org/show_bug.cgi?id=71507
+
+```
+ABI breakage: Qt segfaults when run against libxcb 1.9.3
+```
+
+So we either need to change the version of libxcb linked against, or link it statically.
+ 
+
+comment number: 81910827 
+body: Hmm. I already worked through a very similar issue a while back, and I thought that this was resolved. Obviously not, but I believe it should be accounted for already.
+
+The details are foggy now, I'll check my notes.
+ 
+
+comment number: 82088073 
+body: Yes, I've bumped into this one already, but apparently I only managed a partial-fix.
+
+https://github.com/bitcoin/bitcoin/blob/master/depends/patches/qt/fix-xcb-include-order.patch was added to address this.
+
+See #5915 for the full fix.
+ 
+
+129. bug report number : ['5890']
+comment number: 85480823 
+body: utACK for 0.10.
+ 
+
+comment number: 85504805 
+body: Cherry-picked to 0.10 as 1d2cdd2ef9091508c42619c94d4a7106b1471a14
+ 
+
+130. bug report number : ['5879']
+comment number: 78347164 
+body: Code review ACK.
+
+Copyright at the top of the new file should have year 2015, if you care about that sort of thing (I don't....)
+ 
+
+comment number: 78479789 
+body: ACK
+ 
+
+comment number: 78494142 
+body: Rebased to pick up #5883 so hopefully Travis will pass  now.
+ 
+
+comment number: 78525769 
+body: cherry-picked to 0.10 via c91c660 1117378
+ 
+
+131. bug report number : ['5865']
+comment number: 94224443 
+body: I am having this issue also. As far as I know, the computer has not been shutdown improperly nor has the application crashed. I also have plenty of available disk space. If there is a way to recover from this by rebuilding the chainstate from the downloaded blocks, that would be ideal.  The only other option is to resync everything.
+ 
+
+comment number: 138810573 
+body: Having the same behavior. This happened already for the third time in two month period. Really annoying because you have to rebuild the db from scratch which takes a lot of time.
+
+Debug output from the last successful launch and then the following unsuccessful launch. Note that the gap in the log file is there, I haven't created that by myself. I had a power outage at that moment so I guess that has to do something with the error.
+
+The D drive is WD Green WD20EARS 2TB 64MB on NTFS.
+
+```
+2015-09-05 04:40:23 UpdateTip: new best=000000000000000011adbee5b98e072c463f90d20147ca7f92ea42cff13e63ec  height=373062  log2_work=83.30377  tx=82395716  date=2015-09-05 00:34:49 progress=0.999808  cache=37.0MiB(17222tx)
+2015-09-05 04:40:54 UpdateTip: new best=00000000000000000954f9a8a3ade8e22ee56c7421a18ddb1f09cc321af0c3bf  height=373063  log2_work=83.303799  tx=82396309  date=2015-09-05 00:42:24 progress=0.999813  cache=51.1MiB(18889tx)
+2015-09-05 04:40:54 ERROR: AcceptToMemoryPool: non-final
+2015-09-05 04:40:54 receive version message: /Satoshi:0.11.0/: version 70002, blocks=357861, us=***.***.***.***:8333, peer=13
+2015-09-05 04:40:54 Added time data, samples 11, offset -40 (+0 minutes)
+2015-09-05 04:40:54 nTimeOffset = +0  (+0 minutes)
+2015-09-05 04:40:54 ERROR: AcceptToMemoryPool: non-final
+2015-09-05 04:40:54 ERROR: AcceptToMemoryPool: non-final
+2015-09-05 04:40:54 ERROR: AcceptToMemoryPool: non-final
+2015-09-05 04:40:55 ERROR: AcceptToMemoryPool: non-final
+2015-09-05 04:41:37 UpdateTip: new best=000000000000000012aade3900c329c3dd6d0bdb0cc0fa863d867afe514ef470  height=373064  log2_work=83.303829  tx=82397881  date=2015-09-05 01:06:18 progress=0.999831  cache=62.8MiB(21888tx)
+2015-09-05 04:41:37 ERROR: AcceptToMemoryPool: non-final
+2015-09-05 04:41:37 receive version message: /Satoshi:0.9.2.1/: version 70002, blocks=352943, us=***.***.***.***:8333, peer=14
+2015-09-05 04:41:37 Added time data, samples 12, offset -8 (+0 minutes)
+2015-09-05 04:41:37 ERROR: AcceptToMemoryPool: non-final
+2015-09-05 04:42:01 UpdateTip: new best=0000000000000000059f75c608690cb93cc6fde550944a2e84107f21999ea3e8  height=373065  log2_work=83.303858  tx=82398600  date=2015-09-05 01:14:29 progress=0.999837  cache=10.0MiB(2563tx)
+2015-09-05 04:42:01 ERROR: AcceptToMemoryPool: non-final
+2015-09-05 04:42:19 UpdateTip: new best=000000000000000010c8d1f7ed391da514b30b937f50653a3dfe3c2b7d936880  height=373066  log2_work=83.303888  tx=82399294  date=2015-09-05 01:23:47 progress=0.999844  cache=14.0MiB(4417tx)
+2015-09-05 04:42:28 UpdateTip: new best=00000000000000000756dfe59e0133866e6a181a117dc4b2dd44d8563c9222b0  height=373067  log2_work=83.303918  tx=82399694  date=2015-09-05 01:28:43 progress=0.999848  cache=17.3MiB(5452tx)
+2015-09-05 04:42:36 UpdateTip: new best=000000000000000010f52ad243cbfc1e37085249c5f975004e37c34c0fc455d1  height=373068  log2_work=83.303947  tx=82400153  date=2015-09-05 01:34:55 progress=0.999853  cache=18.6MiB(6525tx)
+2015-09-05 04:42:45 UpdateTip: new best=00000000000000001004e5b5c0a4f21d3f76727000f610c38df7a3041fe58233  height=373069  log2_work=83.303977  tx=82400774  date=2015-09-05 01:42:35 progress=0.999859  cache=19.3MiB(7815tx)
+2015-09-05 04:42:54 UpdateTip: new best=00000000000000000c68dfb349e72eadc8c2a6788d1262f22d2e47f9695d4607  height=373070  log2_work=83.304006  tx=82401125  date=2015-09-05 01:51:46 progress=0.999866  cache=21.4MiB(8676tx)
+2015-09-05 04:43:24 UpdateTip: new best=000000000000000005a5c082a69db099595290bdadc52f022ddbe51800f732ac  height=373071  log2_work=83.304036  tx=82402680  date=2015-09-05 02:10:41 progress=0.999880  cache=41.0MiB(12283tx)
+2015-09-05 04:43:29 UpdateTip: new best=00000000000000001292629b98eb69c6e8d12c8f80d5aecbb2620c33608a3bf8  height=373072  log2_work=83.304065  tx=82402895  date=2015-09-05 02:13:49 progress=0.999883  cache=41.2MiB(12733tx)
+2015-09-05 04:43:43 UpdateTip: new best=00000000000000000a93d16d850ab47efa6fdbc933c8365c412a2b0138bcd2d4  height=373073  log2_work=83.304095  tx=82403869  date=2015-09-05 02:34:59 progress=0.999899  cache=48.5MiB(14668tx)
+2015-09-05 05:21:17 GUI: "registerShutdownBlockReason: Successfully registered: Bitcoin Core didn't yet exit safely..." 
+2015-09-05 05:21:17 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2015-09-05 05:21:17 Bitcoin version v0.11.0 (2015-07-10 19:23:55 +0200)
+2015-09-05 05:21:17 Using OpenSSL version OpenSSL 1.0.1k 8 Jan 2015
+2015-09-05 05:21:17 Using BerkeleyDB version Berkeley DB 4.8.30: (April  9, 2010)
+2015-09-05 05:21:17 Default data directory C:\Users\*******\AppData\Roaming\Bitcoin
+2015-09-05 05:21:17 Using data directory D:\bt-data
+2015-09-05 05:21:17 Using config file D:\bt-data\bitcoin.conf
+2015-09-05 05:21:17 Using at most 125 connections (2048 file descriptors available)
+2015-09-05 05:21:17 Using 8 threads for script verification
+2015-09-05 05:21:17 Using wallet wallet.dat
+2015-09-05 05:21:17 scheduler thread start
+2015-09-05 05:21:17 init message: Verifying wallet...
+2015-09-05 05:21:17 CDBEnv::Open: LogDir=D:\bt-data\database ErrorFile=D:\bt-data\db.log
+2015-09-05 05:21:18 Bound to [::]:8333
+2015-09-05 05:21:18 Bound to 0.0.0.0:8333
+2015-09-05 05:21:18 Cache configuration:
+2015-09-05 05:21:18 * Using 2.0MiB for block index database
+2015-09-05 05:21:18 * Using 32.5MiB for chain state database
+2015-09-05 05:21:18 * Using 65.5MiB for in-memory UTXO set
+2015-09-05 05:21:18 init message: Loading block index...
+2015-09-05 05:21:18 Opening LevelDB in D:\bt-data\blocks\index
+2015-09-05 05:21:18 Opened LevelDB successfully
+2015-09-05 05:21:18 Opening LevelDB in D:\bt-data\chainstate
+2015-09-05 05:21:21 Corruption: error in middle of record
+2015-09-05 05:35:23 Aborted block database rebuild. Exiting.
+2015-09-05 05:35:23 scheduler thread interrupt
+2015-09-05 05:35:23 Shutdown: In progress...
+2015-09-05 05:35:23 StopNode()
+2015-09-05 05:35:23 Shutdown: done
+2015-09-07 07:38:58 GUI: "registerShutdownBlockReason: Successfully registered: Bitcoin Core didn't yet exit safely..." 
+2015-09-07 07:38:59 
+```
+ 
+
+comment number: 260117243 
+body: Closing this in an effort to cleanup issues. The debug logs here are from 0.10.0 and 0.11.0, so if there are corruption issues with a more current release, a new issue can be opened.
+ 
+
+132. bug report number : ['5859']
+comment number: 77547577 
+body: @gavinandresen No clue how to use that boost::bind inside a type descriptor. Feel free to suggest code.
+ 
+
+comment number: 77565596 
+body: ACK
+ 
+
+comment number: 77655773 
+body: Tested ACK.
+
+My c++ kung fu fails me trying to use boost::bind instead of a CombinerAll class.
+But you could save a couple of lines of code like this:
+
+```
+diff --git a/src/net.h b/src/net.h
+index e500536..81783ab 100644
+--- a/src/net.h
++++ b/src/net.h
+@@ -26,6 +26,7 @@
+ #include <arpa/inet.h>
+ #endif
+
++#include <boost/algorithm/cxx11/all_of.hpp>
+ #include <boost/filesystem/path.hpp>
+ #include <boost/foreach.hpp>
+ #include <boost/signals2/signal.hpp>
+@@ -83,11 +84,7 @@ struct CombinerAll
+     template<typename I>
+     bool operator()(I first, I last) const
+     {
+-        while (first != last) {
+-            if (!(*first)) return false;
+-            ++first;
+-        }
+-        return true;
++        return boost::algorithm::all_of_equal<I, bool>(first, last, true);
+     }
+ };
+```
+
+Take it or leave it, your original code is arguably more readable (doesn't require knowledge of what all_of_equal does).
+ 
+
+comment number: 77833516 
+body: > #include &lt;boost/algorithm/cxx11/all_of.hpp>
+
+I like the shorter, declarative code. But (looking at the include file name) does that require c++11?
+ 
+
+comment number: 77847337 
+body: This is a boost implementation of functionality already part of C++11 for older C++ compilers. 
+
+## 
+
+Gavin Andresen
+
+> On Mar 9, 2015, at 6:56 AM, Wladimir J. van der Laan notifications@github.com wrote:
+> 
+> #include
+> 
+> I like the shorter, declarative code. But (looking at the include file name) does that require c++11?
+> 
+> —
+> Reply to this email directly or view it on GitHub.
+ 
+
+comment number: 78227616 
+body: Ah, right, a boost-ism that can be changed to a c++11-ism, that's great
+ 
+
+comment number: 78266758 
+body: ut ACK
+ 
+
+133. bug report number : ['5851']
+comment number: 102981306 
+body: I've also noticed this. There seems to be heavy lock contention during some of the synchronization phases. This causes e.g. RPC to react slowly. Also other peers sometimes completely time out. Not only during initial sync, but also when catching up a significant number of blocks.
+ 
+
+comment number: 106713148 
+body: Made a little progress on finding out why the GUI hangs during intensive catch-up phases. Indeed, `cs_main` is held for a longer time. The GUI does not wait on `cs_main` during normal operation, however when it receives a new transaction
+
+```
+2015-05-29 06:48:46 AddToWallet xxx  new
+```
+
+It will try to get the transaction information from the wallet in `qt/transactiontablemodel.cpp:130`, which takes both a `cs_main` and wallet lock. It can stay stuck there for minutes at a time. A possible solution is to copy the relevant data in the notification function.
+
+This is fighting symptoms, but will lead to a more responsive UI. The root cause would be mitigated by changing `ActivateBestChain`/`ActivateBestChainStep`/`ConnectTip` logic to release the cs_main lock between attaching blocks.
+
+**Edit:** another consequence is that the block number and progress in the UI is not updated, as it never manages to get the `cs_main` lock (it polls a few times per second, with `TRY_LOCK`). The new-block notification path (`NotifyBlockTip` → `ClientModel`) should be restored, with rate limiting.
+ 
+
+comment number: 106829957 
+body: ActivateBestChain releases cs_main between blocks, except during a reorg,
+to avoid exposing a worse state than before.
+ 
+
+comment number: 117481924 
+body: I think the `cs_main` LOCK at `qt/transactiontablemodel.cpp:130` can be avoided.
+
+While re-writing most parts of the `CWalletTx` i think the problematic points are `CWalletTx::GetCredit()` mainly the `GetBlocksToMaturity()` which needs the chainActive (lock on cs_main) to get the current height. But only for coinbase wtxs.
+
+The rest of `decomposeTransaction()` needs no cs_main locking IMO.
+ 
+
+comment number: 117645095 
+body: Probably makes sense to store a copy of the best chain's tip CBlockIndex\* pointer in the CWallet object, and update it through a signal mechanism. Credit/confirmation querying can then use the cached version instead of needing a lock every time
+ 
+
+comment number: 117658742 
+body: Yes. This would be a good way.
+The new wallet does interact over a extra interface with main/mempool (https://github.com/jonasschnelli/bitcoin/blob/2015/05/corewallet/src/corewallet/coreinterface.cpp). This would be a starting point for optimizing locks and later separation into a own process.
+ 
+
+comment number: 119710456 
+body: @MrKrzYch00 could you test if the problem still exists in the `0.11`?
+ 
+
+comment number: 119729102 
+body: I will give it a try after I build myself newest commit. My latest build bases on d0a10c1959176eb40c0ec47a56de00820c59066d , which, I'm pretty sure, was still slowing down RPC (when I was 15h behind and run my PHP script to manually connect to selected IPs, after 3rd connection it started to response very sluggish). However to confirm loosing connections I would need to re-download block chain (I think?).
+
+Also to be 100% sure I would need to note that I have one small error when building with gcc 4.9.4 (20150630 - prerelease; windows mingw) on /leveldb/util/env_win.cc file which tells me that _beginthread is undefined until I compile the file manually while omitting D_REENTRANT. Not sure what causes it and if it could have any impact on tests being correct... btw. my build is x64, uses Ofast and AVX instruction set tuning (including all dependencies, with one exception being O3 due to Ofast failing).
+
+EDIT: when I reported this issue I was using standard mingw toolchain with default build optimization but due to linker issues on other program being compiled I was forced to change gcc versions over time. The above gcc version and altered gcc switches were used only in my latest build based on commit mentioned above...
+ 
+
+comment number: 122361025 
+body: ![bitcoin_core_first_synchronisation](https://cloud.githubusercontent.com/assets/11292594/8753863/51225d52-2cbf-11e5-935c-63d7ed4ba6b5.png)
+
+^ this is what happens when Bitcoin Core is checking blocks, the ping times raise a lot. My speed is ~1.5MB/s download and ~70KB/s upload (bytes).
+
+I will provide more detailed text log with php script I'm running to get current height, num of connections and time it took to get reply with this data from bitcoin core during first synchronization.
+ 
+
+comment number: 122550823 
+body: Full log at: http://4my.eu/first_synchronization_log.txt
+PHP-CLI script run for testing: http://4my.eu/bitcoin_core_test.txt
+
+Using 2GB db cache, built with: Ofast, AVX and core i7 tuning, without debug. x64 build.
+Running on core i7-3630QM 2.7Ghz, 8GB RAM. ~1.5MB/s download, ~70KB/s upload. Windows 8.1
+Build last commit: fe3fe547f747b909f66a28cef6addfea3e1606e2.
+RPC Keep-alive connection with 60s timeout.
+The connections were estabilished to 38 pool IPs and Core was set to not allow to/from other nodes connections.
+
+Started with 38 connections, dropped to 14 soon after (guess to network lag) and finally ended up with 8. So I think it's not that bad, however, response times from RPC were exceeding 60s sometimes - two commands total as seen in php script. During very high response times BitCoin Core was using 60~80% CPU (counting usage for all cores).
+ 
+
+comment number: 123361995 
+body: @laanwj That also happens if you load an old wallet file and trigger a rescan, it will take longer than the ping message timeout and on completion all peers will have dropped you. Not an issue under any circumstance but it might explain why I've seen peers on the network not responding to messages occasionally. 
+ 
+
+comment number: 160109310 
+body: Partially addresses in #7112. Still, AddToWallet needs better lock handling.
+ 
+
+comment number: 161418024 
+body: Running bitcoin-qt v0.11.2 I run into "Activating best chain…" with high CPU load for 20 minutes on slow machine.
+
+Not sure if relevant: I wanted to "quickly" do a transaction but 0.11.1 crashed, making a re-index necessary. I downloaded 0.11.2 meanwhile, orderly interrupted the re-index to let the latest version take over after 10% progress. It then ran into "system shutting down due to CPU@100°C" or so. Now all I get is indefinite(?) "Activating best chain". I did the kill -9 and started bitcoin-qt, only to run into this again.
+
+Also I understood that incoming transaction trigger this lock? I switched off wifi of that machine, to not get those.
+ 
+
+comment number: 161579790 
+body: @Giszmo: mind re-testing this issue after https://github.com/bitcoin/bitcoin/pull/7112 has been merged? (compile or https://bitcoin.jonasschnelli.ch/nightlybuilds)
+ 
+
+comment number: 161656456 
+body: @jonasschnelli sorry but I'd be glad if my primary wallet gave me back my access to my funds asap. Syncing since yesterday and without a clue why it had to re-download 8GB so far. 50% to go.
+
+If 11.3 has the fix and you can tell me how to test, I could do that with a backup or something but else, with this machine I'm a bit paranoid to get only signed software near it.
+ 
+
+comment number: 161663678 
+body: @Giszmo: Sure. That is wise (and I would do the same). Maybe try compile bitcoin-core by yourself? It's not that hard (check the docs/ section).
+ 
+
+comment number: 161666354 
+body: > Running bitcoin-qt v0.11.2 I run into "Activating best chain…" with high CPU load for 20 minutes on slow machine.
+
+"Activating best chain..." can take a long time in some cases, see also #7038. It processes the backlog of  blocks. It should always finish eventually, though. Kill -9 will only set back progress.
+
+I don't think #7112 helps here. Sure, it makes GUI-core interaction somewhat more fluid, but high CPU during initial sync is normal (lot of verification work - with `-par=X` you can change the number of verification threads, reduce the load at expense of speed).
+ 
+
+comment number: 262768860 
+body: I frequently see my node being disconnected from all peers during IBD as ProcessMessages() doesn't get a chance to run for over 20 minutes frequently. Might a solution be to take a break from UpdateTip every now and again to give some received messages some attention? 
+
+comment number: 262773087 
+body: Yes, that's still the same issue.
+Though the cs_main lock does get released, this does not guarantee other processes will be able to get it (or at least, often enough to make useful progress).
+We've tried adding a yield() in that loop but to no avail either.
+ 
+
+134. bug report number : ['5821']
+comment number: 75850826 
+body: The purpose of the rpcwait argument is to ask the command line client to wait until it can connect to a running bitcoind so that way test scripts and whatnot don't have to worry about how long it takes a fresh bitcoind to warm up.
+
+What is the exact misconfiguration you are referring to?
+ 
+
+comment number: 75886064 
+body: In this case server was not set. From the user's perspective it's a very bad way of dealing with inputs. What I'm supposed to do with this output information? (none) That's what output is there for: to inform a user about the internal state. With no output, I have no way to know what is going on, no way of fixing it. And if something is misconfigured the system should exit. Here it just loops on.
+ 
+
+comment number: 75925021 
+body:  Can you specify the exact command line you're using (and the OS)? I've tried various combinations of rpcwait and invalid commands, and cannot reproduce an infinite loop.
+
+```
+src/bitcoin-cli -testnet -rpcwait test
+error: {"code":-32601,"message":"Method not found"}
+```
+ 
+
+comment number: 75925886 
+body: On Ubuntu 14, tag 0.10.0, if the conf does not contain server=1
+
+```
+./bitcoin-cli getinfo
+```
+
+In this case I'd expect an error like "error: server not set." or something like it. 
+ 
+
+comment number: 75926256 
+body: Do you run `bitcoind` or `bitcoin-qt` (which requires server=1 to enable RPC at all...)?
+ 
+
+comment number: 75926782 
+body: Running bitcoind.
+
+If I try to reproduce I get an appropriate error message. So I can't reproduce the problem. Strange - I thought this is default behaviour, because it happened many times.
+
+```
+bitcoin-cli getinfo
+error: {"code":-28,"message":"Verifying blocks..."}
+```
+
+and if server is down, also a correct error message:
+
+```
+./bitcoin-cli getinfo
+error: couldn't connect to server
+```
+ 
+
+comment number: 75928189 
+body: I can reproduce endless loop with
+
+```
+bitcoind -server=0 &
+bitcoin-cli -rpcwait test
+```
+
+but... Ugh. Is it the case you are reporting?
+ 
+
+comment number: 75929452 
+body: That might be the bug, but without the -rpcwait flag. But you misunderstand some things here: server=0 is not set in versions before 0.10. So it breaks compatibility, because old conf files don't contain server=0. Also an error like this is the responsibility of the person who writes the software, not the user. Blaming users for bad inputs is something you can allow yourself to do in your personal projects. It's like saying if I send -1 bitcoins the software crashes and that's the users fault. No, that's not how error handling and input validation works.
+ 
+
+comment number: 76150923 
+body: Right: The point of `-rpcwait` is to wait indefinitely until the server comes up. If you didn't start the server then it will wait and wait and wait. It cannot print errors because that will interfere with script usage. Scripts just expect the output, not intermediate status messages.
+
+_Without_ the `-rpcwait` flag it should never end up in an infinite loop, though. Anyone else that reproduce this without rpcwait?
+ 
+
+135. bug report number : ['5770']
+comment number: 73404817 
+body: utACK
+ 
+
+comment number: 73405682 
+body: ut ACK
+ 
+
+comment number: 73405705 
+body: ACK
+ 
+
+comment number: 73406310 
+body: utACK
+ 
+
+comment number: 73406437 
+body: There's another one here: https://github.com/bitcoin/bitcoin/blob/master/src/main.cpp#L3453
+
+Edit: and here https://github.com/bitcoin/bitcoin/blob/master/src/net.cpp#L1974  although arguably, it's less important as it only logs outgoing messages.
+ 
+
+comment number: 73406601 
+body: Hmm, can't we call sanitize on the command string directly on input instead later on every LogPrint?
+ 
+
+comment number: 73407717 
+body: Somehow related: #5492
+ 
+
+comment number: 73410607 
+body: The problem here is the output, hence the point is to sanitize on _output_, not the input. Operations on valid input may still result in output strings that are 'dangerous'. Filtering out the characters on input would result in the counter-intuitive behavior that `"get\x1bblock"`is an alias for `"getblock"` (for another example of input and output sanitization being confused only look as far as PHP's 'magic quotes' disaster, which has corrupted texts with extra \ and didn't solve the underlying SQL injection at all). 
+
+(Prematurely _rejecting_ commands with control or non-ASCII characters would of course be more reasonable, as there are none of those that we handle anyway)
+
+But in any case, we'd like to minimize code impact outside of immediate logging/debugging code. E.g. @gmaxwell and I have talked about changing LogPrintStr to replace with ' ' any control characters except a '\n' at the end of the string. This would solve this problem thoroughly without any potential side-impact on the code.
+
+Edit: and this specific code change should go in as well, it'd just be a last ditch catch-all.
+ 
+
+comment number: 73428501 
+body: @laanwj good catch; I saw the one at 1974 but because it was outgoing I didn't hit it. Since it caught your attention to, I'll just add it; better than people in the future spending time thinking about it being okay or not.
+ 
+
+136. bug report number : ['5721']
+comment number: 72097442 
+body: 0.10?
+ 
+
+comment number: 72152682 
+body: Untested ACK (after squash), including 0.10.
+ 
+
+comment number: 72516080 
+body: utACK, after squash
+ 
+
+comment number: 72522033 
+body: Now that I've eliminated the empty commit I used to bump travis (after it initially failed for reasons I think are unrelated to my pull), travis is again showing the initial failed run.  Is there a better way for me to handle this in the future?
+ 
+
+comment number: 72540062 
+body: @sdaftuar creating a new commit on top forces travis to test that commit. But when you pop it back off, it's already built that exact revision, so it doesn't bother trying again.
+
+Rather than that, just re-commit the change in some way that generates a new commit hash. Edit the commit message somewhat, git format-patch -1 + git am, something like that. Then force-push to overwrite the old one.
+
+But of course, the above only applies if the test failure really was a fluke!
+ 
+
+comment number: 72543293 
+body: CCheckQueue should be able to drop its friendship with CCheckQueueControl after this change (sorry CCheckQueueControl...)
+
+That should keep something like this from happening again, since the member vars would be guarded.
+utACK after that.
+ 
+
+comment number: 72569768 
+body: utACK
+
+The following was observed on testnet in one of the initial syncs at height 224873:
+
+bitcoind: checkqueue.h:183: CCheckQueueControl<T>::CCheckQueueControl(CCheckQueue<T>*) [with T = CScriptCheck]: Assertion `pqueue->nTotal == pqueue->nIdle' failed.
+ 
+
+comment number: 72608908 
+body: Weird, it failed travis again. 
+ 
+
+comment number: 72622342 
+body: Travis reports during `make check` (a.k.a src/test/test_bitcoin):
+
+```
+2015-01-28 20:27:11 Unlocked: cs_Shutdown  init.cpp:141
+make[2]: *** [check-local] Error 1
+```
+
+It looks like test_bitcoin crashes at `init.cpp:141` (`Shutdown()`)
+This like is `TRY_LOCK(cs_Shutdown, lockShutdown);` (https://github.com/bitcoin/bitcoin/blob/master/src/init.cpp#L141)
+
+And this pull introduces a mutex.
+I tend to NACK unless this is sorted out.
+ 
+
+comment number: 72669147 
+body: To clarify -- this pull doesn't introduce an actually new mutex, but does it acquire a lock based on the existing mutex that is already used to synchronize access to the member variables in CCheckQueue.
+
+The travis failure was unrelated to the pull; the travis log (https://travis-ci.org/bitcoin/bitcoin/builds/48672519) shows the java comparison tool test failed with:
+
+`08:27:09 14 BitcoindComparisonTool$1.onPeerDisconnected: bitcoind node disconnected!`
+
+What appears below that is the end of the debug log from bitcoind after the comparison tool failure, which shows a clean shutdown for a bitcoind that is compiled with DEBUG_LOCKORDER and run with -debug (ie the message @jonasschnelli pasted is a normal one, not indicative of the failure).
+
+Note also that this is not test_bitcoin which failed; the test_bitcoin unit tests passed:
+
+```
+$ if [ "$RUN_TESTS" = "true" ]; then make check; fi
+Making check in src
+make[1]: Entering directory `/home/travis/build/bitcoin/bitcoin/bitcoin-x86_64-unknown-linux-gnu/src'
+make[2]: Entering directory `/home/travis/build/bitcoin/bitcoin/bitcoin-x86_64-unknown-linux-gnu/src'
+make  check-TESTS check-local
+make[3]: Entering directory `/home/travis/build/bitcoin/bitcoin/bitcoin-x86_64-unknown-linux-gnu/src'
+Running 137 test cases...
+*** No errors detected
+PASS: test/test_bitcoin
+=============
+1 test passed
+=============
+```
+
+I tested my original pull by compiling with DEBUG_LOCKORDER and doing a -reindex on testnet, and by verifying that it solved the race condition in the original issue (which I exacerbated in testing by adding a usleep(500000) before nIdle++ at `checkqueue.h:101`).
+
+At any rate I just made the change suggested by @theuni (removing the friend class designation for CCheckQueueControl), which is going to bump travis again.
+ 
+
+comment number: 72743505 
+body: I've tested this a good bit locally, since although it doesn't look like it should be able to break anything, the random travis failure on the DEBUG_LOCKORDER test is rather scary.
+
+I've re-run the comparison tool test dozens of times now, with the exact same conditions (built from depends, NO_QT=1 NO_UPNP=1 DEBUG=1, configured with --enable-glibc-back-compat CPPFLAGS=-DDEBUG_LOCKORDER).
+
+No problems here.
+
+Also, notice that in the Travis failure, we never even get a "bitcoind connected". Looks to me like failure really was a fluke.
+ 
+
+comment number: 72755856 
+body: I'd bet this is related to https://github.com/bitcoin/bitcoin/pull/5433#issuecomment-67916872 (probably the same issue), try with https://github.com/TheBlueMatt/bitcoin/commit/e21269e04cbc5e1e0e3a3f7e3bd906bb5c74ca82 merged in.
+ 
+
+comment number: 73256729 
+body: @TheBlueMatt Just to clarify is there anything more to be done on this pull?  Since travis ran cleanly  with the current code, I thought I'd just keep your workaround in mind if that travis issue comes up again, but not necessarily change anything now.
+ 
+
+137. bug report number : ['5719']
+comment number: 72002656 
+body: Tested ACK
+ 
+
+comment number: 72590637 
+body: Rebased.
+ 
+
+comment number: 72608770 
+body: Cherry-picked to 0.10 branch via 2448d34 1bbad80
+ 
+
+138. bug report number : ['5717']
+comment number: 71598431 
+body: ACK
+ 
+
+comment number: 71653756 
+body: Closing in favor of #5719
+ 
+
+139. bug report number : ['5715']
+comment number: 71596825 
+body: For now I'd propose #5717.
+
+> Besides fixing this, it should be made harder to accidentally trigger this behaviour by making SignatureChecker reject CMutableTransaction. This can be done by making a private constructor with CMutableTransaction, or by disallowing implicit conversions from CMutableTransaction to CTransaction.
+
+That'd just be a workaround. Allowing conversions is fine. The problem is storing a reference instead of an explicit pointer, relying on c++'s intricacies with regard to temporaries to manage object lifetime.
+ 
+
+comment number: 72622205 
+body: Fixed by #5719
+ 
+
+140. bug report number : ['5706']
+comment number: 71443115 
+body: Thanks for reporting this in such detail. I'm not sure this limitation is intended, so we may go for a different fix.
+ 
+
+comment number: 71443523 
+body: Pretty sure it should fail with >15 due to the P2SH limitations.
+ 
+
+comment number: 71444788 
+body: Right, I remember now, we already check the resulting script against MAX_SCRIPT_ELEMENT_SIZE for that later.
+
+The issue is that some assertion before that fails while constructing the script
+
+In any case, the proposed fix to hardcode a limit at 16 (because the underlying code fails) is not so bad then. Though it may make sense to move the check down to GetScriptForMultisig instead of in the RPC code, so that potential other usages of it get a clear error.
+ 
+
+comment number: 71444830 
+body: **luke-jr:**
+
+> Pretty sure it should fail with >15 due to the P2SH limitations.
+
+Yes, it should.
+if keys.size equal 16 then  error message looks like:
+
+```
+redeemScript exceeds size limit: 547 > 520 (code -1)
+```
+
+But I left a restriction on 16 because
+
+``` c
+static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 520; // bytes
+```
+
+may change in the future
+ 
+
+comment number: 71450675 
+body: Not likely, that'd be a hardfork.
+ 
+
+141. bug report number : ['5678']
+comment number: 70508898 
+body: Good catch.
+
+The most straightforward solution would be for the function to do the locking itself, e.g. add a LOCK(cs_main) at the top of that function.
+ 
+
+comment number: 70510949 
+body: On a side note: wouldn't it be better, performance-wise, to use a separate lock for the mapNodeState data structure, instead of using the global cs_main lock?
+ 
+
+comment number: 70512810 
+body: Yes, more granular locking would help performance. The cs_main lock is heavily contended. But be careful not to introduce deadlocks. Which is easier if the locks are properly encapsulated inside data structures, which is the direction things should be moving anyhow.
+ 
+
+comment number: 71063061 
+body: It looks like the lock in "ProcessBlockAvailability()" is missing, too?
+ 
+
+comment number: 252559425 
+body: Closing as fixed in #7942
+ 
+
+142. bug report number : ['5645']
+comment number: 69580996 
+body: No need to rant. What version of OpenSSL?
+Could be this issue: http://sourceforge.net/p/bitcoin/mailman/message/33222029/
+
+In that case, you need to upgrade to 0.9.4.
+ 
+
+comment number: 69599680 
+body: Yes it,s OpenSSL 1.0.1k.
+
+Thank you very much for pointing this out!
+I switched to the 0.9.3 binaries from bitcoin.org and it works now.
+
+Sorry for the rant
+ 
+
+comment number: 69600968 
+body: Please rant at your distro maintainer; we have been preaching the "You Must Ship Statically Linked BItcoin Binaries" gospel for a long time, but we run up against the "Thou Shalt Not Ship Statically Linked Binaries" religion.
+ 
+
+comment number: 69603476 
+body: Ok! When will distro maintainers understand that bitcoin is a special case?
+Please keep up the good work!
+ 
+
+comment number: 70513434 
+body: Stuck at the same block (322082). Bitcoin-qt installed from package, i'm running Debian sid.
+ 
+
+comment number: 70513635 
+body: Push your distro maintainer to upgrade their package to 0.9.4.
+ 
+
+comment number: 75383391 
+body: I have first experienced the same problem with 0.9.3.
+Having the same problem with 0.10.0 node I have build from source:
+
+$ /usr/local/bin/bitcoin-cli getinfo
+{
+    "version" : 100000,
+    "protocolversion" : 70002,
+    "blocks" : 322082,
+    "timeoffset" : -1,
+    "connections" : 14,
+    "proxy" : "",
+    "difficulty" : 29829733124.04041672,
+    "testnet" : false,
+    "relayfee" : 0.00001000,
+    "errors" : ""
+}
+
+Running:
+OpenSSL 1.0.1e 11 Feb 2013
+Debian
+ 
+
+comment number: 111475102 
+body: I am also having this problem. I'm using bitcoin-qt compiled myself. Perhaps the build instructions need updating?
+ 
+
+143. bug report number : ['5621']
+comment number: 69199002 
+body: Tested by running on a faulty host that was reliably getting LevelDB checksum errors and continuing operation afterwards.
+ 
+
+comment number: 69199375 
+body: ut ACK
+ 
+
+comment number: 69307744 
+body: So, #5619 or this one? Or both?
+ 
+
+comment number: 69339722 
+body: Not both. This one will cause an assert before #5619 has a chance to catch anything anyway.
+ 
+
+comment number: 69343975 
+body: I'm testing 5619 on my faulty host.  So far it successfully has failed one of one attempts, another one is ongoing.  (5621 was at 3 of 3 shortly after opening the PR)  Sorry, the host isn't fast.
+
+I would accept 5619 if, after a more testing we're not surprised by any additional places where an exception here could escape.   Though, ... I'm not sure we should be using exceptions for critical failures while we are still using them for normal conditions. Eliminating them from normal conditions would require a substantial rewrite of the network deserialization code, so asserting on the critical failures is the thing to do if you buy into my argument that we shouldn't be mixing them.
+ 
+
+comment number: 69594920 
+body: #5619 was merged.
+ 
+
+144. bug report number : ['5620']
+comment number: 69322754 
+body: Looks good to me, utACK
+ 
+
+comment number: 69339769 
+body: @Diapolo would it be possible to cover this with a test in `paymentservertests.cpp`?
+ 
+
+comment number: 69342455 
+body: One could craft and add an expired payment request into `paymentrequestdata.h`, copy and paste the check used in this pull `(details.has_expires() && (int64_t)details.expires() < GetTime()))` and use that in a testcase, yes. I can't craft a usable payment request usable there, feel free to jump in :).
+ 
+
+comment number: 69343027 
+body: Btw. @laanwj `expires` is also an `uint64` casted to `int64_t`, is that safe? `GetTime()`is using `int64_t` as return value, wheras the used `time()` in it is returning `time_t` (which is a `long long` on my compiler suite).
+
+Thinking about it, `uint64` allows for bigger numbers than `int64` can store, so if one crafts payment request with `expires` set to a value bigger than `0x7FFFFFFFFFFFFFFF` it would be considered valid for a very long time, right (if -9223372036854775807 < GetTime())? Could this become a problem?
+ 
+
+comment number: 69350006 
+body: Definitely needs a unit test (or two, testing expires with large unsigned values is a great idea).
+
+@Diapolo : if you aren't willing to create unit tests for your code, then, in my humble opinion, you shouldn't be writing code. Testing is critical.
+ 
+
+comment number: 69350471 
+body: @gavinandresen Sorry if you have the impression I'm not willing, it's more my skills are limited in that case. I really have no idea how to craft a suiting payment request for `paymentrequestdata.h`, like you did -_-.
+
+Oh and by the way, you created the initial check in paymentserver.cpp, which also had no unit test :-P. I just duplicated the code which was there and added it, where it also needs to kick in!
+ 
+
+comment number: 69351076 
+body: @Diapolo i'll try to create one a link you in a commit for `paymentrequestdata.h`
+ 
+
+comment number: 69351330 
+body: @jonasschnelli I'm glad if you also can help me in understanding how you do it :).
+ 
+
+comment number: 69351549 
+body: There's simple c++ code for creating payment requests here:  https://github.com/gavinandresen/paymentrequest/blob/master/c%2B%2B/paymentrequest-create.cpp
+
+I used it to generate a binary payment request (after using openssl commands to generate private keys, certificates, etc).
+
+Then I converted the binary payment request files to base64 (e.g. openssl enc -base64)
+
+Then copy the base64 into the .h file.
+ 
+
+comment number: 69352412 
+body: @gavinandresen Thanks for linking that in here, I'll take a look.
+ 
+
+comment number: 69352645 
+body: Could you not take one from https://bitcoincore.org/~gavin/createpaymentrequest.php and base64 it?
+If you need different values, take the php source, run them on MAMP/XAMP, etc. 
+I suppose this might also work.
+ 
+
+comment number: 69354391 
+body: @Diapolo ping me if you didn't succeed then i start looking at it.
+ 
+
+comment number: 69431425 
+body: @gavinandresen Wow, that was quite hard up to where I am now :). I took your whole branch https://github.com/gavinandresen/paymentrequest and converted the entire create_ca.sh to a Windows compatible create_ca.cmd, reworked build_detect_platform, Makefile, paymentrequest-create.cpp, paymentrequest-dump.cpp and even the README.txt (to perhaps aid others with this stuff) to be Windows compatible!
+
+I build the executables with MinGW 4.9.2 x64 and the ca stuff with OpenSSL 1.0.1j.
+
+Now when I try to do `paymentrequest-create paytoaddress=1BTCorgHwCg6u2YSAWKgS17qUad6kHmtQW memo="Just Testing" amount=11.0 | paymentrequest-dump`, I get the following error, which I could not solve until now:
+
+<pre>
+[libprotobuf ERROR google/protobuf/message_lite.cc:123] Can't parse message of type "payments.PaymentRequest" because it is missing required fields: serialized_payment_details
+</pre>
+
+Can you or any other (@mikehearn) assist with solving this!?
+
+Edit: paymentrequest.pb.cpp, paymentrequest.pb.h and paymentrequest.proto from your repo are identiocal to the ones I have in my Bitcoin Core build dir based on current master!
+
+Edit2: Seems to be a problem with paymentrequest-dump.exe, as I can open the payment request file from  paymentrequest-create.exe in a 0.9.3 client... strange.
+ 
+
+comment number: 69754844 
+body: I depend on #5642 getting merged, before I can add another unit test for this.
+ 
+
+comment number: 69755737 
+body: @Diapolo could you not include #5642 commits in this PR and add a UT?
+ 
+
+comment number: 69756760 
+body: @jonasschnelli Yeah I could rebase this ontop of the other pull, but I'm not sure this allows for a quicker merge. The other pr requires a review of at least one other core dev I guess...
+ 
+
+comment number: 69912673 
+body: Rebased to be on top of #5642, which has 2 ACKs now.
+ 
+
+comment number: 70052251 
+body: If this passes Travis it should be ready to merge. Needs review by @gavinandresen or @laanwj.
+ 
+
+comment number: 71174690 
+body: So 8 days ago I finished this medium priority pull and no one cares to review/ACK? Are we dropping wallet support or why is no one caring about our reference implementation of the payment protocol?
+ 
+
+comment number: 71176875 
+body: I think we all care.
+It's just very hard to set priorities.
+Your work looks really good and I will do a proper test and a review.
+
+Please be patient and give us some more days. Thanks.
+ 
+
+comment number: 71192138 
+body: Here are some fresh built binaries from my gitian-build-server (in case some likes to test but not to build):
+https://bitcoin.jonasschnelli.ch/pulls/5620/
+ 
+
+comment number: 71986805 
+body: Tested, reviewed
+ACK.
+
+![bildschirmfoto 2015-01-29 um 09 24 47](https://cloud.githubusercontent.com/assets/178464/5954520/cb7f0278-a798-11e4-9b69-050e63d23e37.png)
+ 
+
+145. bug report number : ['5619']
+comment number: 69189544 
+body: utACK. Should fix #5588 and #5462.
+ 
+
+comment number: 69191320 
+body: tested ACK
+ 
+
+comment number: 69299236 
+body: utACK
+ 
+
+comment number: 69594812 
+body: After the fact ninja ACK. (seems to successfully shut down on my faulty test host)
+ 
+
+146. bug report number : ['5588']
+comment number: 68484883 
+body: Weird.
+Is there anything in the tail of the debug.log about errors accepting a block?
+Or e.g. leveldb checksum errors?
+Was this during the initial sync, or a node that has been running for a long time? Was it upgraded from 0.9?
+
+I wonder if A) it ever received the correct block 336370 (hash 00000000000000000c3ac3a00701d773648fa304a324a7a11eb1e4cf71c8c972) and rejected it, or B) that it isn't requesting that for some reason, and therefore stuck on the wrong side. Or the node requested it but hasn't received it...
+ 
+
+comment number: 68484962 
+body: Make sure you save the debug.log before restarting the node (as that may rotate it and lose information).
+For troubleshooting it would help a lot if you mail it (gzipped/optionally pgp encrypted) to laanwj@gmail.com or upload it somewhere.
+ 
+
+comment number: 68485519 
+body: Also: can you post the output of the `getchaintips` RPC?
+ 
+
+comment number: 68485677 
+body: Can it be a problem with compatibility to the relay network client.  I noticed that 336372 came directly after 336371.  debug.log contains the lines
+
+```
+2014-12-28 21:03:08 ERROR: AcceptBlockHeader : prev block not found
+2014-12-28 21:03:08 ERROR: ProcessNewBlock : AcceptBlock FAILED
+2014-12-28 21:03:08 Misbehaving: 127.0.0.1:40312 (0 -> 10)
+```
+
+Maybe the blocks were relayed in the wrong order.
+
+_Update_: block 336372 was sent _before_ 336371 (both came from the same miner). 
+_Update 2_: I should check the facts more carefully.  336372 and 336373 came from the same miner with reversed time stamps.  336371 came from a different miner a minute earlier (according to time stamp).   Of course, the time stamps are not accurate enough to say anything about the order they were sent through the network.
+
+I restarted the server and it recovered from the problem.
+ 
+
+comment number: 68520670 
+body: That makes sense - it looks like a subtle bug, it rejected the header because it could not find the previous block, then just never requested it again. None of these messages mentions which block is concerned, but we could assume it is 336371.
+
+Possibly, interactions with @bluematt's relay client may break an assumption in the P2P code.
+ 
+
+comment number: 68521207 
+body: I've augmented your blk overview with the block numbers, and they tell a similar story
+
+```
+[main 336368] Block: 000000000000000007113bc080f3442d74d11e02ca156e39c92290a78d70403a parent: 000000000000000007edde8a1649ca5f967c95142920bb20408cfc1b9f1a2a66
+[main 336369] Block: 0000000000000000189923f03da1a3130919808dc354074267ead5988b87ad19 parent: 000000000000000007113bc080f3442d74d11e02ca156e39c92290a78d70403a
+[stale 336370] Block: 000000000000000000929bbefb29a690c8913b3c066946d998bfd7c5426fb5e7 parent: 0000000000000000189923f03da1a3130919808dc354074267ead5988b87ad19
+[main 336372] Block: 0000000000000000038c09063f665c6a3b906d0d6f0969572dc4a9d119f3b6ea parent: 00000000000000000b858f3f63fa38dd01051abaa5974aec68c3c2712602205d
+[main 336370] Block: 00000000000000000c3ac3a00701d773648fa304a324a7a11eb1e4cf71c8c972 parent: 0000000000000000189923f03da1a3130919808dc354074267ead5988b87ad19
+[main 336373] Block: 0000000000000000084413b21b030408acf50f2741ac623973ef8a9676e93b78 parent: 0000000000000000038c09063f665c6a3b906d0d6f0969572dc4a9d119f3b6ea
+[main 336374] Block: 00000000000000001124faaba22545ebea7ec0a5fc0218f972915698c417af9e parent: 0000000000000000084413b21b030408acf50f2741ac623973ef8a9676e93b78
+[main 336375] Block: 000000000000000015a4f30d82ee0b924836815f7afb5d420852eedda59f10c9 parent: 00000000000000001124faaba22545ebea7ec0a5fc0218f972915698c417af9e
+```
+
+The main chain's block 336371 `00000000000000000b858f3f63fa38dd01051abaa5974aec68c3c2712602205d` was never received and stored, so likely never requested again.
+ 
+
+comment number: 68565409 
+body: Dumb question:  Was this node connected to any peers other than the relaynode peer?  
+ 
+
+comment number: 68589457 
+body: Yes, it was connected; it usually has a lot of incoming connections in addition to the usual eight outgoing connections.  
+
+If I understand the problem correctly it didn't request block 336371 from the other peers ever again although it requested the parent block 336370 later.  Even a misbehaving peer should not be able to stop bitcoind from accepting a valid block.
+
+The problem was solved by restarting.
+ 
+
+comment number: 68612346 
+body: I've been trying to track this down and I think I have a guess as to what could have occurred. 
+
+Which version of the relay client are you using?  Am I right in assuming you've whitelisted it?
+
+I believe at least the java and python versions of the relay client will send an inv for blocks they deliver followed by the block itself as part of their delivery, and because the relay client is probably whitelisted, that the relay node will be a preferred download peer and could be assigned a block to download.  If that were to happen, then the node would get stuck because the getdata would go unanswered, but because the block is "in flight" no other node would be asked to provide it.
+
+More specifically, my guess is that the following likely occurred:
+a) The network forks at block 370 (as shown above).
+
+b) Block 371 is inv'ed and delivered by the relay node.
+This block would be discarded since its parent is unknown.  The getheaders message sent to the relay node is discarded by the relay code.
+
+c) Block 372 is inv'ed by one of the other peers.
+The getheaders request sent in response was presumably answered and mapBlockIndex now contains the alternate block 370 along with blocks 371 and 372.
+
+Since you indicated most of your other peers are inbound connections, I think it's likely that the peer who inv'ed you 372 is not a preferred download peer (see main.cpp:295).  I believe that the inv handling code would request block 372 itself from the peer that inv'ed it, but to download block 371, my understanding is that the code defers assignment until later, in SendMessages.
+
+When SendMessages is called for each node, I believe the only preferred download peer that would have the block as available is the relay node peer.  The relay would be a preferred download peer if it's whitelisted (even though it's inbound), and in ProcessBlockAvailability (main.cpp:348) the hash for block 371, which was unknown when received, should then be able to be found in the block index and could be assigned.
+
+Assuming no other peers have inv'ed blocks 371 or 372 at the point , the node would have sent a getdata to the relay peer.  Unfortunately the relay peer ignores those messages, and I believe this would trigger a bug highlighted in #5463, namely that having a getdata ignored by a client causes the node to get stuck with the tip not advancing.  
+
+If this analysis is right, it's not clear to me what the right solution to this is; presumably #5463 would solve this problem from lingering, but perhaps a solution that gets the tip moving more quickly again would be preferable, so that miners using the relay client don't find themselves mining on an old tip?
+ 
+
+comment number: 68613629 
+body: I had what might be a related issue. I noticed that my syncing (catching up, when starting up, running 0.10.0rc1) was stalled, and looking at the log showed that it had been stuck for over 2 hours, and that the next block was in flight from one peer. Also, the blocks ahead seemed to be getting loaded in, as it was switching block files. I used a program to forcibly close the socket, disconnecting the peer that was supposedly serving me that block, and 80 seconds later I was synced.
+
+[getchaintips](https://www.irccloud.com/pastebin/MjcFrbB7), [getpeerinfo](https://www.irccloud.com/pastebin/CzcL4eHu), [debug.log excerpt](http://pastebin.com/ZZUPCutt)
+
+You can see it synced normally until block 337077 at 2015-01-03 19:38:06, at which point it stopped, but continued to fill in the blocks ahead of there. At 2015-01-03 21:42:17 I killed the connection to that peer, at which point syncing proceeded normally.
+ 
+
+comment number: 68625556 
+body: I don't have the relay on the whitelist (I didn't bother to figure out how to do it yet). 
+I use the Java version of RelayNode; the latest version pre-compiled in Matt's repository (from Sept).
+https://github.com/TheBlueMatt/RelayNode/blob/master/client/RelayNodeClient.jar
+
+I haven't asked for getpeerinfo, but I don't think the block was stalled by another peer.  At the time I restarted it was 3.5 days behind.
+ 
+
+comment number: 68636043 
+body: So it sounds like there are two independent problems:
+- Outside of IBD, stalling detection doesn't work, so we want a means to prevent unbounded waiting for a block that doesn't arrive (like #5463, see my comment there).
+- The relay client doesn't reply to `getheaders` - this is not a problem to bitcoin core itself, but it does make the relay client useless for transferring reorgs.
+ 
+
+comment number: 68636118 
+body: IBD meaning initial node bootstrap specifically though, not catching up on
+start.
+
+On Sun, Jan 4, 2015 at 5:13 PM, Pieter Wuille notifications@github.com
+wrote:
+
+> So it sounds like there are two independent problems:
+> - Outside of IBD, stalling detection doesn't work, so we want a means
+>   to prevent unbounded waiting for a block that doesn't arrive (like
+>   #5463 https://github.com/bitcoin/bitcoin/pull/5463, see my comment
+>   there).
+> - The relay client doesn't reply to getheaders - this is not a problem
+>   to bitcoin core itself, but it does make the relay client useless for
+>   transferring reorgs.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/bitcoin/bitcoin/issues/5588#issuecomment-68636043.
+ 
+
+comment number: 68636545 
+body: @Michagogo Eh? I'm using IBD here to refer to whenever you're more than 1024 blocks behind.
+ 
+
+comment number: 68636616 
+body: Ah, okay.
+
+On Sun, Jan 4, 2015 at 5:28 PM, Pieter Wuille notifications@github.com
+wrote:
+
+> @Michagogo https://github.com/Michagogo Eh? I'm using IBD here to refer
+> to whenever you're more than 1024 blocks behind.
+> 
+> —
+> Reply to this email directly or view it on GitHub
+> https://github.com/bitcoin/bitcoin/issues/5588#issuecomment-68636545.
+ 
+
+comment number: 69551917 
+body: Workaround in #5608, so removing 0.10.0 milestone
+ 
+
+comment number: 69619458 
+body: I ran into this testing 0.10.0rc1 (on 32 bit ARM) while catching up ~2000 blocks 
+Curiously it got stuck on height=338072 (stays as last connected best block) as well for some reason:
+
+[debug log excerpt](http://pastebin.com/CdKARQfb) 
+[peerinfo (a couple of hours later but still stuck)](http://pastebin.com/fyArgNcY) 
+[getchaintips](http://paste.debian.net/140347/)
+ 
+
+comment number: 69620200 
+body: Please test 0.10.0rc3 now, this should be fixed...
+ 
+
+147. bug report number : ['5565']
+comment number: 68371392 
+body: ACK
+Thanks for checking this out.
+ 
+
+148. bug report number : ['5461']
+comment number: 66633177 
+body: utACK for 0.10 and master.
+ 
+
+comment number: 66640931 
+body: ~~Can you give a reproducible example of the crash?~~
+
+~~I just tried the following on testnet based on the command line of issue #5454, without this patch~~
+
+``` bash
+    X=$(src/bitcoin-cli -testnet createrawtransaction  "[{\"txid\":\"00000000faeea6702a677fdc53f80fa15c017a159674dcff285ada3017844327\",\"vout\":0}]" "{\"muwmUMjAuMQYNZtr4kLKcUjXUe1rrGgne7\":0.01}")
+    src/bitcoin-cli -testnet signrawtransaction $X '[]' '["5HpHagT65TZzG1PH3CSu63k8DbpvD8s5ip4nEB3kEsreAbuatmU"]'
+```
+
+~~This gives the output:~~
+
+```
+error: {"code":-5,"message":"Invalid private key"}
+```
+
+Edit: doh, managed to reproduce it, privkeys have a different marker byte on testnet and mainnet, if you use `91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjJoQFacbgwi1C2GD` it reproduces
+ 
+
+comment number: 66643711 
+body: Tested ACK commithash aa768f1848b00e0fd615016598d3fb1f1da240ed
+([signature](https://dev.visucore.com/bitcoin/acks/5461))
+ 
+
+comment number: 66754736 
+body: ACK
+ 
+
+comment number: 66755900 
+body: utACK
+ 
+
+149. bug report number : ['5456']
+comment number: 66628694 
+body: Yes, this is a bug in the bignum tests that has been solved in master.
+ 
+
+comment number: 66629778 
+body: Ah, I think I found it: https://github.com/bitcoin/bitcoin/commit/63c17613ab808208c8a760fc750e0429c8e53a39
+
+Seems to be resolved then.
+ 
+
+comment number: 66630043 
+body: Indeed, that's the commit that fixed it.
+ 
+
+150. bug report number : ['5383']
+comment number: 184777067 
+body: Bitcoin Core's wallet regards outputs of its own outgoing zero-conf transactions as spendable (unless `-spendzeroconfchange=0`), but not those of incoming transactions.
+
+Spending the outputs of other people's transactions before they are confirmed is, in general, unsafe. Various malleability issues make that unreliable.
+ 
+
+comment number: 184854791 
+body: @laanwj And `fundrawtransaction` should be able to select those zero-conf UTXOs? Even if they are watch only?
+ 
+
+comment number: 185100197 
+body: @promag Wouldn't be against making it configurable, but by default it should have the same behavior as the other send\* options I'd say.
+ 
+
+151. bug report number : ['5382']
+comment number: 64717139 
+body: http://cdn.meme.am/instances/500x/35866472.jpg
+ 
+
+comment number: 64744886 
+body: So, ACK the patch (but nit: change ??? to ?? to avoid a trigraph warning), but also ACK removing.  My one reservation with removing is that I think we currently have no RPC method to find out about orphaned blocks that we know... otherwise this output is completely redundant with what you can get more easily via rpc.
+
+Actually, scracht that... with getchaintips we can even get the orphans. So ACK removal, since it's redundant to data already better available in RPC.  If you want to be snazzy you could feel free to just add a commit removing it on top of this commit fixing it; so a fixed version is in the history if someone wants it. :)
+ 
+
+comment number: 64756870 
+body: I'm OK with removing it. It was already broken for a long time before I fixed it last time (#3980) which is indicative that almost noone knows about it.
+ 
+
+comment number: 64771224 
+body: Closing in favor of #5385.
+ 
+
+152. bug report number : ['5355']
+comment number: 64123379 
+body: Would it be easier to finally review #4871 ;) and base new suggestions there on? I believe the code is more robust (but also doesn't set the proxy for networks that are limited).
+
+For the payment request, if there is no proxy set because of the net limiting we are not using any. I'm not sure setting a proxy for networks that are limited is correct.
+
+Edit: Perhaps we should prefer Tor proxy for payment requests over IPv4 proxy and use IPv4 proxy if Tor proxy is not set!?
+ 
+
+comment number: 64131440 
+body: -proxy= sets a proxy that should be used for _everything_.  Making any direct connections when proxy is set is very wrong.
+ 
+
+comment number: 64138663 
+body: @sipa  Can you explain the logic for not setting the proxy on IsLimited networks? I don't see what useful thing it accomplishes.
+ 
+
+comment number: 64758439 
+body: okay, fixed in master and the 0.9. branch.
+ 
+
+153. bug report number : ['5330']
+comment number: 63831962 
+body: Probably need a `LOCK(cs_main)` before the call to `ProcessNewBlock` in `LoadExternalBlockFile`.
+ 
+
+comment number: 63833025 
+body: Is this on #5241?
+
+No, ProcessNewBlock should run without cs_main, otherwise the entire reorg that may result would be done without releasing the lock.
+ 
+
+comment number: 63833626 
+body: I've added a LOCK(cs_main) to the FlushStateToDisk function in #5241.
+ 
+
+comment number: 63833637 
+body: > Is this on #5241?
+
+Yes.
+
+> No, ProcessNewBlock should run without cs_main, otherwise the entire reorg that may result would be done without releasing the lock.
+
+OK. But somewhere along the call chain it should acquire the lock.
+
+Edit: OK will re-cherry-pick.
+ 
+
+154. bug report number : ['5277']
+comment number: 65778124 
+body: Cannot be debugged without further information.
+Do you have a debug.log from that initialization? especially the part about command line arguments interaction.
+ 
+
+comment number: 65832052 
+body: Sorry, no. Note that I am a dumb user. Are there instructions somewhere on capturing this log? If so, please provide link. In this case, next time I encounter aberrant behavior, I will capture the log.
+
+Otherwise, I understand the limitation. Feel free to close issue.
+ 
+
+comment number: 65898981 
+body: Just search for a debug.log in your Bitcoin Core data folder.
+ 
+
+comment number: 65926643 
+body: Found it. Thanks.
+ 
+
+155. bug report number : ['5271']
+comment number: 63057460 
+body: tested with current master on OSX 10.10 (2.6 GHz Intel Core i7, 16GB Ram) and could not reproduce the issue. I tested with around 200 wtx. Was superfluent.
+Did also time-profile it to see minor thread-blocks but could found nothing. I will also have a look at it in ubuntu soon.
+ 
+
+comment number: 63095290 
+body: Same wallet perform also very good on my ubuntu 14.04 when switching units. Around 200 wtx.
+ 
+
+comment number: 63100422 
+body: Ok, must be a local problem then, thanks for checking.
+ 
+
+comment number: 73663633 
+body: I recently played around with a >100'000tx wallet.
+There are multiple lags in Qt.
+Manly sorting and Base58 to string (see screenshot from my time profiler below).
+Same thing when changing the BTC unit.
+
+The transaction table should not load all transaction at once.
+There should be a kind of a paging mechanism. Or like iOS does, a create-when-required technique of table rows (there a row gets created when the user starts to scroll near it).
+Maybe this could be helpful: http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#fetchMore
+
+![bildschirmfoto 2015-02-10 um 09 40 47](https://cloud.githubusercontent.com/assets/178464/6123957/09b6e29e-b109-11e4-8970-c3b69c5ccd13.png)
+ 
+
+156. bug report number : ['5270']
+comment number: 62871377 
+body: Wow, thanks for catching this.
+
+I was convinced that AcceptBlockHeader called CheckBlockHeader.
+ 
+
+comment number: 62873375 
+body: Hm, now that you mention it, AcceptBlock _does_ call CheckBlock.  So maybe the call to CheckBlockHeader should be moved inside of AcceptBlockHeader?  (Doesn't matter for the functionality, but is maybe cleaner and more consistent with the rest.)  So far I understood it as "check first, then accept to only update the state" (not quite, but more or less).
+ 
+
+comment number: 62874224 
+body: Indeed, that seems like the right place for it. Functionally it shouldn't matter, but it's strange that AcceptBlockHeader would accept an invalid header...
+ 
+
+comment number: 62947509 
+body: Updated accordingly.  Note that `AcceptBlock` now calls the PoW check twice:  Once via `CheckBlock` and once via `AcceptBlockHeader`.  I guess that doesn't hurt, though.
+ 
+
+comment number: 62987088 
+body: Regarding repeated calls, see #5163.
+ 
+
+comment number: 63096567 
+body: untested ACK
+ 
+
+comment number: 63577243 
+body: utACK only commithash bfaf3f0c39954239726410546990a229af89b70d (+/- the semi-invalid comment): http://bitcoin.ninja/TheBlueMatt-5270.txt
+ 
+
+comment number: 63597422 
+body: I can completely remove the comment.  Do you like that better?  Or any suggestions on what to say there instead?
+ 
+
+comment number: 63619704 
+body: Can you move the comment to the CheckBlockHeader() call in CheckBlock()?
+ 
+
+comment number: 63770620 
+body: Done.
+ 
+
+comment number: 63800740 
+body: utACK commithash 57425a24255c5af439241d59ad5a878b7a3771a7 https://dev.visucore.com/bitcoin/acks/5270
+ 
+
+157. bug report number : ['5267']
+comment number: 63314571 
+body: @TheBlueMatt Can you get this in a state where the tests pass (perhaps by delaying the enabling of large-reorg)?
+ 
+
+comment number: 63667210 
+body: Upon review... it seems to me the first immature-coinbase-in-the-mempool bug is due to this code:
+
+```
+   // Resurrect mempool transactions from the disconnected block.
+    BOOST_FOREACH(const CTransaction &tx, block.vtx) {
+        // ignore validation errors in resurrected transactions
+        list<CTransaction> removed;
+        CValidationState stateDummy;
+        if (!tx.IsCoinBase())
+            if (!AcceptToMemoryPool(mempool, stateDummy, tx, false, NULL))
+                mempool.remove(tx, removed, true);
+    }
+    mempool.check(pcoinsTip);
+    // Update chainActive and related variables.
+    UpdateTip(pindexDelete->pprev);
+```
+
+AcceptToMemoryPool calls CheckInputs(), which does check for coinbase maturity.
+Seems to me just moving UpdateTip() to before the resurrect-into-mempool loop would fix that bug.
+
+Coinbase spends right at the maturity threshold would get dropped from the mempool, but I don't think I care (our wallet code should rebroadcast the spend if it doesn't stay in a block).
+
+---
+
+The other bug, a coinbase spend in the mempool that becomes immature when DisconnectTip() happens:  I think I'm ok with the proposed fix, but it feels like there might be a simpler and more robust solution-- maybe the mempool should keep a list of all coinbase-spending transactions inside it (add to that list in addUnchecked()), and remove-then-AcceptToMemoryPool all of them (and any dependents) after a DisconnectTip().
+
+---
+
+ACK on the work queue optimization.
+ 
+
+comment number: 63698507 
+body: @gavinandresen re: first bug: its not about transactions that are in the block, its about transactions in mempool, so calling AcceptToMemoryPool on anything that is within that loop wont help, afaict.
+ 
+
+comment number: 64154324 
+body: You don't need a large reorganization. Just connect some peers and start mining, then send some of the coinbase to each of the peers and keep mining, you will see it. The problem and solution is clear since this issue has been known since 5 years ago. :+1: 
+ 
+
+comment number: 64155126 
+body: @john-connor I'd love to know what issue you're referring to here. There is certainly no way to "send some of the coinbase to each of the peers" and, in #2821 you seem to think it is a locking issue, but the proper locks appear to be taken in the block creation code.
+ 
+
+comment number: 64257988 
+body: FYI: I'm working on tests for these cases using @sipa's excellent invalidatblock:
+   https://github.com/gavinandresen/bitcoin-git/tree/coinbase_in_mempool_tests
+ 
+
+comment number: 64421903 
+body: Fails a test case I wrote:
+1. Spend a coinbase at depth 100+2, only in mempool (not confirmed)
+2. Re-org back to depth 99
+
+EXPECT: mempool empty
+RESULT: mempool contains the spend
+
+See https://github.com/gavinandresen/bitcoin-git/commit/24eba4feffd29c0bee3e2296f04ed789b0b715f7 for code. (spend_101 is the transaction that is being left in the mempool)
+ 
+
+comment number: 64534189 
+body: @TheBlueMatt I never mentioned "locks". Setup a testnet of N peers and start mining, let the coinbase mature spend it around to the "loosely organized" peers (addresses), when N or more nodes generate a block a reorganization will possibly happen leaving some of the mempool's full of (now) invalid transactions. gavinandresen's latest test results confirm my theory. So, just remove them from the mempool during a reorganization and the assert should never be hit. If do not have the mining thread running you will never hit the assert either which masks the problem. These transactions also seem to make it into the wallet.dat and they should not. I've confirmed this because the problem follows the wallet.dat file.
+ 
+
+comment number: 64734500 
+body: @john-connor So...you're referring to the bug that both of these pulls fix in different ways?
+ 
+
+comment number: 64755971 
+body: Note that the failures here are only from the test-update. I spent a while trying to get it to not overrun travis' memory, and while I have one I think should work, I miscompiled it and then left and forgot to even push the source...so its gonna be till next week before I can get that updated. In any case, its been passing locally for a while, and I also added gavin's tester from #5368 on a branch with this at https://github.com/TheBlueMatt/bitcoin/commits/mempoolfix3 (which passes as well)
+ 
+
+comment number: 64843717 
+body: @TheBlueMatt These don't fix the entire problem(s) but is a start.The invalid transaction will make it into the mempool long enough to get broadcasted out to the network where it will cause further mempool pollution. So, it's still going to waste global network bandwidth. Luckily the wallet is smart enough to not allow the invalid transaction onto the network during a resend so it stops with the mempool.
+ 
+
+comment number: 64845783 
+body: Huh? The transactions are valid, but become invalid during a reorg (not even after)... Each node is responsible for keeping its mempool valid, not its peers. Again, I'm really not sure what bug you're talking about. 
+
+On November 27, 2014 8:47:40 PM EST, John Connor notifications@github.com wrote:
+
+> @TheBlueMatt These don't exactly fix the problem(s). The invalid
+> transaction will make it into the mempool long enough to get
+> broadcasted out to the network where it will cause further mempool
+> pollution. So, it's still going to waste global network bandwidth.
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/pull/5267#issuecomment-64843717
+ 
+
+comment number: 64924672 
+body: @TheBlueMatt then we are talking about two very similar but different bugs. I'll open an issue that shows the full problem.
+ 
+
+comment number: 64949896 
+body: @gavinandresen @TheBlueMatt Just to be clear about the off-by-one: a transaction that made it into block N, can be spent at block N+100, which means with 101 confirmations (as the block it's in already counts for 1).
+ 
+
+comment number: 64959728 
+body: Hmm? The confusion actually wasn't about which block can spend an output, but about the definition of the memorial mempool's spendability requirement. 
+
+On November 29, 2014 7:14:16 AM EST, Pieter Wuille notifications@github.com wrote:
+
+> @gavinandresen @TheBlueMatt Just to be clear about the off-by-one: a
+> transaction that made it into block N, can be spent at block N+100,
+> which means with 101 confirmations (as the block it's in already counts
+> for 1).
+> 
+> ---
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/pull/5267#issuecomment-64949896
+ 
+
+comment number: 65603353 
+body: I rebased on top of master, allowing me to pull in @gavinandresen's test from #5368 without depending on another pull req, fixed the block-tester issues, and removed the commit which got rid of the removed-tx tracking (that @dgenr8 had issues with, though I'm still not able to reproduce...I'll reintroduce that in a separate pull req).
+ 
+
+comment number: 65647832 
+body: @TheBlueMatt If you can get Travis to succeed here, I'll reconsider, but right now this is just not mergable.
+ 
+
+comment number: 65695162 
+body: @sipa I said the failures are just the test-update, could easily merge without it...anyway, I removed that commit, I'll add it again via another pull.
+ 
+
+comment number: 65695552 
+body: @TheBlueMatt Sorry, missed that. I knew that the problem was just in the tester, but really - if Travis doesn't pass, I tend to ignore it.
+ 
+
+comment number: 65736943 
+body: Untested ACK; I prefer this approach over #5368, and it seems to pass the same tests.
+ 
+
+comment number: 65738555 
+body: Untested ACK, I have no preference on which version of this makes it in.
+ 
+
+comment number: 66196723 
+body: Rebased for dumb merge conflict (new tests in rpc-test.sh).
+ 
+
+comment number: 66197302 
+body: Oh, and resolved sipa's nit.
+ 
+
+comment number: 66288906 
+body: Which one?
+ 
+
+comment number: 66413868 
+body: utACK commithash 34318d7fad7922ce56ff47908ff70e2c8a42ee56. 
+
+I have no preference which one makes it in either, #5267 or #5368. Which I suppose means that @sipa's preference for this one is the tie-breaker.
+([signature](https://dev.visucore.com/bitcoin/acks/5267))
+ 
+
+comment number: 66414044 
+body: @sipa the "while(!thing.empty())" vs "while (thing.size())" one.
+ 
+
+158. bug report number : ['5262']
+comment number: 65778367 
+body: We really need a RPC testcase in `qa/rpc-tests` for this. As long as there is no regression test case, an obscure feature like this is bound to stop working.
+ 
+
+comment number: 65785805 
+body: Indeed the keep-alive implementation is not working but partial available in the code.
+I try to write some http keep-alive rpc-tests and finish/fix the implementation.
+ 
+
+comment number: 65913147 
+body: I checked the whole http handling.
+The RPC server does correctly handles persistent connection (according to http 1.1). The RPC server can handle multiple requests/responses within the same http connection.
+I wrote a rcp-test for this, but it's probably not worth committing to the core.
+
+@zenixls2 
+I cannot follow your reported issue. I saw that the bitcoin-cli utility is not able to process multiple http requests/responses in the same http-connection. But obviously this also not necessary for the bitcoin-cli app itself (one app-run executes one rpc call). As a http-client there is no need in bitcoin-core to support a persistent (keep-alive) connection.
+It would need some effort to make the internals (`Object CallRPC(const string& strMethod, const Array& params)` http-persistent-keep-alive-conform. IMO there is no need for this, but feel free to contribute this in a PR.
+
+IMO: issue can be close.
+ 
+
+comment number: 65913850 
+body: @jonasschnelli There was at least one bug in the past related to keep-alive in the HTTP server.  I think it would be worth it to commit the test, as long as you have written it.
+ 
+
+comment number: 65916319 
+body: here we go: #5436
+ 
+
+comment number: 65916681 
+body: I wonder if we ought to be disabling keep-alive support as long as idle connections prevent new ones from working (by tying up a RPC thread)?
+ 
+
+comment number: 65929288 
+body: The magic keyword for that would be "timeout". Apaches default timeout is 15s. That would also be feasible for bitcoind.
+I never checked the timeout behavior.
+
+Disabling keep-alive could harm heavy rpc and REST user. Because it gives the possible to do more queries with less resources.
+
+Zombi-Ideling connections are only there becaus of wrong client implementation. A client needs to close the connection at the end.
+We don't have the unknown browser situation so we should expect the rpc clients work as expected and close connections at the end.
+ 
+
+comment number: 66036681 
+body: Thanks for testing @jonasschnelli ! Closing this.
+
+I don't agree with disabling keep-alive by default. It's up to the user (and those delegated to w/ -rpcallow) to use the RPC server responsibly, if he wants to run a slowloris attack against it to hold up threads, so be it.
+ 
+
+159. bug report number : ['5243']
+comment number: 62255787 
+body: I wonder what would happen if you start with -reindex but don't actually already have a blockchain locally. Or what if the genesis block entry on disk is broken.
+
+Maybe it makes sense to wait for _either_ the genesis block present, or the importing process to be finished.
+ 
+
+comment number: 62270299 
+body: If the import process finishes without genesis, then we have skipped the genesis-build and we should actually wipe chainstate or so.
+ 
+
+comment number: 62747950 
+body: Agreed on concept, but this looks fragile. Polling every 10 milliseconds is also suboptimal - if this really needs to happen in a thread I would prefer to use a condition variable.
+
+Though as said in #5078 I'd prefer to split off the part of the import that looks for the Genesis block into a LocateGenesisBlock function. This would look in the first block file, look at the first block, and if it is not the Genesis block it would terminate. Waiting for the whole import to finish to detect that the genesis block is corrupt/missing would be suboptimal.
+ 
+
+comment number: 63098650 
+body: @TheBlueMatt Agree, I don't think this makes things worse.
+ 
+
+comment number: 63473348 
+body: @TheBlueMatt Actually, it does. `-reindex` without any datadir currently works as expected. I believe that the code here will end up in an infinite sleep loop.
+ 
+
+comment number: 63497535 
+body: Tested ACK.
+
+I was wrong. Importing ends with a call to InitBlockIndex(), which fixes the no-genesis case in case nothing was imported.
+ 
+
+comment number: 67758626 
+body: @laanwj I agree, but overcomplicating this stuff for the incredibly rare/strange case of having a corrupt genesis block (especially if it works in that case, even if not well)...probably not worth it. Anyway, I added a log print and a check to fRequestShutdown.
+ 
+
+comment number: 71448062 
+body: Backported to 0.10 branch as c5044bc1693ced50ed070a27e7d2f3174202ace5
+ 
+
+160. bug report number : ['5194']
+comment number: 61396872 
+body: Interesting; we should definitely do that. Can you move the logic for pruning setBlockIndexCandidates to a separate function (as the same code appears in ActivateBestChainStep)>
+ 
+
+comment number: 61409449 
+body: Updated as requested.
+ 
+
+comment number: 61409631 
+body: Untested ACK
+ 
+
+comment number: 62273629 
+body: Aside from whitespace bugs, tested ACK only commithash ba5bf8f6ae344bf2e69ff551490b4262e3e9d129: http://bitcoin.ninja/TheBlueMatt-5194.txt
+ 
+
+comment number: 62675095 
+body: Removed the trailing whitespace on 2867 and 2869, as suggested.
+ 
+
+comment number: 63474625 
+body: untested ACK still
+ 
+
+comment number: 64596898 
+body: Continued in #5321
+ 
+
+161. bug report number : ['5173']
+comment number: 61039420 
+body: utACK; thanks for investigating!
+ 
+
+comment number: 61453247 
+body: utACK
+ 
+
+162. bug report number : ['5158']
+comment number: 60814787 
+body: How did you test this?
+ 
+
+comment number: 60821107 
+body: I tested this by running it over a derivative of #4701 on syncing, reindexing and up-to-date nodes. Those cases were broken before this patch, and work well after.
+
+The dependence on local time is ugly, but that was there before, anyway...
+ 
+
+comment number: 60847400 
+body: This gets rid of the nLastUpdate static, I'm happy about that. This seems reasonable to me. utACK.
+ 
+
+comment number: 61635359 
+body: In what ways is IsInitialBlockDownload broken now? Not a criticism, just trying to understand :)
+ 
+
+comment number: 61652023 
+body: It randomly returns true or false during all the  IBD.
+ 
+
+comment number: 61975939 
+body: Added a commit implementing @laanwj suggestion to deal with @gmaxwell's concern.
+ 
+
+comment number: 61976576 
+body: A single boolean would suffice, no?
+ 
+
+comment number: 61986638 
+body: Simplified to use a single boolean.
+ 
+
+comment number: 62020492 
+body: utACK.
+ 
+
+comment number: 62073900 
+body: utACK: http://bitcoin.ninja/TheBlueMatt-5158.txt
+ 
+
+comment number: 62206048 
+body: still ACK  (though only tested pretty lightly)
+ 
+
+comment number: 63330057 
+body: Note that #5241 reduces the number of conditionals that are based on IsInitialBlockdownload().
+ 
+
+comment number: 63330258 
+body: utACK
+ 
+
+comment number: 63761943 
+body: utACK only commithashes 9ec75c5ef4182a38e261beaafdc94325785cc7c5 + a2d0fc658a7b21d2d41ef2a6c657d24114b6c49e: http://bitcoin.ninja/TheBlueMatt-5158.txt
+ 
+
+163. bug report number : ['5157']
+comment number: 60797975 
+body: ACK
+
+Tested, fixes #5138 and #5113.
+ 
+
+comment number: 60836244 
+body: @gavinandresen please test again; it was preferring inbound now, as noticed by @cozz.
+ 
+
+comment number: 60924702 
+body: Going to test this
+ 
+
+comment number: 60940484 
+body: Reworked the functions/names a bit; maybe it's less confusing now.
+ 
+
+comment number: 60974664 
+body: Still issues with sync never starting, here's a test case (put in qa/rpc-tests, run with --tracerpc to see behavior):
+
+```
+#!/usr/bin/env python
+
+from test_framework import BitcoinTestFramework
+from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
+from util import *
+import time
+
+class SyncDir(BitcoinTestFramework):
+    def setup_network(self):
+        self.nodes = []
+        self.nodes.append(start_node(0, self.options.tmpdir, ["-debug=net"]))
+        self.nodes.append(start_node(1, self.options.tmpdir, ["-debug=net"]))
+        connect_nodes(self.nodes[0], 1)
+        print("Nodes connected")
+        self.is_network_split = False
+        self.sync_all()
+        random_transaction(self.nodes, Decimal("0.001"), Decimal("0.0001"), 0, 0)
+        print ("One tx sent")
+        self.nodes[0].setgenerate(True,1)
+        print ("Block mined")
+        self.sync_all()
+        print ("Chains synced")
+        stop_node(self.nodes[0],0)
+        print ("Node stopped")
+        self.nodes[0] = start_node(3, self.options.tmpdir,["-debug=net"])
+        print ("New node created")
+        connect_nodes(self.nodes[1], 0)  #connect the new node
+        #connect_nodes(self.nodes[1], 3)  #connect the new node
+        print ("New node connected....")
+        #self.sync_all()
+        sync_blocks(self.nodes)
+        print ("New node synced")
+
+    def run_test(self):
+        print ("Running test")
+
+if __name__ == '__main__':
+    SyncDir().main()
+```
+
+Connecting node 0 to node 1 (instead of 1 to 0) and all is well.
+ 
+
+comment number: 61004613 
+body: @gavinandresen did the previous version of the PR work?
+ 
+
+comment number: 61005310 
+body: I don't know if previous version worked-- I reversed connection direction to better test for this version, didn't test previous that way.
+
+> On Oct 29, 2014, at 5:04 PM, Pieter Wuille notifications@github.com wrote:
+> 
+> @gavinandresen did the previous version of the PR work?
+> 
+> —
+> Reply to this email directly or view it on GitHub.
+ 
+
+comment number: 61054925 
+body: Can those looking at this also look at #5099 please? I've been developing and testing functionality to do with preferred downloads and optimising the IBD since June, and it's almost near perfect now (although I'm not so sure about my C++ coding style!).
+ 
+
+comment number: 61358916 
+body: I'd like to code a pull request to make download of headers faster, but given that #5099 hasn't received any attention, would I be wasting my time and effort?
+ 
+
+comment number: 61361853 
+body: @rebroad This is not about making it faster, but fixing the bug of it not starting downloads at all in some situations. The problem is the logic that tries to avoid downloading from incoming peers (because of the current expectation that you don't get much bandwidth usage from making just outgoing connections). It seems overeager and sometimes causes no download at all to start.
+
+I'll get to looking at your pull request, but it's a lot of code, and getting the bugs out has higher priority now.
+ 
+
+comment number: 61495611 
+body: Tested ACK
+ 
+
+164. bug report number : ['5154']
+comment number: 60995964 
+body: Can you provide a description of how this bug can be triggered? (and have you seen this segfault?)
+ 
+
+comment number: 61039623 
+body: You'll see it on initializing the daemon, while scanning for better chains in the block chain database, that are not yet connected in the active best chain.
+
+When this does occur, ConnectTip in ActivateBestChainStep returns true. Hence, fInvalidFound remains false, CheckForkWarningConditions is entered instead of CheckForkWarningConditionsOnNewFork where pindexBestForkBase is set. Hence, subsequent refs to pindexBestForkBase fail. 
+
+The commit catches this, and produces a "Warning: Found invalid chain at least ~6 blocks longer than our best chain. Chain state database corruption likely." Preferable to what otherwise results in a crash, and, in fact, informative, as reindex-ing does correct it.
+ 
+
+comment number: 61046465 
+body: Huh? The way I read this pull, the only thing it will do is fix a SEGFAULT, not a logic error?
+ 
+
+comment number: 61082203 
+body: The description is that of the functional impact of the PR.
+ 
+
+comment number: 63948366 
+body: I'm pretty sure this is actually triggerable exactly as 21E14 describes, e.g. when restarting a node which is had previously had an invalid block in the last execution.  It's easily triggerable with Pieter's invalidate block patch.
+
+The fix given here does not appear to be sufficient as pindexBestForkBase is also dereferenced in the next block below, so I cannot ACK.  I would bludgeon Matt to clean the whole thing up, but he's travling and a minimal change for 0.10 would be preferable.
+
+21E14, can you please extend the guards so that all the deferences in this function are protected? I think that would be the simple and conservative move right now rather than trying to reason about what invarients hold for these globals. Having potential crash bugs for a corner case nag message isn't something that excites me.
+ 
+
+comment number: 64070319 
+body: Updated as suggested. Please note that, unlike the first block, I have not observed the second block being entered in this instance. Nevertheless, extending the guards seems prudent until the globals are reconsidered more systematically.
+ 
+
+comment number: 64073417 
+body: Thanks. ACK.
+ 
+
+comment number: 64127918 
+body: utACK
+ 
+
+comment number: 64132987 
+body: Wouldn't we want warnings even if !pindexBestForkBase? Or am I missing something?
+ 
+
+comment number: 64133255 
+body: @luke-jr It still gives a warning, just a less specific one, see the other prints in that block.
+ 
+
+165. bug report number : ['5138']
+comment number: 60437794 
+body: Possible patch that fixes the problem for me, not sure if it will cause other problems:
+
+```
+diff --git a/src/main.cpp b/src/main.cpp
+index 0cfe90b..fc17c4b 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -4419,7 +4419,14 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
+         // Start block sync
+         if (pindexBestHeader == NULL)
+             pindexBestHeader = chainActive.Tip();
+-        bool fFetch = !pto->fInbound || (pindexBestHeader && (state.pindexLastCommonBlock ? state.pindexLastCommonBlock->nHeight : 0) + 144 > pindexBestHeader->nHeight);
++        bool fFetch = !pto->fInbound;
++        if (!fFetch && pindexBestHeader)
++        {
++            if (state.pindexLastCommonBlock)
++                fFetch = (state.pindexLastCommonBlock->nHeight + 144 > pindexBestHeader->nHeight);
++            else
++                fFetch = true;
++        }
+         if (!state.fSyncStarted && !pto->fClient && fFetch && !fImporting && !fReindex) {
+             // Only actively request headers from a single peer, unless we're close to today.
+             if (nSyncStarted == 0 || pindexBestHeader->GetBlockTime() > GetAdjustedTime() - 24 * 60 * 60) {
+```
+ 
+
+comment number: 60438608 
+body: That patch will just make you download from all peers at startup (until you have something). That won't hurt, but it's not really the intended effect. What it's trying to do is only fetch from non-outbound if we're synced up to less than 144 blocks (a day) from the best known headers synced already.
+
+The problem is really just the lack of outbound connections. If there are no such connections, we should probably just fetch from all peers.
+ 
+
+comment number: 60470183 
+body: Relatedly, the "chainActive.Tip()->GetBlockTime() > GetAdjustedTime() - Params().TargetSpacing() \* 20" condition causes block data to not be fetched (immediately) upon receiving the block announcement when the current Tip is older by more than 3.33 hours (Params().TargetSpacing() \* 20). Such a time gap is not unlikely with fully-synced nodes in regtest mode, but also not inconceivable in any.
+
+This causes immediate node divergence, as headers-first sync never gets going either. The patch corrects this, but I wonder whether the conditional logic needs revisiting too.
+ 
+
+comment number: 60615378 
+body: @sipa : is there a higher-level description somewhere of how peers figure out what chains they have in common? I'm having trouble following the logic in main.cpp.
+
+Also, I get the feeling there might have been some premature optimization here; in particular, just looking at the data structures I expected that CNodeState->pindexLastCommonBlock should be non-null not too long after a peer has completed the version/verack sequence, but I guess that is not true? Seems to me upon connection peers should always tell each other what their best blocks are, even if they are at the same height.
+ 
+
+comment number: 63719026 
+body: I ran into this again today writing a regression test.  Here is a distilled test case that will fail:
+
+```
+#!/usr/bin/env python
+# Copyright (c) 2014 The Bitcoin Core developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#
+# Test proper initiation of block sync between nodes
+#
+
+from test_framework import BitcoinTestFramework
+from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
+from util import *
+import os
+import shutil
+
+class BlockSyncTest(BitcoinTestFramework):
+
+    def setup_network(self):
+        # Nodes will all start with same chain, but
+        # are disconnected
+        self.nodes = start_nodes(4, self.options.tmpdir)
+
+    def run_test(self):
+        # Have node0 mine two blocks, disconnected from other nodes
+        blocks = self.nodes[0].setgenerate(True, 2)
+
+        # Now connect 0 to 1, then 2 to 0:
+        connect_nodes(self.nodes[0], 1)
+        connect_nodes(self.nodes[2], 0)
+
+        # Wait a few seconds for inv/getdata/block messages
+        time.sleep(3)
+
+        # Everybody should have the same idea of best block
+        assert_equal(self.nodes[1].getbestblockhash(), blocks[-1])
+        assert_equal(self.nodes[2].getbestblockhash(), blocks[-1])
+
+        # if node3 mines three then connects, everybody should sync with
+        # it's chain:
+        blocks = self.nodes[3].setgenerate(True, 3)
+        connect_nodes(self.nodes[3], 0)
+        time.sleep(3)
+        bestblocks = [ node.getbestblockhash() for node in self.nodes ]
+        assert_equal(bestblocks, [blocks[-1]]*len(self.nodes) )
+
+if __name__ == '__main__':
+    BlockSyncTest().main()
+```
+
+Reversing the connection direction in the last `connect_nodes(self.nodes[3], 0)` and the test succeeds.
+ 
+
+comment number: 65153247 
+body: I went through the logic of this.   When the connection direction is reversed, node3 is an outbound connection of node0 and is therefore a "nice" peer (fPreferredDownload is true).  But in the connection direction of your test case, node3 is inbound and so its not preferred and since node0 has another preferredDownload peer (it made an outbound connection to node1) it does not feel the need to sync headers with node3.  See `main.cpp:SendMessages()` at line 4520.
+ 
+
+comment number: 69178342 
+body: ~~Should be fixed by #5157~~ (turns out to be not the case)
+ 
+
+comment number: 69195318 
+body: As discussed on irc, @gavinandresen's test in his Nov 14 comment still fails.  The problem is that if an inbound peer is multiple blocks ahead of you and you have other outbound peers, the download logic tries to download the intermediate blocks from one of the outbound peers.  If the outbound peers haven't announced the block, then you'll never request them.  
+
+That's true even if an inbound peer continued to announce blocks that continue to build on its chain, you wouldn't ever advance your tip to catch up, because you'll be held up by not requesting the intermediate blocks, since you have no one to request them of.  
+ 
+
+comment number: 107371429 
+body: Should be fixed by #5662
+ 
+
+166. bug report number : ['5127']
+comment number: 60351987 
+body: I've also noticed that.  Adding `dnsseed=0` to the config written in `util.py`'s `initialize_datadir` fixes it.  Although it may be better to disable the DNS seed for regtest by itself.
+
+I can provide a patch for either solution, if it is desired.
+ 
+
+comment number: 60353569 
+body: The root issue here is that CRegTestParams inherits all parameters from CTestNetParams, but forgets to clear vFixedSeeds, so it can try to connect to the testnet seeds.
+These are the 'fixed seeds', not the DNS seeds, those are properly cleared.
+ 
+
+comment number: 60353912 
+body: See #5133
+ 
+
+167. bug report number : ['5126']
+comment number: 60280844 
+body: ```
+#include <string>
+```
+
+in script.h should fix. I reproduced it very closely with libc++. Could you please verify?
+ 
+
+comment number: 60387586 
+body: Hm @theuni do we need a Travis build with libc++?
+ 
+
+comment number: 60388237 
+body: Yea. I'd like to look at that after 0.10. I've got a rework of the OSX build that can use more recent SDKs and compilers, it may make sense to use libc++ there.
+ 
+
+comment number: 61303364 
+body: This can be closed, it was fixed by 3a757c529
+ 
+
+168. bug report number : ['5113']
+comment number: 59888310 
+body: In which code version do you observe this?
+ 
+
+comment number: 59888664 
+body: Current Git header: `64ffc995d685cf8a53ef868572e835ce42269ec6`
+
+My code contains also private commits, but they only touch the `qa/rpc-tests` folder.
+ 
+
+comment number: 60542096 
+body: I ran into this problem as well.  The below code demonstrates it by hanging at `sync_blocks`.   If you switch which node connects to which it tends to change whether it works or not.  I also noticed that if you use `sync_all` it sometimes fails syncing the mempools after syncing the blocks.  I'm not familar enough with the headers first code, but I think the issue is caused by which peer does a getheaders from the other.  This is run from the current master.
+
+``` Python
+#!/usr/bin/env python
+
+from test_framework import BitcoinTestFramework
+from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
+from util import *
+import time
+
+class SyncDir(BitcoinTestFramework):
+    def setup_network(self):
+        self.nodes = []
+        self.nodes.append(start_node(0, self.options.tmpdir, ["-debug"]))
+        self.nodes.append(start_node(1, self.options.tmpdir, ["-debug"]))
+        connect_nodes(self.nodes[1], 0)
+        print("Nodes connected")
+        self.is_network_split = False
+        self.sync_all()
+        random_transaction(self.nodes, Decimal("0.001"), Decimal("0.0001"), 0, 0)
+        print ("One tx sent")
+        self.nodes[0].setgenerate(True,1)
+        print ("Block mined")
+        self.sync_all()
+        print ("Chains synced")
+        stop_node(self.nodes[0],0)
+        print ("Node stopped")
+        self.nodes[0] = start_node(3, self.options.tmpdir,["-debug"])
+        print ("New node created")
+        connect_nodes(self.nodes[0], 1)  #connect the new node
+        #connect_nodes(self.nodes[1], 3)  #connect the new node
+        print ("New node connected....")
+        #self.sync_all()
+        sync_blocks(self.nodes)
+        print ("New node synced")
+
+    def run_test(self):
+        print ("Running test")
+
+if __name__ == '__main__':
+    SyncDir().main()
+```
+ 
+
+comment number: 60542695 
+body: I believe this is a dup/very related to #5138.
+ 
+
+comment number: 60553432 
+body: Regarding the `sync_all` problem:  I ran into this myself recently as well.  In my case, the problem is that the blocks are synced but the mempools are not.  This happens (for me) when transactions are put back into the mempool after reorganising - it seems those are not broadcasted to the nodes that always were on the longer chain.
+
+Since I introduced `sync_all`, should I propose another patch?  `sync_all` could be modified to be configurable about what should be synced (blocks and/or mempool), either with an optional argument or with a new member variable.  `join_network` would then only sync blocks and not the mempools.  Sounds like a good idea?  Or should such a change be introduced only together with actual tests that need the fixed behaviour?
+ 
+
+comment number: 69178258 
+body: Should be fixed by #5157
+ 
+

@@ -1,0 +1,1047 @@
+499. bug report number : ['385']
+comment number: 1571140 
+body: Can you rebase?
+ 
+
+comment number: 2132464 
+body: I have been told that this issue does not persist with the current release candidate.
+
+Closed pending test case to show leak.
+
+Sipa has referenced the following in IRC:
+
+https://github.com/bitcoin/bitcoin/commit/858cebed7dee2e9801e754a9969844b7969254ee
+
+and 
+
+https://github.com/bitcoin/bitcoin/pull/522
+ 
+
+500. bug report number : ['382']
+comment number: 2352708 
+body: WX is now deprecated. Please update this thread if the problem persists in the QT build.
+ 
+
+501. bug report number : ['359']
+comment number: 1458560 
+body: Looks fine to me when referring to X11. See http://en.wikipedia.org/wiki/X_Window_System
+ 
+
+comment number: 1606385 
+body: this assumes specific detailed linux knowledge. 
+"Start bitcoin on x window system startup" or even "Start bitcoin on/before login" would be more clear.
+ 
+
+comment number: 4967171 
+body: I wouldn't call this a bug, but it can be made clearer maybe. I like "Start bitcoin on login".
+ 
+
+comment number: 4968992 
+body: "Autostart Bitcoin after login"? On Windows it clearly happens after you typed in user and pass ^^.
+ 
+
+comment number: 8763125 
+body: @nilsja This is now `Start Bitcoin on system login` and IMO can be considered fixed! Just close this issue, if you agree.
+ 
+
+comment number: 10473697 
+body: Can be closed!
+ 
+
+502. bug report number : ['358']
+comment number: 1459088 
+body: 1) ACK
+2) ACK; I don't like using mapPubKeys as a check for whether a key is ours though (there's pwalletMain->HaveKey()), but for now it's correct.
+3) ACK
+4) NAK: you change the check for whether the key belongs to a certain account, but still look it up there the next line?
+5) I like accessor functions for those things, but a GetDefaultAddress should return the address corresponding to vchDefaultKey, and SetDefaultAddress should update vchDefaultKey (and push to db), imho.
+ 
+
+comment number: 1459684 
+body: Ok i've amended the commits.
+
+About 4), I assumed previously that mapPubKey contained a subset of mapAddressBook. Maybe it is (or will become) false, but anyway it is better to add the check.
+
+About 5), I hope I've done the wanted changes.
+
+About HaveKey(), there are many other occurrences of mapPubKeys that should be replaced as well.
+So it's probably better to leave it unchanged until a global substitution is performed.
+ 
+
+comment number: 1459726 
+body: mapPubKeys is not a subset of mapAddressBook; it contains reserve keys while mapAddressBook doesn't. You can assume for now that mapPubKeys does contain all 'our' keys though, and ignore HaveKey for now.
+ 
+
+comment number: 1465942 
+body: Indeed. Reserve keys!
+Thank you.
+ 
+
+comment number: 1470739 
+body: Can we get a breakdown of the original problems this addresses instead of just what was done to correct them?
+ 
+
+comment number: 1475977 
+body: 1) If you need a concrete appearance of the underlying problem, make some changes in your address book using the gui (current head), close the address book window, open it again. Changes are not displayed.
+
+2) and 4) see respective links.
+
+3) and 5) are just improvements.
+ 
+
+comment number: 1479327 
+body: ACK.
+ 
+
+comment number: 1479997 
+body: NACK - crashes when loading from empty .bitcoin - "Error to load wallet.dat"
+ 
+
+comment number: 1480021 
+body: Problem first showed up in 0efc5d29a2d8922b10dcd02a1f1ad7b46258edd8, Ill let you do the rest.
+ 
+
+comment number: 1482389 
+body: Yes a small issue with big consequences.
+The address name "" was generated as the default "map"ed value, and therefore it was not written to db.
+
+Note to myself, I should really keep away from languages that allow me to make such stupid mistakes :-)
+ 
+
+comment number: 1551132 
+body: Status update.
+
+1) has been pulled.
+
+2) and 4) are still pending fixes for outstanding bugs.
+Note: expect merge conflicts with recent work by sipa.
+ 
+
+comment number: 1571100 
+body: If 1 has been pulled, why is its commit still listed here? Can you do a rebase, removing the already-merged parts?
+ 
+
+comment number: 1571532 
+body: Dunno, the first patch was kind of cherry-picked.
+Here comes the clean rebase.
+ 
+
+comment number: 1772568 
+body: Rebased against recent changes. Removed 5) since its purpose is no so clear now.
+ 
+
+comment number: 3270868 
+body: How relevant are these fixes still?
+ 
+
+503. bug report number : ['351']
+comment number: 2352674 
+body: WX is now deprecated. Please update this thread if the problem persists in the QT build.
+ 
+
+504. bug report number : ['350']
+comment number: 1442395 
+body: Hi,
+See also pull #335.
+ 
+
+comment number: 1442444 
+body: hm right, seems that I did some duplicated effort :-)
+ 
+
+comment number: 1443780 
+body: Your Erase naming is more consistent with the name of other functions.
+SetDefaultAddress was missing.
+Also, I agree that code should be extracted from .h to .cpp files!
+
+It's nice to see some activity, and thanks for the (indirect) feedback! :-)
+ 
+
+comment number: 2299415 
+body: If this is still relevant with the new QT GUI, please rebase and re-open.
+ 
+
+comment number: 3019433 
+body: For the record, this fix got merged for 0.3.24.
+ 
+
+505. bug report number : ['346']
+comment number: 3956819 
+body: The GUI part of this should be solved with pull request #689.
+ 
+
+comment number: 4966899 
+body: Closing this; listtransactions Does the Right Thing.
+ 
+
+506. bug report number : ['344']
+comment number: 1435293 
+body: 23:13:51 @jine This is a patch for bitcoind from hevosenliha in #bitcoins.lc. To try to add support for keep-alive
+23:13:55 @jine http://jine.be/46
+23:14:18 @jine The issue with that seems to be (according to ius in #bitcoins.lc) that the connection only allows one user to connect.
+23:14:31 @jine (And also, i'm having troubles with that code)
+ 
+
+comment number: 1439467 
+body: One thing tho, the keep-alive solution should be based upon multi-threading (as implemented before in https://github.com/bitcoin/bitcoin/pull/214
+
+/ Jim
+ 
+
+comment number: 1439690 
+body: Someone at a Swedish forum found this link, should be something worth taking a look on:
+http://codingplayground.blogspot.com/2008/07/boostasio-and-keep-alive.html
+ 
+
+comment number: 6791573 
+body: Should be fixed thanks to HTTP/1.1 support
+ 
+
+507. bug report number : ['330']
+comment number: 4962913 
+body: Keeping this open, although the immediate issue was fixed long ago it still might be nice to eventually make number parsing locale-aware.
+ 
+
+comment number: 26704951 
+body: I think it's time to revive this issue (or kill it forever). Do we really want number parsing and formatting in the GUI (this is oblivious to bitcoind) locale aware?
+Implementation wise it's a trivial change as Qt contains everything for locale-specific number processing. 
+
+But it may cause communication confusion between people or result in wrong amounts being sent if, for some reason, the locale is picked wrongly. This was the original reason for Satoshi to settle on one kind of number formatting. But maybe it's a misplaced concern now that we always ask for confirmation.
+ 
+
+comment number: 37790802 
+body: Closing in favor of #3887 which is more clearly formulated
+ 
+
+508. bug report number : ['329']
+comment number: 2465258 
+body: If you have not submitted these commits to a pull request, please do so.
+ 
+
+509. bug report number : ['328']
+comment number: 4091570 
+body: @laanwj Does this issue still exist in the Qt GUI?
+ 
+
+comment number: 4098741 
+body: I don't think so. Addresses are checked at every stage.
+ 
+
+510. bug report number : ['323']
+511. bug report number : ['322']
+512. bug report number : ['321']
+comment number: 1390880 
+body: -rescan seems to work on linux but doesn't (always) work on windows.
+ 
+
+comment number: 4044119 
+body: In which version was this? Automatic rescanning was added in 0.3.21.
+ 
+
+513. bug report number : ['307']
+comment number: 1319488 
+body: I don't know about bitcoin's source code, but after having a quick look inside, I believe in file rpc.c, function ListReceived(), where the is now:
+    if (!AddressToHash160(strAddress, hash160))
+
+... it should rather be:
+    if (!AddressToHash160(strAddress, hash160) || !mapPubKeys.count(hash160))
+
+And similar fix for getaddressesbyaccount.
+ 
+
+comment number: 1916423 
+body: I'm having the same problem.  Seems there's no way to distinguish between receiving addresses and addresses the client has sent to using the rpc.  Obviously, the client UI is doing it somehow to create the address book.
+ 
+
+comment number: 2009452 
+body: v0.3.21 has been deprecated: https://github.com/bitcoin/bitcoin/commit/ec74e8a44338202bfb82faa2cef4611cc37e7fa5
+
+Please submit a new issue if this persists in current versions.
+ 
+
+514. bug report number : ['306']
+comment number: 1319133 
+body: Same here. It happens when I'm using chinese language. removing locale/zh_cn resolves the problem.
+ 
+
+comment number: 1319172 
+body: ---
+
+EXCEPTION: St9bad_alloc  
+std::bad_alloc  
+D:\Program Files (x86)\Bitcoin\bitcoin.exe in CMyApp::OnExceptionInMainLoop()       
+
+sending: inv (73 bytes) 
+received: addr (31 bytes)
+sending: inv (73 bytes) 
+sending: inv (73 bytes) 
+sending: addr (31 bytes) 
+sending: inv (73 bytes) 
+sending: addr (31 bytes) 
+sending: inv (73 bytes) 
+DBFlush(false)
+addr.dat refcount=0
+addr.dat flush
+ThreadSocketHandler exiting
+ThreadMessageHandler exiting
+blkindex.dat refcount=0
+blkindex.dat flush
+UPNP_DeletePortMapping() returned : 0
+ThreadMapPort exiting
+ThreadOpenConnections exiting
+wallet.dat refcount=0
+wallet.dat flush
+StopNode()
+DBFlush(true)
+Bitcoin exiting
+ 
+
+comment number: 2009448 
+body: v0.3.21 & v0.3.22 have been deprecated: https://github.com/bitcoin/bitcoin/commit/ec74e8a44338202bfb82faa2cef4611cc37e7fa5
+
+Please submit a new issue if this persists in current versions.
+ 
+
+515. bug report number : ['304']
+comment number: 1312572 
+body: Actually, dont pull this yet, way more stuff to come.
+ 
+
+comment number: 1312696 
+body: Nevermind, other bug is in CryptoPP ASM when cross compiled.
+ 
+
+comment number: 1319679 
+body: ACK, looks good to pull to me.
+ 
+
+516. bug report number : ['300']
+comment number: 1306428 
+body: As devrandom pointed out, tor latency could be much greater than 5s.  Maybe add if (fProxy) timeout = 20s?
+ 
+
+comment number: 1308021 
+body: Maybe this can be done adaptively: start with a timeout=100ms, and each time N connection attempts have failed through time-out (and not enough connections are established), double the timeout.
+ 
+
+comment number: 1310748 
+body: I think making it a command line override option would be a better way of handling it. In general you want to avoid connecting to other nodes where your network path is that latent. That way people who have known-latent paths can manually bump the timeout but it works as expected for most users.
+ 
+
+comment number: 1311072 
+body: @jrmithdobbs: good suggestion - implemented.
+ 
+
+comment number: 1319859 
+body: I'd prefer removing the nConnectTimeout global variable and just calling GetArg("-timeout", 5000) in ConnectSocket.
+ 
+
+comment number: 1327989 
+body: My name is phantomcircuit and I approve this patch.
+ 
+
+comment number: 1329964 
+body: @gavinandresen: I disagree - I don't like global variables, but doing parsing of command-line options all over the place is even worse.
+ 
+
+comment number: 1339951 
+body: bleh, this is overkill.
+
+Use select with timeout -- as net.cpp already does -- and eliminate that polling loop.
+
+In all of linux/osx/winsock, you issue a non-blocking connect(2), and then select(2) the socket for writing.
+ 
+
+comment number: 1351925 
+body: ACK final result.  Needs to be rebased though...
+ 
+
+comment number: 1352596 
+body: ACK -- looks OK, but I haven't had time to compile and test.
+ 
+
+comment number: 1353183 
+body: Now using select() instead of looping. Tested on Linux and Windows.
+ 
+
+517. bug report number : ['299']
+comment number: 2009425 
+body: Version v0.3.20.01 is deprecated, see https://github.com/bitcoin/bitcoin/commit/ec74e8a44338202bfb82faa2cef4611cc37e7fa5
+
+Also see the mining deprecation thread: https://github.com/bitcoin/bitcoin/pull/466
+ 
+
+518. bug report number : ['264']
+comment number: 1237762 
+body: This should fix https://github.com/bitcoin/bitcoin/issues/263
+ 
+
+519. bug report number : ['263']
+comment number: 1237759 
+body: See https://github.com/bitcoin/bitcoin/pull/264
+ 
+
+comment number: 1304693 
+body: pulled sipa's fix
+ 
+
+520. bug report number : ['258']
+comment number: 1258562 
+body: Overall transaction handling in db.cpp is terrible.  BDB has good transaction support, but it is only used in one or two places.
+ 
+
+comment number: 1259092 
+body: I looked into this a bit: I think disabling fsync for the address database is the way to go, but since we need to leave it enabled for the rest (?) of the databases, that will require creating a separate BDB [DbEnv](http://download.oracle.com/docs/cd/E17076_02/html/api_reference/CXX/envcreate.html).
+ 
+
+comment number: 1386562 
+body: This appears to be at least an order of magnitude worse in the OSX build than in the Linux build. Might OSX be handling the fsync'ing differently?
+ 
+
+comment number: 1393242 
+body: Yeah, it's absolutely abysmal on osx.
+ 
+
+comment number: 1395233 
+body: I didn't really notice since the macs I run it on all have SSDs. But yes, it is demonstrably worse on OS X.
+ 
+
+comment number: 1433733 
+body: With a high-end Mac Pro (gobs of RAM, 2 quad-core CPUs) this issue makes Bitcoin essentially unusable in conjunction with other day-to-day use of the machine.  It causes the HD to click noisily all day (with brief pauses) and degrades performance of other applications - web browsing etc.  I keep Bitcoin terminated during the day when working and just run it at night.
+
+How large is the address DB typically and is it expected to grow with network size? (mine is ~15MB).  If it remains of that order, perhaps an option to keep it in memory would be appropriate?
+
+I'm assuming the 'fsync' suggestion above involves modification of the code, but if there is any 'quick fix' available, that would be a useful temporary workaround for Mac users.  
+
+Cheers (- everyones work is appreciated).
+ 
+
+comment number: 1469020 
+body: You might try -noflushwallet, but that probably wouldnt work and could lead to the loss of data in the wallet or the corruption of the wallet if the bitcoin client crashes while it is writing to the wallet.
+ 
+
+comment number: 1526591 
+body: Does every address need an fsync?  It seems that just fsyncing after key/wallet operations would be more than acceptable.  Can the address cache fsyncs be batched into blocks of 1000 or something?
+ 
+
+comment number: 1714541 
+body: With OS X adding addresses is _much_ slower than with Linux: it takes a very long time until it starts fetching new blocks after startup.
+Note: I'm using an encrypted *.dmg for all Bitcoin data (inclusive debug.log), which could make things more worse.
+
+Just to confirm this as a serious problem (0.3.24-beta, OS X Lion): the difference between Linux and OS X is so big (with OS X it has taken >15min until fetching first block!), that something seems to be buggy.
+ 
+
+comment number: 1773052 
+body: Try with some revision that is more recent than 24271c542b9a0d6016badf5438fb7e5ff7961ace.
+This patch reduces db commits when addresses are added.
+ 
+
+comment number: 4044303 
+body: Addrman (#787) fixes this completely, as it only writes addr.dat asynchonously.
+ 
+
+comment number: 4961056 
+body: Addrman pulled.
+ 
+
+521. bug report number : ['253']
+comment number: 1364709 
+body: ACK
+
+and I think Gavin is in favor of this, too
+ 
+
+comment number: 1490461 
+body: NACK, it would appear code was ripped out of uibase.\* without modifying the uiproject.fpb file meaning no one can edit the wxUI in the future.
+ 
+
+comment number: 1559512 
+body: Also, please update for latest changes (lots!).  We wanted to pull wallet crypto first.
+ 
+
+comment number: 1560610 
+body: yeah I will, first have to get this wx dialog editor tooling
+ 
+
+comment number: 1593259 
+body: Aww. The removal of this would mean we can't run a lottery for nodes running the most recent version of bitcoin as an incentive to make people upgrade. :)
+ 
+
+comment number: 1593434 
+body: Wow, you probably hit upon the first actual useful application for send to
+IP transactions. But watch out for people MITMing you to steal the
+incentives :)
+ 
+
+comment number: 1593448 
+body: Well, if they are going to go through the trouble of setting up something that _pretends_ to be a current node it would be easier to actually RUN a current node.  The lottery could do some reasonable health checks too. :)  Like make sure the winner can feed the block chain and forward a transaction. 
+ 
+
+522. bug report number : ['248']
+comment number: 1214447 
+body: What's the difference?
+ 
+
+comment number: 1241566 
+body: Do you have a reliable test-case for this, something that always fails on the first and never on the last?
+ 
+
+comment number: 1319938 
+body: Yes, test case(s) please?
+ 
+
+comment number: 2792628 
+body: Whatever this was, was my fault. I think.
+ 
+
+523. bug report number : ['244']
+comment number: 1203842 
+body: Oops, already been posted here: #240
+ 
+
+524. bug report number : ['243']
+comment number: 1241766 
+body: Based on my quick googleing it is not possible to get DPI from wx.  A system-dependent version could be implemented.  All that should realistically need done, is multiply the size of each window by the DPI/96, I think.
+ 
+
+525. bug report number : ['240']
+comment number: 1203043 
+body: Both warnings in util.cpp are false positives. I'm not going to dive in the GUI.
+ 
+
+526. bug report number : ['239']
+comment number: 3005537 
+body: This concerns the old Wx GUI, closing the issue
+ 
+
+527. bug report number : ['238']
+comment number: 4044345 
+body: wx GUI has been removed, closing.
+ 
+
+528. bug report number : ['237']
+comment number: 4044341 
+body: Does this problem still exist?
+ 
+
+529. bug report number : ['236']
+comment number: 1198435 
+body: Seems like a nice, well-defined problem for somebody new to tackle.  Conversion of difficulty to floating point isn't a critical function (internally it is all uint256's), and we're not going to get to 2 billion difficulty soon, so not high priority.
+ 
+
+530. bug report number : ['231']
+comment number: 1194051 
+body: This is a manifestation of the error fixed in 2f62b1299f1d2d8e56ff9096017b1f3835b41642.  That said, it is still an indication of a more underlying error which should be investigated.  Probably an issue in SendMoney.
+ 
+
+comment number: 1195621 
+body: As an addendum to this issue, the client first displayed a message box telling me about a transaction fee (0.01) for which I pressed the 'Ok' button...it is at that point it displayed the error message above...
+ 
+
+comment number: 3019190 
+body: This bug is related to wxGTK which was removed in 0.5.0.
+ 
+
+531. bug report number : ['216']
+comment number: 1129850 
+body: This is a feature to prevent the remaining 0.00XXXX from being lost as you can't send that without a 0.01 fee which you can't have if your balance is <0.01
+ 
+
+comment number: 1130107 
+body: Yes, but if I have 10.01999999 bitcoins, and am in a pool, I could safely assume that I would be able to make 0.00000001 bitcoins to then have whole cent within a reasonable amount of time. The feature should be to simply not allow you to send a transaction if you have less than 0.01 rather than sending it along with the whole cent. Otherwise, it's theft of coin (negligible or not) by the network.
+ 
+
+comment number: 1130591 
+body: You cannot send a coin smaller than 0.01 without paying a transaction fee.  So if you had a 10.019, and you got a 0.001 payment (whoever sent that would have had to pay a fee), you cannot resend that 0.001 payment without paying a 0.01 bitcoin fee.  I know it looks like you have exactly 10.02 BTC in that case, but to bitcoin you have a 10.019BTC "coin" and a 0.001 BTC "coin".
+ 
+
+comment number: 1134090 
+body: In that case, it should notify users that, if they have a balance of 1.01999999 and they send someone 1 BTC with a 0.01 TxFee, they are sending them their subcent balance with it.
+ 
+
+comment number: 1134810 
+body: Yep, the GUI should definitely notify the user, so lets keep this issue open until that is fixed.
+ 
+
+comment number: 4044411 
+body: I believe the current Qt GUI behaves correctly now.
+ 
+
+comment number: 4091361 
+body: @laanwj Does this problem still exist?
+ 
+
+comment number: 4098878 
+body: Nope, bitcoin adds the fee at most, nothing more.
+ 
+
+532. bug report number : ['207']
+comment number: 1301526 
+body: Same with 64 bit on Ubuntu 11.04.
+ 
+
+comment number: 1302028 
+body: Just got that error on 64 bit Ubuntu 2.6.32-32-generic
+ 
+
+comment number: 1304391 
+body: All kinds of similar errors pop up if you are running the 32-bit version on 64-bit Ubuntu, Im assuming you are all running the right version for you machines?
+ 
+
+comment number: 1304713 
+body: The 32 bit version does not run (core dump) on my machine.  I just
+turned off the errors and the gui does seem to work.
+
+On Sun, Jun 5, 2011 at 8:34 AM, TheBlueMatt
+reply@reply.github.com
+wrote:
+
+> All kinds of similar errors pop up if you are running the 32-bit version on 64-bit Ubuntu, Im assuming you are all running the right version for you machines?
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/207#comment_1304391
+ 
+
+comment number: 1304746 
+body: The 32 bit version does not run (core dump) on my machine.
+You shouldnt be trying the 32-bit version on a 64-bit machine.  And you didn't answer my question, do you see these errors on the 64-bit version as well, or only when you are running the wrong binary?
+ 
+
+comment number: 1304750 
+body: OK.  When I run the 32 bit it core dumps (can I say that any other
+way?).  There you go.
+
+On Sun, Jun 5, 2011 at 10:47 AM, TheBlueMatt
+reply@reply.github.com
+wrote:
+
+> The 32 bit version does not run (core dump) on my machine.
+> You shouldnt be trying the 32-bit version on a 64-bit machine.  And you didn't answer my question, do you see these errors on the 64-bit version as well, or only when you are running the wrong binary?
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/207#comment_1304746
+ 
+
+comment number: 1305036 
+body: According to your first comment, you are on a 64-bit machine, correct?
+When you run the 32-bit binary, it is expected that it will not work.  Thus what you are saying is not a bug.
+My question is...when you run the proper (ie 64-bit) binary, does the same problem present itself?
+ 
+
+comment number: 1305083 
+body: I understand that running 32 bit on 64 is not a bug.  The messages
+appear when running the 64 bit since I am only 64 bit.  The messages
+can be suppressed by unchecking a box on the error message dialog and
+then hitting the continue button.  The client then runs without a
+problem.  I did install the wxwidgets from their site, but it didn't
+seem to include any extra fonts.  I gave up on the problem since the
+client works fine and I can see all the text with no issues.  I would
+classify it as a bug, but not a show stopper.  Will you enter it into
+the bug tracking system?  Or is there such a system?
+
+On Sun, Jun 5, 2011 at 12:25 PM, TheBlueMatt
+reply@reply.github.com
+wrote:
+
+> According to your first comment, you are on a 64-bit machine, correct?
+> When you run the 32-bit binary, it is expected that it will not work.  Thus what you are saying is not a bug.
+> My question is...when you run the proper (ie 64-bit) binary, does the same problem present itself?
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/207#comment_1305036
+ 
+
+comment number: 1305252 
+body: You are on the bug-tracking system.  Anyway, sorry for the confusion, just wanted to make sure as it was not clear from the first couple of posts.  Can you give any more info on your system, as I dont see this error on a clean Ubuntu LiveCD.  Are you running Kubuntu or some other flavor, what packages might you have removed that were in the default install?
+ 
+
+comment number: 1305748 
+body: I am running Lucid, but have not really removed a lot of packages.
+Maybe the fonts will be available in Maverick or Natty.
+
+On Sun, Jun 5, 2011 at 1:32 PM, TheBlueMatt
+reply@reply.github.com
+wrote:
+
+> You are on the bug-tracking system.  Anyway, sorry for the confusion, just wanted to make sure as it was not clear from the first couple of posts.  Can you give any more info on your system, as I dont see this error on a clean Ubuntu LiveCD.  Are you running Kubuntu or some other flavor, what packages might you have removed that were in the default install?
+> 
+> ## 
+> 
+> Reply to this email directly or view it on GitHub:
+> https://github.com/bitcoin/bitcoin/issues/207#comment_1305252
+ 
+
+comment number: 2352660 
+body: WX is now deprecated. Please update this thread if the problem persists in the QT build.
+ 
+
+533. bug report number : ['191']
+comment number: 1090862 
+body: proposed patch is http://dpaste.org/OwYT/
+ 
+
+comment number: 1099241 
+body: I've tried to compile bitcoin with your patch applied, but got an error
+
+g++ -c -O2 -Wno-invalid-offsetof -Wformat -g -D__WXDEBUG__ -DNOPCH -DFOURWAYSSE2 -DUSE_SSL -fPIC -I/usr/lib/wx/include/gtk2-unicode-2.9 -I/usr/include/wx-2.9 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -pthread -DGUI -o obj/main.o main.cpp
+main.cpp: In function 'void CallCPUID(int, int&, int&)':
+main.cpp:3162:6: error: PIC register '%ebx' clobbered in 'asm'
+make: **\* [obj/main.o] Error 1
+make: **\* Waiting for unfinished jobs....
+ 
+
+comment number: 3002151 
+body: Detect128BitSSE2 and CallCPUID have been removed from the bitcoin source, closing this issue
+ 
+
+534. bug report number : ['172']
+comment number: 5763861 
+body: Do you know if there is any applicable workaround ?
+
+I have a case where I imported a lot of private keys into a wallet, and there's starting to be a very significant discrepancy between what `getbalance` and what `getbalance '*'` report, I suspect that this issue might be somehow related as the difference increases with time and with transactions that are being sent...
+
+Any help whatever small would be immensely appreciated !
+ 
+
+comment number: 28302942 
+body: Was fixed by #2272 a long time ago, closing
+ 
+
+535. bug report number : ['144']
+comment number: 2352641 
+body: WX is now deprecated. Please update this thread if the problem persists in the QT build.
+ 
+
+536. bug report number : ['140']
+comment number: 27688049 
+body: Just verified that this works fine now, closing
+ 
+
+537. bug report number : ['130']
+comment number: 1116911 
+body: Have you tested this on 0.3.21? What method did you use to download?
+ 
+
+comment number: 1129338 
+body: Just downloaded 0.3.21-beta from http://www.bitcoin.org/ and it still happens
+ 
+
+comment number: 1201797 
+body: I have had the same issue with 0.3.21 as well as with the new 0.3.22-rc2. Clicking 'Cancel' allows the Address Book to open. The error does not appear on subsequent opening of the address book until bitcoin is restarted.
+
+I am using Windows 7 x64.
+ 
+
+comment number: 1254821 
+body: Confirm this bug exist in 0.3.21 windows 7  64 bit aswell.
+ 
+
+comment number: 1254868 
+body: This is a bug with high DPI settings, but it shouldn't appear on a standard 96 DPI machine.  Might you have some kind of theme which makes the icons in the corner of your windows larger?
+ 
+
+comment number: 1254890 
+body: I don't think I have any settings different from whatever the Windows 7 defaults are
+ 
+
+comment number: 1255067 
+body: Have you tried 0.3.22 rc5+?
+ 
+
+comment number: 1255328 
+body: Issue appears to be fixed in 0.3.22 rc5.
+ 
+
+comment number: 1985393 
+body: Issue closed pending further comments/commits
+ 
+
+538. bug report number : ['128']
+comment number: 1083763 
+body: This is a problem with wx, works fine with wxWidgets-trunk.
+ 
+
+comment number: 2352640 
+body: WX is now deprecated. Please update this thread if the problem persists in the QT build.
+ 
+
+539. bug report number : ['94']
+comment number: 831764 
+body: Since that commit stripped out the inclusion of WXINCLUDEPATHS in the defs and moved it to the obj/%.o location instead. This means the nogui option compilation doesn't receive the **WXGTK** define, which is #ifdef'ing out the daemonizing fork() call. (Which itself is probably the genesis of this bug.)
+ 
+
+comment number: 831940 
+body: bugfix: https://github.com/bitcoin/bitcoin/pull/96
+ 
+
+540. bug report number : ['93']
+comment number: 837957 
+body: See https://github.com/bitcoin/bitcoin/pull/95
+Cherry-picked and released as bitcoin v0.3.20.2
+ 
+
+541. bug report number : ['89']
+comment number: 940365 
+body: You can get Bitcoin.app to load by deleting the Bitcoin folder in ~/Library/Application Support/
+ 
+
+comment number: 1307476 
+body: I tried deleting the Bitcoin folder as suggested by Mr Burns. Unfortunately, still crashing.
+
+Process:         bitcoin [306]
+Path:            /Users/johnhoward/Downloads/bitcoin-0.3.21 2/Bitcoin.app/Contents/MacOS/bitcoin
+Identifier:      org.bitcoin.bitcoin
+Version:         0.3.21 (321)
+Code Type:       X86 (Native)
+Parent Process:  launchd [115]
+
+Interval Since Last Report:          22343408 sec
+Crashes Since Last Report:           156
+Per-App Interval Since Last Report:  46 sec
+Per-App Crashes Since Last Report:   8
+
+Date/Time:       2011-06-06 08:57:35.744 +0200
+OS Version:      Mac OS X 10.5.8 (9L30)
+Report Version:  6
+Anonymous UUID:  E3A6652B-5130-4FF2-AD5D-A79CC8D32939
+
+Exception Type:  EXC_BREAKPOINT (SIGTRAP)
+Exception Codes: 0x0000000000000002, 0x0000000000000000
+Crashed Thread:  0
+
+Dyld Error Message:
+  Symbol not found: _fopen$UNIX2003
+  Referenced from: /Users/johnhoward/Downloads/bitcoin-0.3.21 2/Bitcoin.app/Contents/MacOS/bitcoin
+
+##   Expected in: /usr/lib/libSystem.B.dylib
+
+  Model Name:   iMac
+  Model Identifier: iMac4,1
+  Processor Name:   Intel Core Duo
+  Processor Speed:  2 GHz
+  Number Of Processors: 1
+  Total Number Of Cores:    2
+  L2 Cache: 2 MB
+  Memory:   2 GB
+  Bus Speed:    667 MHz
+  Boot ROM Version: IM41.0055.B08
+
+---
+
+Anyone have any other tips?
+J
+ 
+
+comment number: 4145136 
+body: Closing as "cannot reproduce"
+ 
+
+542. bug report number : ['86']
+comment number: 820868 
+body: Is there another potential issue here?  For transactions that, for one reason or another, don't get into a block in a reasonable amount of time, is there some criteria for which the network will drop (and thereby cancel) such transactions?  (like a certain amount of time passing without being included in a block)
+ 
+
+comment number: 822157 
+body: afaik, there is currently no mechanism that would drop transactions from local cache. They just stay there until found in a block.
+
+It's been suggested to do that, though (like limit local cache to 5MB), in order to avoid DoS attack. It's probably not that simple, though.
+
+Don't know if there's a github issue for this, if not, it certainly deserves one.
+ 
+
+comment number: 822490 
+body: Lets discuss on the forum:  http://www.bitcoin.org/smf/index.php?topic=4009.msg57469
+ 
+
+comment number: 828831 
+body: See pull request at https://github.com/bitcoin/bitcoin/pull/88
+ 
+
+543. bug report number : ['80']
+comment number: 905767 
+body: My walletdump branch (https://github.com/sipa/bitcoin/tree/walletdump) should contain a fix for this. But there are still a lot of edge cases that need to be tested.
+ 
+
+comment number: 1035119 
+body: 0.3.21 has a fix for this; please test and let us know all is well and we'll close this issue.
+ 
+
+544. bug report number : ['76']
+comment number: 896498 
+body: Submitted pull request: https://github.com/bitcoin/bitcoin/pull/126
+ 
+
+comment number: 1116929 
+body: Aside from the typo in the code, is there a reason why this pull request was closed?
+ 
+
+comment number: 1116934 
+body: No. I submitted a second pull request (#127,
+https://github.com/bitcoin/bitcoin/pull/127) with revised code, which
+was merged on April 5th.
+
+On 05/07/2011 08:11 PM, TheBlueMatt wrote:
+
+> Aside from the typo in the code, is there a reason why this pull request was closed?
+
+## 
+
+Eric Swanson
+http://www.alloscomp.com/
+GPG Key: 7A96 A45E 1603 6FCB EA72 146D 33D6 60E9 FFC7 420D
+ 
+
+comment number: 1116939 
+body: Can we close this issue then?
+ 
+
+comment number: 1116944 
+body: Yeah, the bug is fixed in the current HEAD, so close it.
+
+On 05/07/2011 08:15 PM, TheBlueMatt wrote:
+
+> Can we close this issue then?
+
+## 
+
+Eric Swanson
+http://www.alloscomp.com/
+GPG Key: 7A96 A45E 1603 6FCB EA72 146D 33D6 60E9 FFC7 420D
+ 
+
+545. bug report number : ['75']
+comment number: 1532209 
+body: init.cpp:308 
+`#if defined(__WXMSW__) && defined(GUI)
+// wxSingleInstanceChecker doesn't work on Linux
+...
+#endif`
+
+Probably the whole block should be removed so long as lock file works right on windows.
+ 
+
+comment number: 1533126 
+body: Seems that single instance check is older than the lock file code. The whole block is obsolete.
+Just tried it, locking works fine without that checking.
+ 
+
+comment number: 3002132 
+body: This is no longer relevant with bitcoin-qt, closing issue
+ 
+
+546. bug report number : ['70']
+comment number: 771725 
+body: RE: add address:  Adding a sending address to your address book you have to paste the address that you're sending to.
+
+If you click on the Receiving address tab you don't specify the new address, bitcoin generates it for you.
+
+Organizing would be a new feature.
+ 
+
+comment number: 799178 
+body: Rendering issues were resolved by building with the mingw toolchain.
+ 
+
+547. bug report number : ['69']
+comment number: 774815 
+body: I'm seeing something that's probably related. When Bitcoin is underneath a window, and then brought to the top, the background of the tool strip appears to not get repainted. See this screenshot: http://i.imgur.com/uSkud.png
+ 
+
+comment number: 788315 
+body: Please try 0.3.20.01 (binaries at SourceForge, replaces the first candidate 0.3.20 release).  It is built with the mingw toolchain, we I hope fixes these issues.
+Let us know if it works for you.
+ 
+
+comment number: 799174 
+body: Rendering issues went away compiling with the mingw toolchain.
+
+Go figure.
+ 
+
+548. bug report number : ['67']
+comment number: 772743 
+body: What version of bitcoin ?   I compiled the windows 0.3.20 bitcoin with boost 1.45.0...
+ 
+
+comment number: 788326 
+body: More info:  m0mchil couldn't compile boost 1.45 with mingw, he downgraded to 1.43 for the windows bitcoin 0.3.20.01 release.
+ 
+
+comment number: 816760 
+body: I successfully compiled with boost_1_46_0 on my Mac (OSX 10.6.6).  I suggest trying with that and if it works for you, maybe it could be added to the Mac build instructions that version 1_45_0 may not work.
+ 
+
+comment number: 3002111 
+body: Is this issue still relevant with the new releases?
+ 
+
+549. bug report number : ['64']
+comment number: 766047 
+body: May I suggest operating Bitcoin from the command line? The documentation on this topic is somewhat sparse, but a reasonable summary may be obtained by typing 'bitcoin help' or at https://en.bitcoin.it/wiki/Original_Bitcoin_client/API_calls_list.
+ 
+
+comment number: 4091463 
+body: @laanwj I read compatibility with NVDA was recently added?
+ 
+
+comment number: 4098806 
+body: Yes; Qt has native support for NVDA, but in windows (with static linking) it was not yet enabled.
+
+I don't know how usable it currently is with screen reader, though. It might be that some hints etc still need to be added.
+ 
+
+comment number: 4960944 
+body: I'm going to close this, because accessibility support was turned on.  If there are still specific issues new issues should be opened.
+ 
+
+550. bug report number : ['49']
+comment number: 723996 
+body: I'm not able to reproduce this in ubuntu 11.04's development version, but I'm using an English locale.
+
+Could you show me the output of running this in a terminal please, so I can better reproduce your environment?
+
+env | grep -i -e 'c[sz]' -e lc
+
+remove anything private from the output, should there be something you don't want to post.
+
+Thanks.
+
+Chris.
+ 
+
+comment number: 723999 
+body: When I try to make a folder like you have, it becomes: /home/chris/Sta¾ené/bitcoin/ - the z hacek comes out like a 3/4 on my screen.
+ 
+
+comment number: 724235 
+body: LANG=cs_CZ.utf8
+GDM_LANG=cs_CZ.utf8
+ 
+
+comment number: 724337 
+body: I still can't reproduce it, even with those settings.
+
+Are you using the official build?  32 or 64 bit?  When does it crash; before or after the GUI appears?  What's the last few lines in ~/.bitcoin/debug.log when it crashes?  Can you get a gdb backtrace?
+ 
+
+comment number: 822083 
+body: I have confirmed the bug on Ubuntu 10.04.2 LTS.  It's triggered when /proc/self/exe links to a UTF-8 path.  Behavior differs depending on LANG setting.
+- LANG=C: bitcoin runs just fine
+- LANG=DE: assertion fails../src/common/intl.cpp(2554): assert "!m_strShort.empty()" failed in AddCatalog(): must initialize catalog first
+- LANG=cs_CZ.utf8: bitcoin silently segfaults, gdb shows corrupted stack trace.  
+
+strace suggests it happens during or right after this line, I think it's a wxLocale bug.
+
+src/ui.cpp:    g_locale.AddCatalog("wxstd"); // wxWidgets standard translations, if any
+ 
+
+comment number: 3956709 
+body: Was this a wx issue? Can anyone please re-test this with 0.5.0+?
+ 
+
