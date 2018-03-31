@@ -17,12 +17,9 @@ for x in range (1,20):
 
     i=0
     for item in j:      
-        if(j[i]['number']): #bug report number
-            f.write("Report number: %s\n" %j[i]['number'])
-        if(j[i]['title']):
-            f.write("title: %s\n" %j[i]['title'])
-        if(j[i]['body']):
-            f.write("body: %s\n" %j[i]['body'])
+        f.write("Reportkyk kyknumber: %s\n" %j[i]['number'])
+        f.write("kyktitle: %s\n" %j[i]['title'])
+        f.write("kykbody: %s\n" %j[i]['body'])
         i+=1
         f.write("\n")
     x+=1
